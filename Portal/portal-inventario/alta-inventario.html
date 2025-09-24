@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario</title>
+	<link rel="shortcut icon" href="../img/bus_8502475.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	   
+	
+    <!-- Contenedor principal -->
+    <div class="contenedor-principal">
+		
+		<!-- Menú superior -->
+		<div class="menu-superior">
+			<!-- Opciones del menú -->
+			<div class="opciones">
+
+				<div class="fr">FLECHA ROJA</div>
+
+					<ul class="menu">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle">Alta de camiones</a>
+								<ul class="submenu">
+									<li><a id="submenu" href="#">Ver Camiones</a></li>
+									<li><a id="submenu" href="#">Alta</a></li>
+								</ul>
+						</li>
+					</ul>
+			
+					<ul class="menu">
+						<li><a href="#">Inventario</a></li>
+					</ul>
+
+					<ul class="menu">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle">Reportes</a>
+							<ul class="submenu">
+								<li><a id="submenu" href="#">Personalizado</a></li>
+								<li><a id="submenu" href="#">Plantillas</a></li>
+							</ul>
+						</li>
+					</ul>
+
+				</div>
+        
+				<div class="perfil">
+
+					<a href="../index.html">
+						<img src="../img/cinta_principal2.png" class="img-perfil">
+					</a>
+
+					<a href="menu.html">
+						Yeykocf
+					</a>
+
+					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+			
+				</div>
+
+			</div>
+	</div>
+
+<!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+	<main class="modulo-contenido">
+        
+    	<div class="modulo-titulo">
+            <h1>Gestión de Inventario de Filtros</h1>
+        </div>
+
+        <div class="tarjetas">
+            <div class="tarjeta">
+                <h3>Total de Filtros</h3>
+                <p>1,245</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Tipos de Filtro</h3>
+                <p>15</p>
+            </div>
+            <div class="tarjeta alerta">
+                <h3>Inventario Bajo</h3>
+                <p>3</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Filtros Instalados</h3>
+                <p>89</p>
+            </div>
+        </div>
+
+        <div class="tabla-contenido">
+            <div class="tabla-titulo">
+                <h2>Filtros Disponibles</h2>
+                <button class="btn-primario">+ Agregar Filtro</button>
+            </div>
+            
+            <table>
+				<!--CABEZERA DE TABLAS-->
+                <thead>
+                    <tr> <!--COLUMNAS TITULOS-->
+                        <th>ID</th>
+                        <th>Tipo de Filtro</th>
+                        <th>Marca</th>
+                        <th>Cantidad en Inventario</th>
+                        <th>Ubicación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+				<!--CUERPO DE TABLA-->
+                <tbody>
+                    <tr>
+                        <td>FR-ACE-001</td>
+                        <td>Filtro de Aceite</td>
+                        <td>PATITO1</td>
+                        <td>50</td>
+                        <td>Almacén A</td>
+                        <td class="acciones">
+                            <button class="btn-editar">Editar</button>
+                            <button class="btn-eliminar">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr class="stock-bajo">
+                        <td>FR-AIR-003</td>
+                        <td>Filtro de Aire Primario</td>
+                        <td>PATITO2</td>
+                        <td>8</td>
+                        <td>Almacén B</td>
+                        <td class="acciones">
+                            <button class="btn-editar">Editar</button>
+                            <button class="btn-eliminar">Eliminar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>FR-COMB-002</td>
+                        <td>Filtro de Combustible</td>
+                        <td>PATITO3</td>
+                        <td>120</td>
+                        <td>Almacén A</td>
+                        <td class="acciones">
+                            <button class="btn-editar">Editar</button>
+                            <button class="btn-eliminar">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="registró">
+
+            <d iv class="modulo-titulo">
+                <h1>Registró de Filtro</h1>
+            </div>
+
+            <div class="form">
+
+                <form>
+                    <label>ingresa ID</label>
+                    <input>
+
+                    <label>Tipo de Filtro</label>
+                    <input>
+
+                    <label>Marca </label>
+
+                </form>
+
+            </div>
+
+        </div>
+    </main>
+ <script src="js/script.js"></script>
+</body>
+</html>
