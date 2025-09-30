@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario</title>
+    <title>Camiones</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -65,87 +65,53 @@
 	</div>
 
 <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
-	<main class="modulo-contenido">
-        
-    	<div class="modulo-titulo">
-            <h1>Gestión de Inventario de Filtros</h1>
-        </div>
 
-        <div class="tarjetas">
-            <div class="tarjeta">
-                <h3>Total de Filtros</h3>
-                <p>1,245</p>
+<div class="contenedor-principal">
+        <div class="menu-superior">
             </div>
-            <div class="tarjeta">
-                <h3>Tipos de Filtro</h3>
-                <p>15</p>
+
+        <main class="modulo-contenido">
+            <div class="form-container card">
+                <h1>Registrar Nuevo Camión en la Flota</h1>
+                <p>Introduce los datos maestros de la nueva unidad.</p>
+                
+                <form id="form-alta-camion">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="numero_economico">Número Económico (ej. ECO-123)</label>
+                            <input type="text" id="numero_economico" name="numero_economico" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vin">Número de Serie (VIN)</label>
+                            <input type="text" id="vin" name="vin" required minlength="17" maxlength="17">
+                        </div>
+                        <div class="form-group">
+                            <label for="placas">Placas</label>
+                            <input type="text" id="placas" name="placas" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="marca">Marca</label>
+                            <input type="text" id="marca" name="marca" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelo">Modelo</label>
+                            <input type="text" id="modelo" name="modelo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="anio">Año</label>
+                            <input type="number" id="anio" name="anio" required min="2000">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="tipo_motor">Tipo de Motor</label>
+                            <input type="text" id="tipo_motor" name="tipo_motor">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primario">Registrar Camión</button>
+                </form>
+                <div id="response-message" class="message"></div>
             </div>
-            <div class="tarjeta alerta">
-                <h3>Inventario Bajo</h3>
-                <p>3</p>
-            </div>
-            <div class="tarjeta">
-                <h3>Filtros Instalados</h3>
-                <p>89</p>
-            </div>
-        </div>
-
-        <div class="tabla-contenido">
-            <div class="tabla-titulo">
-                <h2>Filtros Disponibles</h2>
-                <button class="btn-primario">+ Agregar Filtro</button>
-            </div>
-            
-            <table>
-				<!--CABEZERA DE TABLAS-->
-                <thead>
-                    <tr> <!--COLUMNAS TITULOS-->
-                        <th>ID</th>
-                        <th>Tipo de Filtro</th>
-                        <th>Marca</th>
-                        <th>Cantidad en Inventario</th>
-                        <th>Ubicación</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-				<!--CUERPO DE TABLA-->
-                <tbody>
-                    <tr>
-                        <td>FR-ACE-001</td>
-                        <td>Filtro de Aceite</td>
-                        <td>PATITO1</td>
-                        <td>50</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr class="stock-bajo">
-                        <td>FR-AIR-003</td>
-                        <td>Filtro de Aire Primario</td>
-                        <td>PATITO2</td>
-                        <td>8</td>
-                        <td>Almacén B</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>FR-COMB-002</td>
-                        <td>Filtro de Combustible</td>
-                        <td>PATITO3</td>
-                        <td>120</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        </main>
+    </div>
 
 
 
@@ -154,8 +120,7 @@
 
 
 
-        
-    </main>
+
  
 </body>
 </html>

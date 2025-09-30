@@ -21,7 +21,7 @@ document.querySelectorAll('.dropdown.active').forEach(dropdown => {
 
 
 
-// APARECER EL FORMULARIO DE AGREGAR PIEZAS
+// APARECER EL FORMULARIO DE AGREGAR PIEZAS    ----------------AGREGAR PARA QUE TAMBEIN CON EL BOTON DE AGREGAR FILTRO
 // Esperar a que cargue toda la pagina 
 document.addEventListener("DOMContentLoaded", function(){
     const botonAgregar = document.getElementById("btn-agregar-filtro");
