@@ -18,3 +18,33 @@ document.querySelectorAll('.dropdown.active').forEach(dropdown => {
         }
     });
 });
+
+
+
+// APARECER EL FORMULARIO DE AGREGAR PIEZAS
+// Esperar a que cargue toda la pagina 
+document.addEventListener("DOMContentLoaded", function(){
+    const botonAgregar = document.getElementById("btn-agregar-filtro");
+    const formularioContainer = document.getElementById("formulario-registro");
+    const botonCancelar = document.getElementById("btn-cancelar");
+
+    function mostrarFormulario(){
+        formularioContainer.style.display = "block"; //para hacer visible
+        formularioContainer.scrollIntoView({behavior:"smooth"}); //scroll
+    }
+
+    function ocultarFormulario(){
+        formularioContainer.style.display = "none";
+    }
+
+
+    //condicion para esconder el formulario
+    if (botonAgregar) {
+        botonAgregar.addEventListener("click", mostrarFormulario);
+    }
+
+    if (botonCancelar) {
+        botonCancelar.addEventListener("click", ocultarFormulario);
+    }
+})
+

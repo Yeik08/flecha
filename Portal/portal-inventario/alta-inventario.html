@@ -147,29 +147,50 @@
             </table>
         </div>
 
-        <div class="registró">
+        <div class="contenedor-formulario" id="formulario-registro" style="display: none;">
 
-            <d iv class="modulo-titulo">
-                <h1>Registró de Filtro</h1>
+            <div class="modulo-titulo">
+                <h2>Registró de Nuevo Filtro</h2>
             </div>
 
-            <div class="form">
+            <form class="form-registro">
+                <!--CONTATENAR-->
+                <div class="campo-form">
+                    <label class="filtro-id">ID del Filtro</label>
+                    <input type="number" id="filtro-id" placeholder="Ej. FR-ACE-002"> 
+                </div>
 
-                <form>
-                    <label>ingresa ID</label>
-                    <input>
+                <!--LISTA-->
+                <div class="campo-form">
+                    <label class="filtro-tipo">Tipo de Filtro</label>
+                    <input type="text" id="filtro-tipo" placeholder="Ej. Filtro de Aceite">
+                </div>
 
-                    <label>Tipo de Filtro</label>
-                    <input>
+                <div class="campo-form">
+                    <label class="filtro-marca">Marca</label>
+                    <input type="text" id="filtro-marca" placeholder="Ej. PATITO2">
+                </div>
+                
+                <div class="campo-form">
+                    <label class="filtro-cantidad">Cantidad</label>
+                    <input type="number" id="filtro-cantidad" placeholder="Ej. 100">
+                </div>
 
-                    <label>Marca </label>
+                <!--LISTA-->
+                <div class="campo-form">
+                    <label class="filtro-ubicacion">Ubicación</label>
+                    <input type="text" id="filtro-ubicacion" placeholder="Ej. Taller Tenango">
+                </div>
 
-                </form>
-
-            </div>
-
+                <div class="acciones-form">
+                    <button type="submit" class="btn-primario"> Guardar Filtro</button>
+                    <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
+                </div>   
+                <!--AGREGAR FOTOS-->
+            </form>
         </div>
     </main>
+
  <script src="js/script.js"></script>
 </body>
 </html>

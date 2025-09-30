@@ -289,3 +289,62 @@ tbody tr:hover {
     color: #D32F2F;
     font-weight: bold;
 }
+
+
+/* CONTENEDOR FORMULARIO ALTA */
+
+.contenedor-formulario {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-top: 30px;
+  color: var(--verde);
+}
+
+.contenedor-formulario h2 {
+  text-align: center;
+}
+
+.form-registro {
+  display: grid;
+  /*Creacion de 2 columnas de igual tamaño*/
+  grid-template-columns: repeat(2, 1fr);
+  /*Espacio entre campos*/
+  gap: 20px;
+}
+
+.campo-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.campo-form label {
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.campo-form input {
+  padding: 12px;
+  border: 1px solid #acc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box; /*Para no afectar el ancho total con el padding*/
+}
+
+/*Contenedor de botones*/
+
+.acciones-form {
+  /*El contenedor abarca las 2 columnas*/
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;/*Alinear a la derecha*/
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.acciones-form button {
+  padding: 12px 20px;
+}
