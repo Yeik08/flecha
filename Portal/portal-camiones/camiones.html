@@ -66,53 +66,86 @@
 
 <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
 
-<div class="contenedor-principal">
-        <div class="menu-superior">
+        <main class="modulo-contenido">
+            <div class="modulo-titulo">
+                <h1>Gestión de Flota de Camiones</h1>
             </div>
 
-        <main class="modulo-contenido">
-            <div class="form-container card">
-                <h1>Registrar Nuevo Camión en la Flota</h1>
-                <p>Introduce los datos maestros de la nueva unidad.</p>
-                
-                <form id="form-alta-camion">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="numero_economico">Número Económico (ej. ECO-123)</label>
-                            <input type="text" id="numero_economico" name="numero_economico" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="vin">Número de Serie (VIN)</label>
-                            <input type="text" id="vin" name="vin" required minlength="17" maxlength="17">
-                        </div>
-                        <div class="form-group">
-                            <label for="placas">Placas</label>
-                            <input type="text" id="placas" name="placas" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="marca">Marca</label>
-                            <input type="text" id="marca" name="marca" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="modelo">Modelo</label>
-                            <input type="text" id="modelo" name="modelo" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="anio">Año</label>
-                            <input type="number" id="anio" name="anio" required min="2000">
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="tipo_motor">Tipo de Motor</label>
-                            <input type="text" id="tipo_motor" name="tipo_motor">
-                        </div>
+            <div class="acciones-header">
+                <div class="tarjeta-accion">
+                    <h3>Aprobaciones Pendientes</h3>
+                    <p class="numero-grande">4</p>
+                    <p>Camiones esperando salida de taller.</p>
+                </div>
+                <div class="tarjeta-accion">
+                    <a href="alta-camion.html" class="btn-primario">+ Registrar Nuevo Camión</a>
+                    <p>Dar de alta un vehículo en el sistema.</p>
+                </div>b
+            </div>
+
+            <div class="tabla-contenido">
+                <div class="tabla-header">
+                    <h2>Búsqueda de Camiones</h2>
+                    <div class="filtros">
+                        <input type="text" placeholder="Buscar por ID, Placa..." class="input-busqueda">
+                        <select class="select-filtro">
+                            <option value="">Todos los Estatus</option>
+                            <option value="trabajando">Trabajando</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                            <option value="inactivo">Inactivo</option>
+                            <option value="aprobacion">Aprobación Pendiente</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn-primario">Registrar Camión</button>
-                </form>
-                <div id="response-message" class="message"></div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID del Camión</th>
+                            <th>Placas</th>
+                            <th>Estatus</th>
+                            <th>Última Actualización</th>
+                            <th>Próximo Mantenimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ECO-115</td>
+                            <td>A12-34B</td>
+                            <td><span class="estatus trabajando">Trabajando</span></td>
+                            <td>03/10/2025</td>
+                            <td>15/11/2025</td>
+                            <td class="acciones">
+                                <a href="detalles-camion.html" class="btn-detalles">Detalles</a>
+                            </td>
+                        </tr>
+                        <tr class="aprobacion-pendiente">
+                            <td>ECO-098</td>
+                            <td>C56-78D</td>
+                            <td><span class="estatus aprobacion">Aprobación Pendiente</span></td>
+                            <td>04/10/2025</td>
+                            <td>20/12/2025</td>
+                            <td class="acciones">
+                                <button class="btn-aprobar">Aprobar</button>
+                                <a href="detalles-camion.html" class="btn-detalles">Detalles</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ECO-102</td>
+                            <td>E90-12F</td>
+                            <td><span class="estatus mantenimiento">Mantenimiento</span></td>
+                            <td>01/10/2025</td>
+                            <td>N/A</td>
+                            <td class="acciones">
+                                <a href="detalles-camion.html" class="btn-detalles">Detalles</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>
-
 
 
 

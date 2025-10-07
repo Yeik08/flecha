@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Una Noche para Ti</title>
+    <style>  
+        :root {
+            --cielo: #1a1a2e; 
+            --cielo-claro: #2c3e50; 
+            --luna: #fcefb4; 
+            --montaña: #246a38; 
+            --corazon: #fa69ca; 
+            --text-color: #fcefb4; 
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to top, var(--cielo), var(--cielo-claro));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            flex-direction: column;
+        }
+        .estrella {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+            opacity: 0;
+        }
+        .estrella:nth-child(1) { width: 2px; height: 2px; top: 10%; left: 20%; animation-delay: 0.1s; }
+        .estrella:nth-child(2) { width: 3px; height: 3px; top: 5%; left: 50%; animation-delay: 0.5s; }
+        .estrella:nth-child(3) { width: 2px; height: 2px; top: 15%; left: 80%; animation-delay: 0.8s; }
+        .estrella:nth-child(4) { width: 2px; height: 2px; top: 20%; left: 10%; animation-delay: 1.2s; }
+        .estrella:nth-child(5) { width: 3px; height: 3px; top: 12%; left: 70%; animation-delay: 0.3s; }
+        .estrella:nth-child(6) { width: 2px; height: 2px; top: 25%; left: 40%; animation-delay: 0.9s; }
+        .luna {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: var(--luna);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(252, 239, 180, 0.6);
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+        .montaña {
+            position: absolute;
+            bottom: 0;
+            width: 150%;
+            height: 50%;
+            background-color: var(--montaña);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            z-index: 2;
+        }
+        .corazon-conten {
+            position: absolute;
+            bottom: 32%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            cursor: pointer;
+        }
+        .cora {
+            width: 100px;
+            height: 100px;
+            background-color: var(--corazon);
+            position: relative;
+            transform: rotate(-45deg); 
+            animation: beat 1.5s infinite ease-in-out; 
+            transition: transform 0.3s ease;
+        }
+        .cora:hover {
+            transform: rotate(-45deg) scale(1.1); 
+        }
+        .cora::before,
+        .cora::after {
+            content: '';
+            width: 100px;
+            height: 100px;
+            background-color: var(--corazon);
+            border-radius: 50%;
+            position: absolute;
+        }
+        .cora::before {
+            top: -50px;
+            left: 0;
+        }
+        .cora::after {
+            top: 0;
+            left: 50px;
+        }
+        h1#mensaje {
+            color: var(--text-color);
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            text-shadow: 0 0 10px rgba(252, 239, 180, 0.4);
+            z-index: 4;
+            position: relative;
+        }
+        h1#mensaje.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        @keyframes beat {
+            0%, 100% { transform: rotate(-45deg) scale(1); }
+            50% { transform: rotate(-45deg) scale(1.05); }
+        }
+
+        @media (max-width: 600px) {
+            .luna {
+                width: 200px;
+                height: 200px;
+                top: 30px;
+            }
+            .corazon-conten {
+                bottom: 35%;
+            }
+            .cora {
+                width: 70px;
+                height: 70px;
+            }
+            .cora::before,
+            .cora::after {
+                width: 70px;
+                height: 70px;
+            }
+            .cora::before {
+                top: -45px;
+            }
+            .cora::after {
+                left: 45px;
+            }
+            h1#mensaje {
+                font-size: 1.5em;
+                padding: 10px 20px;
+                text-align: center;
+                margin-top: -135px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="estrella"></div>
+    <div class="estrella"></div>
+    <div class="estrella"></div>
+    <div class="estrella"></div>
+    <div class="estrella"></div>
+    <div class="estrella"></div>
+
+    <div class="luna"></div>
+    
+    <div class="montaña"></div>
+
+    <div class="corazon-conten">
+        <div class="cora"></div>
+    </div>
+
+    <h1 id="mensaje">No solo me gustas, te has convertido en uno de mis pensamientos favoritos!</h1>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const CoraContainer = document.querySelector('.corazon-conten');
+            const message = document.getElementById('mensaje'); 
+
+            CoraContainer.addEventListener('click', () => {
+                message.classList.add('visible');
+            });
+        });
+    </script>
+</body>
+</html>
