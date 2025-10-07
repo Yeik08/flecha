@@ -303,33 +303,35 @@ tbody tr:hover {
     background-color: #2ecc71; /* Verde esmeralda */
     color: white;
 }
-.modal-overlay {
-    position: fixed; /* Se queda fijo en la pantalla */
+
+
+.form-oculto {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Fondo negro con opacidad */
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2000; /* Asegura que esté por encima de todo */
+    z-index: 2000;
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    color: var(--verde);
 }
 
-/* Clase para ocultar el modal */
-.modal-overlay.oculto {
+.form-oculto.oculto {
     opacity: 0;
     visibility: hidden;
 }
 
-/* Contenido del modal (el formulario en sí) */
-.modal-contenido {
+/* Contenido del modal (el formulario) */
+.form-contenido {
     position: relative;
     background-color: white;
-    padding: 30px 40px;
+    padding: 25px 40px 35px 40px; /* Ajuste de padding */
     border-radius: 8px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     width: 90%;
@@ -338,13 +340,12 @@ tbody tr:hover {
     transition: transform 0.3s ease;
 }
 
-/* Efecto de aparición */
-.modal-overlay.oculto .modal-contenido {
+.form-oculto.oculto .form-contenido {
     transform: scale(0.9);
 }
 
-/* Botón para cerrar el modal */
-.modal-cerrar {
+/* Botón para cerrar (sin cambios) */
+.form-cerrar {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -355,7 +356,120 @@ tbody tr:hover {
     cursor: pointer;
     line-height: 1;
 }
+.form-cerrar:hover { color: #333; }
 
-.modal-cerrar:hover {
-    color: #333;
+
+.form-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+.form-header h2 {
+    margin-bottom: 8px;
+    font-size: 1.8rem; /* Tamaño de fuente ligeramente ajustado */
+}
+.form-header p {
+    color: #6c757d; /* Un gris más suave */
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Contenedor de la fila de campos (usando CSS Grid) */
+.form-row {
+    display: grid;
+    /* Crea 2 columnas de igual tamaño */
+    grid-template-columns: repeat(2, 1fr);
+    /* Espacio entre las columnas */
+    column-gap: 30px;
+    /* Espacio debajo de cada fila */
+    margin-bottom: 20px;
+}
+
+/* Estilo para cada grupo de label + input */
+.form-lvip {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-lvip label {
+    margin-bottom: 8px;
+    font-weight: 600; /* Un poco menos grueso que 'bold' */
+    font-size: 0.9rem; /* Tamaño de fuente para la etiqueta */
+    color: #495057;
+}
+
+/* Estilo unificado para todos los campos de entrada */
+.form-lvip input[type="text"],
+.form-lvip input[type="number"],
+.form-lvip input[type="date"],
+.form-lvip select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 1rem;
+    color: #495057;
+    background-color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+    height: 40px; /* Altura fija para alinear todo perfectamente */
+}
+
+/* Efecto visual al seleccionar un campo */
+.form-lvip input:focus,
+.form-lvip select:focus {
+    outline: none;
+    border-color: #316960;
+    box-shadow: 0 0 0 3px rgba(49, 105, 96, 0.2);
+}
+
+/* Caso especial para filas con 3 campos */
+.form-row.tres-columnas {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Línea divisoria */
+.form-divide {
+    border: 0;
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 20px 0;
+}
+
+/* Contenedor de botones de acción */
+.form-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* Botón secundario (Cancelar) */
+.btn-secundario {
+    padding: 10px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+.btn-secundario:hover {
+    background-color: #e2e6ea;
+}
+
+/* Botón primario (Registrar) */
+.btn-primario {
+    padding: 10px 25px;
+    border-radius: 5px;
+    border: none;
+    background-color: #316960;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-primario:hover {
+    background-color: #285a54;
 }
