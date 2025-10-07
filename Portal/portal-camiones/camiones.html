@@ -104,6 +104,12 @@
     <div id="modal-formulario" class="form-oculto oculto">
         <div class="form-contenido">
             <button id="btn-cerrar-modal" class="form-cerrar">&times;</button>
+
+            <div class="mod-carga">
+                <button class="carga-link activa">Registro Manual</button>
+                <button class="carga-link">Subir Archivo</button>
+            </div>
+
             <div class="form-header">
                 <h2>Registro de Nuevo Camión</h2>
                 <p>Introduce la información detallada del vehículo.</p>
@@ -124,7 +130,7 @@
                 <div class="form-row">
                     <div class="form-lvip">
                         <label for="numero_serie">Número de Serie (VIN)</label>
-                        <input type="text" id="numero_serie" name="numero_serie" required>
+                        <input type="text" id="numero_serie" required minlength="17" maxlength="17"  name="numero_serie" pattern="[A-H-NPR-Z0-9]{17}" required>     <!--PREGUNTAR POR EL PATRON-->
                     </div>
                     <div class="form-lvip">
                         <label for="tipo_unidad">Tipo de Tecnología</label>
@@ -137,9 +143,7 @@
                     </div>
                 </div>
 
-                <hr class="form-divide">
-
-                <div class="form-row">
+                <div class="form-row tres-columnas">
                     <div class="form-lvip">
                         <label for="marca">Marca</label>
                         <input type="text" id="marca" name="marca">
@@ -150,24 +154,12 @@
                     </div>
                     <div class="form-lvip">
                         <label for="anio">Año del Modelo</label>
-                        <input type="number" id="anio" name="anio" min="1990" max="2025">
-                    </div>                    
-                    <div class="form-lvip">
-                        <label for="anio">Kilometros recorridos</label>
-                        <input type="number" id="anio" name="anio" min="1990" max="2025">
-                    </div>      
-                    <!--TIPO DE MOTOR, CHOFER, EXCEL CON ULTIMOS DATOS 3 DE RECORRIDO-->
-                    <div class="form-lvip">
-                        <label for="anio">Año del Modelo</label>
-                        <input type="number" id="anio" name="anio" min="1990" max="2025">
-                    </div>
-
-
+                        <input type="number" id="anio" name="anio" min="1990" max="2026">  <!--REVISAR EL MAXIMO DE AÑO-->
+                    </div>   
                 </div>
-                
-                <hr class="form-divide">
 
-                 <div class="form-row">
+                <hr class="form-divide">
+                <div class="form-row">
                     <div class="form-lvip">
                         <label for="estatus_inicial">Estatus Inicial</label>
                         <select id="estatus_inicial" name="estatus_inicial">
@@ -182,10 +174,46 @@
                     </div>
                 </div>
 
-                <div class="form-acciones">
-                    <button type="button" id="btn-cancelar-modal" class="btn-secundario">Cancelar</button>
-                    <button type="submit" class="btn-primario">Registrar Camión</button>
-                </div>
+
+                <hr class="form-divide">
+
+                    <div class="form-row tres-columnas">
+                        <div class="form-lvip">
+                            <label for="marca">kilómetros Recorridos</label>
+                            <input type="text" id="marca" name="marca">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="modelo">Ultimo Cambio de filtro</label>
+                            <input type="text" id="modelo" name="modelo">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="anio">Marca de filtro</label>
+                            <input type="number" id="anio" name="anio" min="1990" max="2026">  <!--REVISAR EL MAXIMO DE AÑO-->
+                        </div>   
+                    </div>
+                
+                <hr class="form-divide">
+
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="estatus_inicial">Estatus Inicial</label>
+                            <select id="estatus_inicial" name="estatus_inicial">
+                                <option value="Mantenimiento">En Taller / Mantenimiento</option>
+                                <option value="Inactivo">Inactivo / En espera</option>
+                                <option value="Trabajando">Listo para trabajar</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-lvip">
+                            <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
+                            <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
+                        </div>
+                    </div>
+
+                    <div class="form-acciones">
+                        <button type="button" id="btn-cancelar-modal" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-primario">Registrar Camión</button>
+                    </div>
             </form>
         </div>
     </div>

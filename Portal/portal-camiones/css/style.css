@@ -473,3 +473,27 @@ tbody tr:hover {
 .btn-primario:hover {
     background-color: #285a54;
 }
+
+.mod-carga {
+  display: flex;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 25px;
+}
+
+.carga-link {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6c757d;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.carga-link.activa {
+  color: var(--verde);
+  border-bottom-color:var(--verde) ;
+
+}
