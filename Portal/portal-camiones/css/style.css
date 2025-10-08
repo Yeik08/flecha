@@ -305,7 +305,7 @@ tbody tr:hover {
 }
 
 
-.form-oculto {
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -322,13 +322,13 @@ tbody tr:hover {
     color: var(--verde);
 }
 
-.form-oculto.oculto {
+.modal-overlay.oculto {
     opacity: 0;
     visibility: hidden;
 }
 
 /* Contenido del modal (el formulario) */
-.form-contenido {
+.modal-contenido {
     position: relative;
     background-color: white;
     padding: 25px 40px 35px 40px; /* Ajuste de padding */
@@ -340,12 +340,12 @@ tbody tr:hover {
     transition: transform 0.3s ease;
 }
 
-.form-oculto.oculto .form-contenido {
+.modal-overlay.oculto .modal-contenido {
     transform: scale(0.9);
 }
 
 /* Botón para cerrar (sin cambios) */
-.form-cerrar {
+.modal-cerrar {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -356,13 +356,20 @@ tbody tr:hover {
     cursor: pointer;
     line-height: 1;
 }
-.form-cerrar:hover { color: #333; }
+.modal-cerrar:hover { color: #333; }
 
 
-.form-header {
+.modal-header {
     text-align: center;
     margin-bottom: 25px;
 }
+
+.form-header{
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+
 .form-header h2 {
     margin-bottom: 8px;
     font-size: 1.8rem; /* Tamaño de fuente ligeramente ajustado */
@@ -480,7 +487,7 @@ tbody tr:hover {
   margin-bottom: 25px;
 }
 
-.carga-link {
+.tab-link {
   padding: 10px 20px;
   cursor: pointer;
   border: none;
@@ -492,12 +499,11 @@ tbody tr:hover {
   margin-bottom: -2px;
 }
 
-.carga-link.active {
+.tab-link.active {
   color: var(--verde);
   border-bottom-color:var(--verde) ;
 
 }
-
 
 
 

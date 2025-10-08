@@ -1,61 +1,50 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // --- LÓGICA PARA EL MENÚ DROPDOWN ---
     document.addEventListener('click', function(e) {
         const isDropdownToggle = e.target.matches('.dropdown-toggle');
         if (!isDropdownToggle && e.target.closest('.dropdown') === null) {
-            document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-                dropdown.classList.remove('active');
-            });
+            document.querySelectorAll('.dropdown.active').forEach(dropdown => dropdown.classList.remove('active'));
         }
-        
         if (isDropdownToggle) {
             const parent = e.target.closest('.dropdown');
             parent.classList.toggle('active');
-            
             document.querySelectorAll('.dropdown.active').forEach(dropdown => {
-                if (dropdown !== parent) {
-                    dropdown.classList.remove('active');
-                }
+                if (dropdown !== parent) dropdown.classList.remove('active');
             });
         }
     });
 
-    // --- LÓGICA DEL MODAL DE ALTA DE CAMIÓN ---
-    const modal = document.getElementById('modo-formulario');
-    const btnAbrirModal = document.getElementById('btn-abrir-modo');
-    // Seleccionamos todos los botones que deben cerrar el modal
-    const btnsCerrarModal = document.querySelectorAll('.form-cerrar, .btn-cerrar-modo');
+    // --- LÓGICA DEL MODAL DE ALTA DE CAMIÓN (CORREGIDA) ---
+    const modal = document.getElementById('modal-formulario');
+    const btnAbrirModal = document.getElementById('btn-abrir-modal');
+    const btnsCerrarModal = document.querySelectorAll('.modal-cerrar, .btn-cerrar-modal');
 
-    // Comprobamos que los elementos existan antes de añadir eventos
-    if (modal && btnAbrirModal && btnsCerrarModal.length > 0) {
-        
+    if (modal && btnAbrirModal) {
         const abrirModal = () => modal.classList.remove('oculto');
         const cerrarModal = () => modal.classList.add('oculto');
-
         btnAbrirModal.addEventListener('click', abrirModal);
         btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
-        
-        // Cerrar al hacer clic en el fondo oscuro
         modal.addEventListener('click', e => {
-            if (e.target === modal) {
-                cerrarModal();
-            }
+            if (e.target === modal) cerrarModal();
         });
     }
 
-    // --- LÓGICA DE PESTAÑAS (TABS) ---
+    // --- LÓGICA DE PESTAÑAS (CORREGIDA) ---
     const tabLinks = document.querySelectorAll('.carga-link');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    if (tabLinks.length > 0 && tabContents.length > 0) {
+    if (tabLinks.length > 0) {
         tabLinks.forEach(link => {
             link.addEventListener('click', () => {
-                const tabId = link.getAttribute('data-tab');
+                const tabId = link.getAttribute('data-tab'); // Necesita 'data-tab' en el HTML
+                if (!tabId) return;
 
                 tabLinks.forEach(item => item.classList.remove('active'));
                 tabContents.forEach(item => item.classList.remove('active'));
 
                 link.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
+                const activeTab = document.getElementById(tabId);
+                if (activeTab) activeTab.classList.add('active');
             });
         });
     }
@@ -81,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(link);
         });
     }
+
 
     if (inputCsvAlta) {
         inputCsvAlta.addEventListener('change', event => {
