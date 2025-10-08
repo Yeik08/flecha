@@ -492,8 +492,107 @@ tbody tr:hover {
   margin-bottom: -2px;
 }
 
-.carga-link.activa {
+.carga-link.active {
   color: var(--verde);
   border-bottom-color:var(--verde) ;
 
+}
+
+
+
+
+
+
+/* --- ESTILOS PARA LA CARGA MASIVA --- */
+
+.tab-content {
+    display: none; /* Oculta todas las pestañas por defecto */
+}
+
+.tab-content.active {
+    display: block; /* Muestra solo la pestaña activa */
+}
+
+/* --- ESTILOS PARA LA SECCIÓN DE CARGA DE ARCHIVOS --- */
+
+.seccion-sube {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.paso-sube{
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+}
+
+.paso-numero{
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: var(--verde);
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.paso-info{
+  flex-grow: 1;
+}
+
+.paso-info h3 {
+  margin: 0 0 5x 0;
+}
+.paso-info p {
+  margin: 0; 
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.input-file{
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.input-file::file-selector-button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+
+/* --- ESTILOS PARA LA TABLA DE PREVISUALIZACIÓN --- */
+.preview-container {
+    margin-top: 25px;
+    max-height: 300px; 
+    overflow-y: auto; 
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.preview-table th, .preview-table td {
+    padding: 8px 10px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+.preview-table th {
+    background-color: #f2f2f2;
+    position: sticky; 
+    top: 0;
 }

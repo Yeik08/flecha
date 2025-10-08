@@ -101,12 +101,12 @@
         </main>
 
 
-    <div id="modal-formulario" class="form-oculto oculto">
+    <div id="modo-formulario" class="form-oculto oculto">
         <div class="form-contenido">
             <button id="btn-cerrar-modal" class="form-cerrar">&times;</button>
 
             <div class="mod-carga">
-                <button class="carga-link activa">Registro Manual</button>
+                <button class="carga-link active">Registro Manual</button>
                 <button class="carga-link">Subir Archivo</button>
             </div>
 
@@ -216,6 +216,51 @@
                     </div>
             </form>
         </div>
+
+        <div id="tab-archivo" class="tab-content">
+            <div class="form-header">
+                <h2>Carga Masiva de Camiones</h2>
+                <p>Sube los archivos CSV con los datos de los nuevos vehículos</p>
+            </div>
+
+            <div class="seccion-sube">
+                <div class="paso-sube">
+                    <div class="paso-numero">1</div>
+                    <div class="paso-info">
+                        <h3>Descargar Plantilla</h3>
+                        <p>Usa este archivo como guía para asegurar que los datos son correctos</p>
+                    </div>
+                    <button id="btn-descargar-plantilla" class="btn-secundario">Descargar</button>
+                </div>
+
+                <div class="seccion-sube">
+                    <div class="paso-numero">2</div>
+                    <div class="paso-info">
+                        <h3>Subir Datos de Alta</h3>
+                        <p>Selecciona el archivo CSV con la lista de camiones</p>
+                        <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                    </div>
+                </div>
+
+                <div class="seccion-sube">
+                    <div class="paso-numero">3</div>
+                    <div class="paso-info">
+                        <h3>Subir Historial de Recorridos</h3>
+                        <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                        <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                    </div>
+                </div>
+            </div>
+
+            <div id="preview-container" class="preview-container">
+
+            </div>
+
+        </div>
+
+
+
+
     </div>
 
     <script src="js/scripts.js"></script>
