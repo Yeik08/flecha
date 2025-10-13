@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- LÓGICA DEL MODAL DE ALTA DE CAMIÓN (CORREGIDA) ---
+    // --- LÓGICA DEL MODAL DE ALTA DE CAMIÓN ---
     const modal = document.getElementById('modal-formulario');
     const btnAbrirModal = document.getElementById('btn-abrir-modal');
     const btnsCerrarModal = document.querySelectorAll('.modal-cerrar, .btn-cerrar-modal');
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (btnDescargarPlantilla) {
         btnDescargarPlantilla.addEventListener('click', () => {
-            const headers = "ID_Camion,Placas,VIN,Tipo_Tecnologia,Marca,Modelo,Anio,Ruta_Asignada,Chofer_Asignado,Tipo_Motor,Kilometros_Recorridos,Ultimo_Cambio_Filtro,Marca_Filtro,Estatus_Inicial";
+            const headers = "ID_Camion,Placas,VIN,Tipo_Tecnologia,Marca,Modelo,Año,Ruta_Asignada,Chofer_Asignado,Tipo_Motor,Kilometros_Recorridos,Ultimo_Cambio_Filtro,Marca_Filtro,Estatus_Inicial";
             const exampleRow = "ECO-999,ABC-123,1G9BS82C0XE178459,SCANIA IRIZAR I5,Scania,Irizar,2023,MEX-QRO,Juan Perez,Diesel,NA,NA,Scania,En Taller/Mantenimiento";
             const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + exampleRow;
             
