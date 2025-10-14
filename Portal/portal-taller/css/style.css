@@ -151,7 +151,52 @@ a {
 }
 
 /* ----------------------------------------------------- MODULOS ----------------------------------------------------- */ 
-/* Estilos para los estatus en la tabla */
+
+/* Contenedor principal del contenido del módulo */
+.modulo-contenido {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    color: #316960;
+}
+
+/* REVISAR CSS TABLA-TITULO*/
+
+/* Contenedor de la tabla */
+.tabla-contenido {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.tabla-header h2 {
+    margin: 0;
+}
+
+/* Botón primario (Registrar) */
+.btn-primario {
+    padding: 10px 25px;
+    border-radius: 5px;
+    border: none;
+    background-color: #316960;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-primario:hover {
+    background-color: #285a54;
+}
+
+
 .estatus-operativo {
     color: #28a745; /* Verde */
     font-weight: bold;
