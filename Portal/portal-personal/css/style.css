@@ -36,7 +36,6 @@ body {
   left: 0;
   width: 100%;
   z-index: 1000;
-  color: white;
 }
 
 .menu-superior .opciones {
@@ -156,6 +155,7 @@ a {
 
 /* ----------------------------------------------------- MODULOS ----------------------------------------------------- */ 
 
+
 /* Contenedor principal del contenido del módulo */
 .modulo-contenido {
     max-width: 1200px;
@@ -225,121 +225,100 @@ tbody tr:hover {
 
 
 
+/* ESTILOS PARA EL MODAL DE GESTIÓN DE PERSONAL
+----------------------------------------------------- */
 
-
-
-
-.estatus-operativo {
-    color: #28a745; /* Verde */
-    font-weight: bold;
-}
-
-.estatus-taller {
-    color: #fd7e14; /* Naranja */
-    font-weight: bold;
-}
-
-.btn-ver {
-    background-color: #17a2b8; /* Azul info */
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.btn-ver:hover{
-    background-color: #117a8b;
-}
-
-
-.acciones .btn-ver {
-  background-color: var(--verde);
-  color: white;
-  border: none;
-  padding: 8px 12x;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.acciones .btn-ver:hover{
-    background-color: red;
-}
-
-/* --- Estilos para la ventana modal --- */
-.modal {
-    display: none; /* Oculto por defecto */
-    position: fixed;
-    z-index: 2000; /* Asegura que esté por encima de todo */
-    left: 0;
+.modal-overlay {
+    position: fixed; /* Se queda fijo en la pantalla */
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); /* Fondo negro semitransparente */
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Asegura que esté por encima de todo */
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.oculto {
+    opacity: 0;
+    pointer-events: none; /* Evita interacción cuando está oculto */
 }
 
 .modal-contenido {
-    background-color: #fefefe;
-    margin: 5% auto; /* Centrado vertical y horizontal */
-    padding: 30px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 600px; /* Ancho máximo */
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 500px; /* Ancho máximo del modal */
     position: relative;
-    color: #333;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
 }
 
-.cerrar-modal {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.cerrar-modal:hover,
-.cerrar-modal:focus {
-    color: #000;
+.modal-overlay.oculto .modal-contenido {
+    transform: translateY(-50px); /* Efecto de "caída" al aparecer */
 }
 
 .modal-contenido h2 {
     margin-top: 0;
+    margin-bottom: 25px;
     color: #316960;
+    text-align: center;
+}
+
+.modal-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-cerrar:hover {
+    color: #333;
 }
 
 /* Estilos para el formulario dentro del modal */
-#form-registro {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.form-grupo {
+    margin-bottom: 20px;
 }
 
-.campo-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.campo-form label {
-    margin-bottom: 5px;
+.form-grupo label {
+    display: block;
+    margin-bottom: 8px;
     font-weight: bold;
     color: #555;
+    font-size: 14px;
 }
 
-.campo-form input,
-.campo-form select {
-    padding: 10px;
+.form-grupo input,
+.form-grupo select {
+    width: 100%;
+    padding: 12px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; /* Importante para que el padding no afecte el ancho */
+}
+
+.form-grupo input:focus,
+.form-grupo select:focus {
+    outline: none;
+    border-color: #316960;
+    box-shadow: 0 0 5px rgba(49, 105, 96, 0.5);
+}
+
+.btn-modal {
+    width: 100%;
+    padding: 15px;
     font-size: 16px;
 }
 
-.campo-form input[type="file"]{
-  padding: 3px;
-}
-
-
-
-.acciones-form {
-    text-align: right;
-    margin-top: 20px;
-}
