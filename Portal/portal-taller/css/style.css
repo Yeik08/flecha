@@ -2,6 +2,9 @@
 
 :root {
   --verde: #316960;
+  --borde-suave: #ddd;
+  --fondo-claro: #ECF0F5;
+  --texto-oscuro: #333;
 }
 
 /*GENERAL*/
@@ -33,6 +36,7 @@ body {
   left: 0;
   width: 100%;
   z-index: 1000;
+  color: white;
 }
 
 .menu-superior .opciones {
@@ -170,16 +174,40 @@ a {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.tabla-header {
+.tabla-titulo {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 
-.tabla-header h2 {
+.tabla-titulo h2 {
     margin: 0;
+    color: var(--verde);
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse; /*Bordes de celda unidos*/
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--borde-suave);
+}
+
+thead th {
+  background-color: #f8f8f8;
+  color: var(--texto-oscuro);
+  font-weight: bold;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+
 
 /* Botón primario (Registrar) */
 .btn-primario {
@@ -217,6 +245,20 @@ a {
 }
 .btn-ver:hover{
     background-color: #117a8b;
+}
+
+
+.acciones .btn-ver {
+  background-color: var(--verde);
+  color: white;
+  border: none;
+  padding: 8px 12x;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.acciones .btn-ver:hover{
+    background-color: red;
 }
 
 /* --- Estilos para la ventana modal --- */
@@ -286,6 +328,12 @@ a {
     border-radius: 4px;
     font-size: 16px;
 }
+
+.campo-form input[type="file"]{
+  padding: 3px;
+}
+
+
 
 .acciones-form {
     text-align: right;
