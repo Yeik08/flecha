@@ -207,7 +207,6 @@ tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-
 /* Botón primario (Registrar) */
 .btn-primario {
     padding: 10px 25px;
@@ -223,7 +222,39 @@ tbody tr:hover {
     background-color: #285a54;
 }
 
+.acciones {
+  text-align: left;
+}
 
+.acciones button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-editar {
+  background-color: #ffc107;
+  color: #333;
+}
+.btn-editar:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
+.btn-eliminar {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-eliminar:hover {
+  background-color: #b71c1c;
+  transform:translateY(-1px);
+}
 
 /* ESTILOS PARA EL MODAL DE GESTIÓN DE PERSONAL
 ----------------------------------------------------- */
