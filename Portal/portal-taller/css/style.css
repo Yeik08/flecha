@@ -1,0 +1,248 @@
+@charset "utf-8";
+
+:root {
+  --verde: #316960;
+}
+
+/*GENERAL*/
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ECF0F5;
+  min-height: 100vh;
+  color: white;
+}
+
+
+/* Contenedor principal */
+.contenedor-principal {
+  display: flex;
+  flex-direction: column;
+  padding-top: 70px;
+}
+
+/* Menú superior */
+.menu-superior {
+  background-color: #316961;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.menu-superior .opciones {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  align-items: center;
+}
+
+.menu {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+}
+
+.menu > li {
+  list-style: none;
+  position: relative;
+}
+
+.menu-superior .opciones a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  left: 0;
+  background: #fff;
+  padding: 10px;
+  margin-top: 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 1000;
+  list-style-type: none;
+}
+
+.submenu li {
+  padding: 8px 0;
+}
+
+.submenu a {
+  color: #316961 !important;
+  text-decoration: none;
+  display: block;
+  white-space: nowrap;
+}
+
+.submenu a:hover {
+  background-color: #f8f8f8;
+}
+
+/* Clase activa para mostrar el submenú */
+.dropdown.active .submenu {
+  display: block;
+}
+
+/* Perfil y botones */
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 20px;
+}
+
+.menu-superior .perfil button {
+  background-color: white;
+  color: #316960;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 22px;
+}
+
+.menu-superior .perfil .img-perfil {
+  width: 30px;
+  height: 30px;
+}
+
+button:hover,
+.menu-superior .perfil button:hover {
+  background-color: white;
+  color: red;
+}
+
+.titulo-modulo {
+  text-align: center;
+  margin: 20px 0;
+  color: #316960;
+  font-size: 2rem;
+}
+
+.modulo-titulo {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.fr {
+    font-weight: 700;
+    font-size: 1.5em;
+    color: white;
+    padding-right: 2rem;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+/* ----------------------------------------------------- MODULOS ----------------------------------------------------- */ 
+/* Estilos para los estatus en la tabla */
+.estatus-operativo {
+    color: #28a745; /* Verde */
+    font-weight: bold;
+}
+
+.estatus-taller {
+    color: #fd7e14; /* Naranja */
+    font-weight: bold;
+}
+
+.btn-ver {
+    background-color: #17a2b8; /* Azul info */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-ver:hover{
+    background-color: #117a8b;
+}
+
+/* --- Estilos para la ventana modal --- */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    z-index: 2000; /* Asegura que esté por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6); /* Fondo negro semitransparente */
+}
+
+.modal-contenido {
+    background-color: #fefefe;
+    margin: 5% auto; /* Centrado vertical y horizontal */
+    padding: 30px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px; /* Ancho máximo */
+    position: relative;
+    color: #333;
+}
+
+.cerrar-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cerrar-modal:hover,
+.cerrar-modal:focus {
+    color: #000;
+}
+
+.modal-contenido h2 {
+    margin-top: 0;
+    color: #316960;
+}
+
+/* Estilos para el formulario dentro del modal */
+#form-registro {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.campo-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.campo-form label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.campo-form input,
+.campo-form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.acciones-form {
+    text-align: right;
+    margin-top: 20px;
+}
