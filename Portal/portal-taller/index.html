@@ -115,7 +115,7 @@
             <h2>Registrar Entrada de Camión a Taller</h2>
             <form id="form-registro">
                 <div class="campo-form">
-                    <label for="unidad">Unidad:</label>
+                    <label for="unidad">ID de Unidad:</label>
                     <input type="text" id="unidad" name="unidad" required>
                 </div>
                 <div class="campo-form">
@@ -131,17 +131,21 @@
                     </select>
                 </div>
                 <div class="campo-form">
-                    <label for="mecanico">Mecánico a Cargo:</label>
+                    <label for="mecanico">ID Mecánico a Cargo:</label>
                     <input type="text" id="mecanico" name="mecanico" required>
                 </div>
                 <div class="campo-form">
-                    <label for="conductor">Conductor que Entrega:</label>
+                    <label for="conductor">ID Conductor que Entrega:</label>
                     <input type="text" id="conductor" name="conductor" required>
                 </div>
                 <div class="campo-form">
-                    <label for="ubicacion">Ubicación (Taller):</label>
-                    <input type="text" id="ubicacion" name="ubicacion" value="Taller Principal" required>
+                    <label for="ubicacion">Ubicación (Taller):</label> 
+                    <select id="ubicacion" name="ubicacion" required>
+                        <option value="poniente">Poniente</option>
+                        <option value="magdalena">magdalena</option>
+                    </select>
                 </div>
+
                  <div class="campo-form">
                     <label for="puntualidad">Puntualidad:</label>
                     <select id="puntualidad" name="puntualidad" required>
