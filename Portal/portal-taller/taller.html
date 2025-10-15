@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camiones</title>
+    <title>Taller</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -125,9 +125,10 @@
                 <div class="campo-form">
                     <label for="tipo-mantenimiento">Tipo de Mantenimiento:</label>
                     <select id="tipo-mantenimiento" name="tipo-mantenimiento" required>
+                        <option value="">Selecciona Mantenimiento</option>
                         <option value="cambio_filtro">Cambio de Filtro</option>
-                        <option value="revision_frenos">Revisión de Frenos</option>
-                        <option value="electrico">Sistema Eléctrico</option>
+              <!--          <option value="revision_frenos">Revisión de Frenos</option>
+                        <option value="electrico">Sistema Eléctrico</option>-->
                     </select>
                 </div>
                 <div class="campo-form">
@@ -141,6 +142,9 @@
                 <div class="campo-form">
                     <label for="ubicacion">Ubicación (Taller):</label> 
                     <select id="ubicacion" name="ubicacion" required>
+
+                        
+
                         <option value="poniente">Poniente</option>
                         <option value="magdalena">magdalena</option>
                     </select>
