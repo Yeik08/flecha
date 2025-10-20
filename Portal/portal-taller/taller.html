@@ -6,6 +6,7 @@
     <title>Taller</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 
 <body>
@@ -142,9 +143,6 @@
                 <div class="campo-form">
                     <label for="ubicacion">Ubicación (Taller):</label> 
                     <select id="ubicacion" name="ubicacion" required>
-
-                        
-
                         <option value="poniente">Poniente</option>
                         <option value="magdalena">magdalena</option>
                     </select>
@@ -161,6 +159,7 @@
                 <div class="campo-form">
                     <label for="foto-camion">Foto de Evidencia (Entrada):</label>
                     <input type="file" id="foto-camion" name="foto-camion" accept="image/*" required>
+                    <div id="mensaje-foto-camion"></div> <!-- Aquí se mostrarán los mensajes -->
                 </div>
                 <div class="acciones-form">
                     <button type="submit" class="btn-primario">Generar Solicitud</button>

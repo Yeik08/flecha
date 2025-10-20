@@ -50,3 +50,72 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
+
+
+    const inputCamion = document.getElementById("foto-camion");
+    const mensajeCamion = document.getElementById("mensaje-foto-camion");
+    const form = document.querySelector("form");
+
+    // Lista de hashes para detectar imágenes repetidas
+    const imagenesCamionSubidas = [];
+    let imagenDuplicadaCamion = false;
+
+    inputCamion.addEventListener("change", function (event) {
+        mensajeCamion.innerHTML = "";
+        const archivo = event.target.files[0];
+        imagenDuplicadaCamion = false;
+
+        if (!archivo || !archivo.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const arrayBuffer = e.target.result;
+            const image = new Image();
+            image.src = URL.createObjectURL(archivo);
+
+            EXIF.getData(image, function () {
+                const fecha = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime") || "sin-fecha";
+                const modelo = EXIF.getTag(this, "Model") || "modelo-desconocido";
+                const tamaño = archivo.size;
+
+                const hash = `${fecha}-${modelo}-${tamaño}`;
+
+                if (imagenesCamionSubidas.includes(hash)) {
+                    imagenDuplicadaCamion = true;
+                    mostrarMensajeFotoCamion("⚠️ Esta imagen ya fue seleccionada antes. Por favor, sube una imagen diferente.", "error");
+                    inputCamion.value = ""; // Limpiar input si es duplicada
+                } else {
+                    imagenesCamionSubidas.push(hash);
+                    mostrarMensajeFotoCamion("✅ Imagen aceptada.", "ok");
+                }
+            });
+        };
+
+        reader.readAsArrayBuffer(archivo);
+    });
+
+    function mostrarMensajeFotoCamion(texto, tipo) {
+        const div = document.createElement("div");
+        div.textContent = texto;
+        div.className = tipo === "ok" ? "alerta ok" : "alerta error";
+        mensajeCamion.appendChild(div);
+    }
+
+    // Envío del formulario
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        if (imagenDuplicadaCamion) {
+            alert("🚫 No se puede generar la solicitud porque la imagen de entrada ya fue usada anteriormente.\n\nPor favor, sube una imagen diferente.");
+            return;
+        }
+
+        // Si todo está bien, generar ticket
+        const ticketId = 'TK-' + Date.now() + Math.floor(Math.random() * 100);
+
+        alert(`Solicitud generada con éxito.\n\nNúmero de Ticket: ${ticketId}\n\nEl mecánico debe presentar este ticket y el filtro usado para recibir el nuevo.`);
+
+        form.reset(); // Limpiar formulario
+        cerrarModal(); // Si tienes una función para cerrar el modal
+    });
