@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal almacen</title>
+	<link rel="shortcut icon" href="../img/bus_8502475.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	   
+	
+    <!-- Contenedor principal -->
+    <div class="contenedor-principal">
+		
+		<!-- Menú superior -->
+		<div class="menu-superior">
+			<!-- Opciones del menú -->
+			<div class="opciones">
+
+				<div class="fr">FLECHA ROJA</div>
+                    
+                    <ul class="menu">
+						<li><a href="../portal-camiones/camiones.html">Camiones</a></li>
+					</ul>
+
+<!--					<ul class="menu">
+						<li class="dropdown">
+							<a href="/Portal/portal-camiones/camiones.html" class="dropdown-toggle">Alta de camiones</a>
+								<ul class="submenu">
+									<li><a id="submenu" href="/Portal/portal-camiones/camiones.html">Ver Camiones</a></li>
+									<li><a id="submenu" href="#">Alta</a></li>
+								</ul>
+						</li>
+					</ul> -->
+			
+					<ul class="menu">
+						<li><a href="../portal-inventario/alta-inventario.html">Inventario</a></li>
+					</ul>
+
+    				<ul class="menu">
+						<li><a href="#">Personal</a></li>
+					</ul>
+<!--
+					<ul class="menu">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle">Alta de Personal</a>
+							<ul class="submenu">
+								<li><a id="submenu" href="#">Mecanicos/almacen</a></li>
+								<li><a id="submenu" href="#">Choferes</a></li>
+							</ul>
+						</li>
+					</ul>
+-->
+
+				</div>
+        
+				<div class="perfil">
+
+					<a href="../index.html">
+						<img src="../img/cinta_principal2.png" class="img-perfil">
+					</a>
+
+					<a href="menu.html">
+						Yeykocf
+					</a>
+
+					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+			
+				</div>
+
+			</div>
+	</div>
+
+<!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+
+        <main class="modulo-contenido">
+            <div class="modulo-titulo">
+                <h1>Control de Intercambio de Filtros</h1>
+            </div>
+
+            <div class="tarjetas-kpi">
+                <div class="kpi-card">
+                    <h3>Total Filtros</h3>
+                    <p>1,245</p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Almacén Poniente</h3>
+                    <p>650</p>
+                </div>
+                <div class="kpi-card">
+                    <h3>Almacén Magdalena</h3>
+                    <p>480</p>
+                </div>
+                <div class="kpi-card alerta">
+                    <h3>Stock Bajo</h3>
+                    <p>5 Tipos</p>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <h2>Registrar Intercambio por Ticket</h2>
+                <form id="form-intercambio">
+                    <fieldset>
+                        <legend>Información de la Solicitud</legend>
+                        <div class="campo-form">
+                            <label for="ticket-id">Número de Ticket:</label>
+                            <div class="input-con-boton">
+                                <input type="text" id="ticket-id" name="ticket-id" placeholder="Ingrese el ticket del mecánico" required>
+                                <button type="button" id="btn-buscar-ticket">Buscar</button>
+                            </div>
+                        </div>
+                        <div class="campo-form">
+                            <label for="camion-id">ID de Camión:</label>
+                            <input type="text" id="camion-id" name="camion-id" readonly>
+                        </div>
+                        <div class="campo-form">
+                            <label for="mecanico-id">ID del Mecánico:</label>
+                            <input type="text" id="mecanico-id" name="mecanico-id" placeholder="ID de quien retira el filtro" required>
+                        </div>
+                         <div class="campo-form">
+                            <label for="almacen">Almacén de Salida:</label>
+                            <select id="almacen" name="almacen" required>
+                                <option value="">Seleccione un almacén</option>
+                                <option value="poniente">Poniente</option>
+                                <option value="magdalena">Magdalena</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Detalles del Intercambio</legend>
+                        <div class="columnas-dos">
+                            <div class="columna">
+                                <strong>Filtro Retirado (Viejo)</strong>
+                                <div class="campo-form">
+                                    <label for="filtro-viejo-serie">Número de Serie:</label>
+                                    <input type="text" id="filtro-viejo-serie" name="filtro-viejo-serie" required>
+                                </div>
+                                <div class="campo-form">
+                                    <label for="filtro-viejo-marca">Marca:</label>
+                                    <input type="text" id="filtro-viejo-marca" name="filtro-viejo-marca" readonly>
+                                </div>
+                            </div>
+                            <div class="columna">
+                                <strong>Filtro Entregado (Nuevo)</strong>
+                                <div class="campo-form">
+                                    <label for="filtro-nuevo-serie">Número de Serie:</label>
+                                    <input type="text" id="filtro-nuevo-serie" name="filtro-nuevo-serie" required>
+                                </div>
+                                <div class="campo-form">
+                                    <label for="filtro-nuevo-marca">Marca:</label>
+                                    <input type="text" id="filtro-nuevo-marca" name="filtro-nuevo-marca" required>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Evidencia Fotográfica (Obligatoria)</legend>
+                        <div class="campo-form-evidencia">
+                            <label for="foto-viejo">1. Foto del Filtro Viejo:</label>
+                            <input type="file" id="foto-viejo" name="foto-viejo" accept="image/*" required>
+                        </div>
+                        <div class="campo-form-evidencia">
+                            <label for="foto-nuevo">2. Foto del Filtro Nuevo:</label>
+                            <input type="file" id="foto-nuevo" name="foto-nuevo" accept="image/*" required>
+                        </div>
+                        <div class="campo-form-evidencia">
+                            <label for="foto-comparacion">3. Foto de Ambos Filtros Juntos:</label>
+                            <input type="file" id="foto-comparacion" name="foto-comparacion" accept="image/*" required>
+                        </div>
+                    </fieldset>
+
+                    <div class="acciones-form">
+                        <button type="submit" class="btn-primario">Confirmar y Registrar Salida</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+
+<script src="js/inventario.js"></script>
+</body>
+</html>
