@@ -46,4 +46,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Limpiamos el formulario después del envío
         formIntercambio.reset();
     });
+    const inputSerieNuevo = document.getElementById("filtro-nuevo-serie");
+    const inputMarcaNuevo = document.getElementById("filtro-nuevo-marca");
+
+    inputSerieNuevo.addEventListener("input", function () {
+        const serie = inputSerieNuevo.value.trim().toUpperCase(); // Aseguramos mayúsculas
+
+        // Detectar marca por prefijo del número de serie
+        if (serie.startsWith("FF")) {
+            inputMarcaNuevo.value = "Fleetguard";
+        } else if (serie.startsWith("DC")) {
+            inputMarcaNuevo.value = "Donaldson";
+        } else if (serie.startsWith("MAH")) {
+            inputMarcaNuevo.value = "Mahle";
+        } else if (serie.startsWith("FR")) {
+            inputMarcaNuevo.value = "Fram";
+        } else {
+            inputMarcaNuevo.value = "Desconocida";
+        }
+    });
 });

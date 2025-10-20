@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnDescargarPlantilla) {
         btnDescargarPlantilla.addEventListener('click', () => {
             // Columnas actualizadas para la plantilla.
-            const headers = "Condicion_del_vehiculo,ID_Camion,Placas,VIN,Condicion,Marca,Modelo,Anio,Tipo_Tecnologia,Estatus_Inicial,ID_Conductor,Kilometros_Recorridos,Ultimo_Mantenimiento,Ultimo_Cambio_Filtro,Marca_Filtro,Serie_Filtro_Aceite";
+            const headers = "Condicion_del_vehiculo,ID_Camion,Placas,VIN,Condicion,Marca,Carroceria,Modelo,Tipo_Tecnologia,Estatus_Inicial,ID_Conductor,Kilometros_Recorridos,Ultimo_Mantenimiento,Ultimo_Cambio_Filtro,Marca_Filtro,Serie_Filtro_Aceite";
             // Fila de ejemplo con los nuevos campos.
             const exampleRow = "Usado / Nuevo, ECO-999,ABC-123,1G9BS82C0XE178459,Usado,Scania,Irizar,2022,scania_i5,trabajando,COND-045,150000,2023-10-15,2023-11-01,Gonher,G-123,GA-456";
             
