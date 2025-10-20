@@ -128,14 +128,18 @@
             <form id="form-alta-personal">
 
                 <div class="form-grupo">
-                    <label for="nombre">Nombre Completo</label>
-                    <input type="text" id="nombre" placeholder="Nombre y apellidos" required>
+                    <label for="nombre">Nombre(s)</label>
+                    <input type="text" id="nombre" placeholder="Ej: Juan Carlos" required>
                 </div>
-     /<!--           <div class="form-grupo">
-                    <input type="text" placeholder="Apellido Materno" required>
-                    <input placeholder="Apellido Paterno" required>
+                <div class="form-grupo">
+                    <label for="apellido_paterno">Apellido Paterno</label>
+                    <input type="text" id="apellido_paterno" placeholder="Ej: Pérez" required>
                 </div>
--->
+                <div class="form-grupo">
+                    <label for="apellido_materno">Apellido Materno</label>
+                    <input type="text" id="apellido_materno" placeholder="Ej: García" required>
+                </div>
+
                 <div class="form-grupo">
                     <label for="rol">Rol</label>
                     <select id="rol" required>
@@ -145,14 +149,14 @@
                         <option value="Conductor">Conductor</option>
                     </select>
                 </div>
-                 <div class="form-grupo">
+                <div class="form-grupo">
                     <label for="fecha_ingreso">Fecha de Ingreso</label>
                     <input type="date" id="fecha_ingreso" required>
                 </div>
                 
                 <div class="form-grupo">
-                    <label for="id_empleado">ID de Empleado</label>
-                    <input type="text" id="id_empleado" placeholder="Ej: MEC-002" required>
+                    <label for="id_empleado">ID de Empleado (se genera automáticamente)</label>
+                    <input type="text" id="id_empleado" placeholder="Seleccione un rol para generar el ID" readonly required>
                 </div>
                 
                 <button type="submit" class="btn-primario btn-modal">Registrar</button>

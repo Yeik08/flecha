@@ -353,3 +353,8 @@ tbody tr:hover {
     font-size: 16px;
 }
 
+.form-grupo input[readonly] {
+    background-color: #f0f0f0; /* Un fondo gris claro */
+    cursor: not-allowed;      /* Muestra un cursor de "prohibido" al pasar el mouse */
+    color: #666;             /* Un color de texto más opaco */
+}
