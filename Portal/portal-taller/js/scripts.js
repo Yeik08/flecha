@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnAbrirModal = document.getElementById('btn-registrar-entrada');
     const btnCerrarModal = document.getElementById('cerrar-modal');
     const form = document.getElementById('form-registro');
+    const puntualidadSelect = document.getElementById('puntualidad');
 
     // 3. Función para abrir el modal.
     // Simplemente cambia el estilo 'display' de 'none' a 'block'.
@@ -40,7 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Aquí es donde enviaremos los datos al backend en el futuro.
         // Por ahora, solo mostramos una alerta y cerramos el modal.
-        alert('Solicitud de mantenimiento generada. Pendiente de aprobación.');
+        const ticketId = 'TK-' + Date.now() + Math.floor(Math.random() * 100);
+
+        alert(`Solicitud generada con éxito.\n\nNúmero de Ticket: ${ticketId}\n\nEl mecánico debe presentar este ticket y el filtro usado para recibir el nuevo.`);
         
         form.reset(); // Limpia el formulario
         cerrarModal(); // Cierra el modal
