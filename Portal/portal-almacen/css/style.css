@@ -183,10 +183,10 @@ a {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    flex-grow: 1;
-    flex-basis: 200px;
+    flex: 1 1 calc(33.333% - 20px); /* 3 por fila, con gap */
     color: #316960;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .kpi-card h3 {
