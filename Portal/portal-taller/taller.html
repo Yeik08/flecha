@@ -6,12 +6,16 @@
     <title>Taller</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- exif-js para metadatos de imágenes JPEG y PNG -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+    <!-- heic2any para convertir imágenes HEIC a JPEG -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any"></script>
 </head>
 
 <body>
-	   
-	
+	   	
     <!-- Contenedor principal -->
     <div class="contenedor-principal">
 		
@@ -150,7 +154,7 @@
 
                  <div class="campo-form">
                     <label for="puntualidad">Puntualidad:</label>
-                    <select id="puntualidad" name="puntualidad" required disabled>
+                    <select id="puntualidad" name="puntualidad" required>
                         <option value="a_tiempo">A tiempo</option>
                         <option value="adelantado">Adelantado</option>
                         <option value="atrasado">Atrasado</option>
@@ -167,7 +171,34 @@
             </form>
         </div>
     </div>
+       <!-- Modal de advertencia por imagen de WhatsApp -->
+        <div id="modal-aviso" class="modal">
+            <div class="modal-contenido">
+                <span class="cerrar-modal" id="cerrar-aviso">&times;</span>
+                <h2>⚠️ Aviso Importante sobre Imágenes de WhatsApp</h2>
+                <p>
+                    Si la imagen fue descargada desde WhatsApp, es posible que se haya comprimido automáticamente y no sea valida(Solo se admiten imágenes en formato <strong>JPG</strong> o <strong>PNG</strong>).
+                </p>
+                <p>
+                    <strong>Para evitar esto, pide que te la envien de la siguiente manera desde WhatsApp:</strong>
+                </p>
+                <ol>
+                    <li>Presiona el <strong>Clip</strong> para insertar un archivo.</li>
+                    <li>Selecciona <strong>Documento</strong> en lugar de la opción de Galería o Fotos.</li>
+                    <li>Busca la carpeta donde tienes almacenada la imagen.</li>
+                    <li>Selecciona la imagen que quieres enviar (esto la enviará como archivo sin perder metadatos).</li>
+                </ol>
+                <p>
+                    Si la imagen fue tomada con el mismo dispositivo usado, puedes subir la imagen directamente desde la galería sin pasar por WhatsApp.
+                </p>
+                <div class="acciones-form">
+                    <button id="continuar-subida" class="btn-primario">Continuar</button>
+                    <button id="cancelar-subida" class="btn-secundario">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="js/scripts.js"></script>
+<script src="js/scripts.js"></script>
 </body>
 </html>
