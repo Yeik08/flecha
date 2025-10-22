@@ -38,6 +38,7 @@
             </div>
 
             <div class="tarjetas-kpi">
+                
                 <div class="kpi-card">
                     <h3>Total Filtros</h3>
                     <p>1,245</p>
@@ -62,38 +63,61 @@
                     <h3>Almacén Magdalena</h3>
                     <p>480</p>
                 </div>
-            </div>
+                
+                <div class="notificaciones-kpi">
+                    <h2>Notificaciones</h2>
+                        <div class="notificaciones-grid">
+                        <div class="notificacion-card alerta">
+                    <h3>Stock Bajo</h3>
+                    <p>El almacén Poniente tiene menos de 20 filtros disponibles.</p>
+                    <span class="fecha">Actualizado: 22/10/2025</span>
+                </div>
 
+                <div class="notificacion-card info">
+                    <h3>Nueva Solicitud</h3>
+                    <p>Se registró una nueva solicitud de intercambio del ticket #3245.</p>
+                    <span class="fecha">Hace 15 min</span>
+                </div>
+
+                <div class="notificacion-card exito">
+                    <h3>Entrega Confirmada</h3>
+                    <p>El filtro del camión 45 fue entregado exitosamente.</p>
+                    <span class="fecha">Hoy 11:32 AM</span>
+                </div>
+            </div>
+        </div>
+    </div>
             <div class="form-container">
                 <h2>Registrar Intercambio por Ticket</h2>
                 <form id="form-intercambio">
+
                     <fieldset>
                         <legend>Información de la Solicitud</legend>
+
                         <div class="campo-form">
                             <label for="ticket-id">Número de Ticket:</label>
                             <div class="input-con-boton">
-                                <input type="text" id="ticket-id" name="ticket-id" placeholder="Ingrese el ticket del mecánico" required>
-                                <button type="button" id="btn-buscar-ticket">Buscar</button>
-                            </div>
+                            <input type="text" id="ticket-id" name="ticket-id" placeholder="Ingrese el ticket del mecánico" required>
+                            <button type="button" id="btn-buscar-ticket">Buscar</button>
                         </div>
+                    </div>
+
                         <div class="campo-form">
                             <label for="camion-id">ID de Camión:</label>
                             <input type="text" id="camion-id" name="camion-id" readonly>
                         </div>
+
                         <div class="campo-form">
                             <label for="mecanico-id">ID del Mecánico:</label>
-                            <input type="text" id="mecanico-id" name="mecanico-id" placeholder="ID de quien retira el filtro" required>
+                            <input type="text" id="mecanico-id" name="mecanico-id" readonly required>
                         </div>
-                         <div class="campo-form">
+
+                        <div class="campo-form">
                             <label for="almacen">Almacén de Salida:</label>
-                            <select id="almacen" name="almacen" required>
-                                <option value="">Seleccione un almacén</option>
-                                <option value="poniente">Poniente</option>
-                                <option value="magdalena">Magdalena</option>
-                                <option value="otro">Otro</option>
-                            </select>
+                            <input type="text" id="almacen-id" name="almacen-id" readonly required>   
                         </div>
                     </fieldset>
+
 
                     <fieldset>
                         <legend>Detalles del Intercambio</legend>
