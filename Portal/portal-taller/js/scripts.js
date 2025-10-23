@@ -149,6 +149,31 @@ document.addEventListener('DOMContentLoaded', function() {
     continuarBtn.onclick = () => {
         modalAviso.style.display = "none";
     };
+const kpiCards = document.querySelectorAll('.kpi-card');
+
+kpiCards.forEach(card => {
+  card.addEventListener('click', () => {
+    const lista = card.querySelector('.lista-kpi');
+
+    if (card.classList.contains('activo')) {
+      // Si ya está activo, ocultamos solo esta lista
+      card.classList.remove('activo');
+      if (lista) lista.style.display = 'none';
+    } else {
+      // Ocultar listas de todas las demás tarjetas
+      kpiCards.forEach(c => {
+        c.classList.remove('activo');
+        const l = c.querySelector('.lista-kpi');
+        if (l) l.style.display = 'none';
+      });
+
+      // Mostrar la lista de la tarjeta clickeada
+      card.classList.add('activo');
+      if (lista) lista.style.display = 'block';
+    }
+  });
+});
+
 
 });
 
