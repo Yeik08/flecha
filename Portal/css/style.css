@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-/*GENERAL*/
+/* GENERAL */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -8,7 +8,6 @@ body {
   min-height: 100vh;
   color: white;
 }
-
 
 /* Contenedor principal */
 .contenedor-principal {
@@ -135,10 +134,10 @@ button:hover,
 }
 
 .fr {
-    font-weight: 700;
-    font-size: 1.5em;
-    color: white;
-    padding-right: 2rem;
+  font-weight: 700;
+  font-size: 1.5em;
+  color: white;
+  padding-right: 2rem;
 }
 
 a {
@@ -146,111 +145,230 @@ a {
   text-decoration: none;
 }
 
-/* ----------------------------------------------------- MODULOS ----------------------------------------------------- */ 
+/* ----------------------------------------------------- MODULOS ----------------------------------------------------- */
 
-        
-/* --- CONTENEDOR PRINCIPAL DEL DASHBOARD --- */
+/* CONTENEDOR PRINCIPAL DEL DASHBOARD */
 main {
-    padding: 30px;
+  padding: 30px;
 }
 
 .bienvenida h1 {
-    margin-top: 0;
-    font-weight: 500;
-    color: #316961;
+  margin-top: 0;
+  font-weight: 500;
+  color: #316961;
 }
 
-/* --- GRID LAYOUT PARA LOS WIDGETS --- */
+/* GRID LAYOUT PARA LOS WIDGETS */
 .dashboard-grid {
-    display: grid;
-/* Columnas responsivas: se ajustan automáticamente. 
-Cada columna tendrá un mínimo de 250px y ocupará el espacio disponible (1fr) */
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 25px; /* Espacio entre los widgets */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
 }
-        
-/* --- ESTILO DE TARJETAS (KPIs y Widgets) --- */
+
+/* ESTILO DE TARJETAS (KPIs y Widgets) */
 .card {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-        
+
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
 .card h2 {
-    margin-top: 0;
-    font-size: 1.1em;
-    color: #555;
+  margin-top: 0;
+  font-size: 1.1em;
+  color: #555;
 }
-        
-/* Estilo específico para las tarjetas*/
+
+/* ESTILO KPI */
 .kpi-card .kpi-number {
-    font-size: 2.8em;
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 10px 0;
+  font-size: 2.8em;
+  font-weight: 700;
+  color: #000000;
+  margin: 10px 0;
 }
-        
+
 .kpi-card .kpi-description {
-    color: #777;
-    font-size: 0.9em;
+  color: #000000;
+  font-size: 0.9em;
 }
 
-/* --- ESTILOS PARA WIDGETS ESPECÍFICOS --- */
-/* Para que un widget ocupe más espacio si es necesario */
+/* Widgets grandes */
 .widget-large {
-/* Ocupará 2 columnas si el espacio lo permite */
-    grid-column: span 2; 
+  grid-column: span 2;
 }
 
-/* Acciones Rápidas */
+/* Acciones rápidas */
 .quick-actions .actions-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .quick-actions .btn {
-    background-color: #316961;
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: 500;
-    transition: background-color 0.3s;
+  background-color: #316961;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 500;
+  transition: background-color 0.3s;
 }
 
 .quick-actions .btn:hover {
-    background-color: white;
-    color: #316961;
+  background-color: white;
+  color: #316961;
 }
-        
-/* Actividad Reciente */
+
+/* Actividad reciente */
 .activity-feed ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .activity-feed li {
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
+  padding: 10px 0;
+  border-bottom: 1px solid #000000;
 }
+
 .activity-feed li:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
-        
+
 .activity-feed .time {
-    display: block;
-    font-size: 0.8em;
-    color: #999;
-    margin-top: 5px;
+  display: block;
+  font-size: 0.8em;
+  color: #000000;
+  margin-top: 5px;
+}
+
+/* Lista de camiones */
+.camiones-lista {
+  margin-top: 15px;
+  padding-left: 20px;
+  list-style-type: none;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.camiones-lista li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.oculto {
+  display: none;
+}
+
+#graficaFlota {
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+  margin: 0 auto;
+}
+
+/* Corrige el alto de las tarjetas KPI */
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 220px;
+  min-height: 220px;
+  box-sizing: border-box;
+}
+
+.kpi-card h2,
+.kpi-card p {
+  margin: 5px 0;
+  text-align: center;
+}
+
+/* Mantiene el gráfico centrado */
+.widget-large canvas {
+  max-width: 100%;
+  height: 250px !important;
+  display: block;
+  margin: 0 auto;
+}
+
+/* NUEVAS TARJETAS */
+.nueva-solicitud-entrada {
+  background-color: #316961;
+  color: white;
+}
+
+.nueva-solicitud-salida {
+  background-color: #9a0909;
+  color: white;
+}
+
+.nueva-solicitud-entrada h2,
+.nueva-solicitud-salida h2,
+.nueva-solicitud-entrada p,
+.nueva-solicitud-salida p {
+  color: white;
+}
+/* --- Colores y estilos de las nuevas tarjetas --- */
+.nueva-solicitud-entrada {
+  background-color: #316961; /* Naranja */
+  color: white;
+}
+
+.nueva-solicitud-salida {
+  background-color: #890101; /* Azul */
+  color: white;
+}
+
+.nueva-solicitud-entrada .kpi-number,
+.nueva-solicitud-salida .kpi-number {
+  color: white; /* Números blancos */
+}
+
+/* --- Ajuste visual de las listas dentro --- */
+.nueva-solicitud-entrada .camiones-lista,
+.nueva-solicitud-salida .camiones-lista {
+  color: #fff; /* Texto blanco */
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 10px;
+}
+/* === ANIMACIÓN DE EXPANSIÓN DE KPI === */
+.kpi-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.kpi-card.expandido {
+  transform: scale(1.03);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  height: auto; /* Permite crecer según el contenido */
+}
+
+/* Suaviza la aparición de la lista */
+.camiones-lista {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.kpi-card.expandido .camiones-lista {
+  max-height: 300px; /* Ajusta según la cantidad de elementos */
+  opacity: 1;
+  padding-top: 10px;
+}
+.widget-large .activity-feed li {
+  color: #2c3e50;
+}
+.widget-large .activity-feed .time {
+  color: #777;
 }
