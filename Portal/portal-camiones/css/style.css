@@ -699,3 +699,119 @@ tbody tr:hover {
     font-size: 1.4rem;
   }
 }
+.sugerencias div:hover {
+  background-color: #f0f0f0;
+}
+/* Lista desplegable del KPI */
+#lista-aprobaciones {
+    margin-top: 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    list-style: none;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    max-width: 250px;
+    display: none; /* Oculto por defecto */
+}
+
+#lista-aprobaciones li {
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+#lista-aprobaciones li:last-child {
+    border-bottom: none;
+}
+
+/* Mostrar lista */
+#lista-aprobaciones.mostrar {
+    display: block;
+}
+
+/* Cursor en KPI */
+#kpi-aprobaciones {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#kpi-aprobaciones:hover {
+    background-color: #eef5ff;
+}
+/* === Buscador arriba de la tabla === */
+.buscador {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.buscador input {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.buscador button {
+    padding: 8px 15px;
+    border: none;
+    background-color: #1e88e5;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.buscador button:hover {
+    background-color: #1565c0;
+}
+.buscador {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.buscador input {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+/* Todos los inputs de texto y selects en mayúsculas */
+input[type="text"],
+input[type="number"],
+select {
+    text-transform: uppercase;
+}
+select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    text-transform: uppercase; /* sigue mostrando en mayúsculas */
+}
+/* === Lista de sugerencias para búsqueda inteligente === */
+.sugerencias-lista {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 10;
+    display: none;
+}
+
+.sugerencias-lista div {
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.sugerencias-lista div:hover {
+    background-color: #e6f0ff;
+}

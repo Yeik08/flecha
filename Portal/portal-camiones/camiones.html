@@ -82,11 +82,20 @@
             </div>
 
             <div class="acciones-header">
-                <div class="tarjeta-accion">
-                    <h3>Aprobaciones Pendientes</h3>
-                    <p class="numero-grande">4</p>
-                    <p>Camiones esperando salida de taller.</p>
-                </div>
+                <div class="tarjeta-accion" id="kpi-aprobaciones">
+    <h3>Aprobaciones Pendientes</h3>
+    <p class="numero-grande">4</p>
+    <p>Camiones esperando salida de taller.</p>
+
+    <!-- Lista desplegable oculta -->
+    <ul id="lista-aprobaciones" class="lista-oculta">
+        <li>ECO-101 — MAN ECLIPSE DD</li>
+        <li>ECO-203 — SCANIA i5</li>
+        <li>ECO-319 — BOXER OF</li>
+        <li>ECO-410 — CENTURY ACM</li>
+    </ul>
+</div>
+
                 <div class="tarjeta-accion">
                     <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
                     <p>Dar de alta un vehículo en el sistema.</p>
@@ -95,6 +104,11 @@
 
             <div class="tabla-contenido">
                <table>
+                <div class="buscador">
+    <input type="text" id="buscar-eco" placeholder="Buscar por número ECO o palabra clave...">
+</div>
+
+
                     <thead>
                         <tr>
                             <th>ID del Camión</th>
@@ -159,29 +173,57 @@
                             <input type="text" id="numero_serie" name="numero_serie" pattern="[A-H-NPR-Z0-9]{17}" required minlength="17" maxlength="17">
                         </div>
                         <div class="form-lvip">
-                            <label for="id_conductor">ID del Conductor Asignado</label>
-                            <input type="text" id="id_conductor" name="id_conductor">
-                        </div>
+    <label for="id_conductor">ID del Conductor Asignado</label>
+    <input type="text" id="id_conductor" name="id_conductor" placeholder="Buscar conductor...">
+    <div id="sugerencias-conductor" class="sugerencias-lista"></div>
+</div>
+
                     </div>
 
                     <div class="form-row tres-columnas">
-                        <div class="form-lvip">
-                            <label for="marca">Marca</label>
-                            <input type="text" id="marca" name="marca">
-                        </div>
-                        <div class="form-lvip">
-                            <label for="carroceria">Carroceria</label>
-                            <input type="text" id="modelo" name="modelo">
-                        </div>
-                        <div class="form-lvip">
-                            <label for="modelo">Modelo</label>
-                            <input type="number" id="anio" name="anio" min="1990" max="2026">
-                        </div>
-                    </div>
+
+    <div class="form-lvip">
+        <label for="marca">Marca</label>
+        <select id="marca" name="marca" required>
+            <option value="">Selecciona una marca</option>
+            <option value="Scania">Scania</option>
+            <option value="MAN">MAN</option>
+            <option value="Mercedes-Benz">Mercedes-Benz</option>
+            <option value="Volvo">Volvo</option>
+            <option value="International">International</option>
+            <option value="Irizar">Irizar</option>
+            <option value="Volkswagen">Volkswagen</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
+
+    <div class="form-lvip">
+        <label for="carroceria">Carrocería</label>
+        <select id="carroceria" name="carroceria" required>
+            <option value="">Selecciona tipo de carrocería</option>
+            <option value="Ayats">Ayats</option>
+            <option value="Beccar">Beccar</option>
+            <option value="Irizar i5">Irizar i5</option>
+            <option value="Irizar i6">Irizar i6</option>
+            <option value="Marcopolo">Marcopolo</option>
+            <option value="Neobus">Neobus</option>
+            <option value="Otra">Otra</option>
+        </select>
+    </div>
+
+    <div class="form-lvip">
+        <label for="anio">Modelo (Año)</label>
+        <select id="anio" name="anio" required>
+            <option value="">Selecciona año</option>
+        </select>
+    </div>
+
+</div>
+
 
                     <div class="form-row">
                         <div class="form-lvip">
-                            <label for="tipo_unidad">Tipo de Tecnología</label>
+                            <label for="tipo_unidad">Tecnología de carrococería</label>
                             <select id="tipo_unidad" name="tipo_unidad">
                                 <option value="boxerof">Boxer Of</option>
                                 <option value="century">CENTURY ACM</option>
@@ -214,7 +256,7 @@
                         </div>
 
                         <hr class="form-divide">
-                        <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros (Solo para camiones usados)</p>
+                        <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros</p>
 
                         <div class="form-row">
                             <div class="form-lvip">
