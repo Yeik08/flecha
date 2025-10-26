@@ -85,120 +85,135 @@
         </div>
 
         <div class="tarjetas">
-            <div class="tarjeta">
-                <h3>Total de Filtros</h3>
-                <p>1,245</p>
-            </div>
-            <div class="tarjeta">
-                <h3>Tipos de Filtro</h3>
-                <p>15</p>
-            </div>
-            <div class="tarjeta alerta">
-                <h3>Inventario Bajo</h3>
-                <p>3</p>
-            </div>
-            <div class="tarjeta">
-                <h3>Filtros Instalados</h3>
-                <p>89</p>
-            </div>
-        </div>
+  <div class="tarjeta" id="kpi-filtros-poniente">
+    <h3>Total de Filtros Poniente</h3>
+    <p>63</p>
+  </div>
 
-        <div class="tabla-contenido">
-            <div class="tabla-titulo">
-                <h2>Filtros Disponibles</h2>
-                <button class="btn-primario" id="btn-agregar-filtro">+ Agregar Filtro</button>
-            </div>
-            
-            <table>
-				<!--CABEZERA DE TABLAS-->
-                <thead>
-                    <tr> <!--COLUMNAS TITULOS-->
-                        <th>ID</th>
-                        <th>Tipo de Filtro</th>
-                        <th>Marca</th>
-                        <th>Cantidad en Inventario</th>
-                        <th>Ubicación</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-				<!--CUERPO DE TABLA-->
-                <tbody>
-                    <tr>
-                        <td>FR-ACE-001</td>
-                        <td>Filtro de Aceite</td>
-                        <td>PATITO1</td>
-                        <td>50</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr class="stock-bajo">
-                        <td>FR-AIR-003</td>
-                        <td>Filtro de Aire Primario</td>
-                        <td>PATITO2</td>
-                        <td>8</td>
-                        <td>Almacén B</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>FR-COMB-002</td>
-                        <td>Filtro de Combustible</td>
-                        <td>PATITO3</td>
-                        <td>120</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="tarjeta" id="kpi-filtros-magdalena">
+    <h3>Total de Filtros Magdalena</h3>
+    <p>57</p>
+  </div>
 
-        <div class="contenedor-formulario" id="formulario-registro" style="display: none;">
+  <div class="tarjeta" id="kpi-lubricante-poniente">
+    <h3>Total de lubricante Poniente</h3>
+    <p>45</p>
+  </div>
 
-            <div class="modulo-titulo">
-                <h2>Nuevo registro</h2>
-            </div>
+  <div class="tarjeta" id="kpi-lubricante-magdalena">
+    <h3>Total de lubricante Magdalena</h3>
+    <p>66</p>
+  </div>
+</div>
 
-            <form class="form-registro">
-                <!--CONTATENAR-->
-                <div class="campo-form">
-                    <label class="filtro-id">ID del Filtro</label>
-                    <input type="number" id="filtro-id" placeholder="Ej. FR-ACE-002"> 
-                </div>
+<!-- Contenedores ocultos que se desplegarán -->
+<div class="detalle oculto" id="detalle-filtros-poniente">
+  <h4>Filtros Poniente</h4>
+  <ul>
+    <li>5 Filtros principales</li>
+    <li>8 Filtros centrífugos</li>
+  </ul>
+</div>
 
-                <!--LISTA-->
-                <div class="campo-form">
-                    <label class="filtro-tipo">Tipo de Filtro</label>
-                    <input type="text" id="filtro-tipo" placeholder="Ej. Filtro de Aceite">
-                </div>
+<div class="detalle oculto" id="detalle-filtros-magdalena">
+  <h4>Filtros Magdalena</h4>
+  <ul>
+    <li>4 Filtros principales</li>
+    <li>10 Filtros centrífugos</li>
+  </ul>
+</div>
 
-                <div class="campo-form">
-                    <label class="filtro-marca">Marca</label>
-                    <input type="text" id="filtro-marca" placeholder="Ej. PATITO2">
-                </div>
-                
-                <div class="campo-form">
-                    <label class="filtro-cantidad">Cantidad</label>
-                    <input type="number" id="filtro-cantidad" placeholder="Ej. 100">
-                </div>
+<div class="detalle oculto" id="detalle-lubricante-poniente">
+  <h4>Lubricantes Poniente</h4>
+  <ul>
+    <li>Aceite 15W-40: 20 unidades</li>
+    <li>Aceite 5W-30: 25 unidades</li>
+  </ul>
+</div>
 
-                <!--LISTA-->
-                <div class="campo-form">
-                    <label class="filtro-ubicacion">Ubicación</label>
-                    <input type="text" id="filtro-ubicacion" placeholder="Ej. Taller Tenango">
-                </div>
+<div class="detalle oculto" id="detalle-lubricante-magdalena">
+  <h4>Lubricantes Magdalena</h4>
+  <ul>
+    <li>Aceite 20W-50: 30 unidades</li>
+    <li>Aceite 10W-40: 36 unidades</li>
+  </ul>
+</div>
+<div class="tabla-contenido">
+  <div class="tabla-titulo">
+    <h2>Inventario General</h2>
+    <button class="btn-primario" id="btn-agregar">+ Agregar Producto</button>
+  </div>
 
-                <div class="acciones-form">
-                    <button type="submit" class="btn-primario"> Guardar Filtro</button>
-                    <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
-                </div>   
+  <table id="tabla-inventario">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Subtipo</th>
+        <th>Marca</th>
+        <th>Cantidad</th>
+        <th>Ubicación</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Aquí se llenará dinámicamente -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Formulario reutilizable -->
+<div class="contenedor-formulario" id="formulario-registro" style="display: none;">
+  <div class="modulo-titulo">
+    <h2 id="titulo-form">Nuevo registro</h2>
+  </div>
+  <form class="form-registro" id="form-producto">
+    <div class="campo-form">
+      <label for="producto-id">ID</label>
+      <input type="text" id="producto-id" required placeholder="Ej. FR-ACE-001 o LUB-15W40-001">
+    </div>
+
+    <div class="campo-form">
+      <label for="producto-tipo">Tipo</label>
+      <select id="producto-tipo" required>
+        <option value="">Selecciona</option>
+        <option value="Filtro">Filtro</option>
+        <option value="Lubricante">Lubricante</option>
+      </select>
+    </div>
+
+    <!-- Subtipo dinámico -->
+<div class="campo-form" id="campo-subtipo">
+  <label for="producto-subtipo">Subtipo</label>
+  <select id="producto-subtipo" required>
+    <option value="">Selecciona un tipo primero</option>
+  </select>
+</div>
+
+<!-- Marca dinámica -->
+<div class="campo-form">
+  <label for="producto-marca">Marca</label>
+  <select id="producto-marca" required>
+    <option value="">Selecciona un tipo primero</option>
+  </select>
+</div>
+
+<!-- Ubicación dinámica -->
+<div class="campo-form">
+  <label for="producto-ubicacion">Ubicación</label>
+  <select id="producto-ubicacion" required>
+    <option value="">Selecciona un tipo primero</option>
+  </select>
+</div>
+
+
+    <div class="acciones-form">
+      <button type="submit" class="btn-primario">Guardar</button>
+      <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
+    </div>
+  </form>
+</div>
+  
                 <!--AGREGAR FOTOS-->
             </form>
         </div>
