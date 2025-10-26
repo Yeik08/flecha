@@ -128,3 +128,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// Convierte automáticamente a mayúsculas lo que se escriba en todos los campos de texto
+document.querySelectorAll('input[type="text"]').forEach(input => {
+    input.addEventListener('input', () => {
+        input.value = input.value.toUpperCase();
+    });
+});
