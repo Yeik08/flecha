@@ -95,7 +95,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 <table>
                     <thead>
                         <tr>
-                            <th>ID Empleado</th>
+                            <th>ID Interno</th> 
                             <th>Nombre</th>
                             <th>Rol</th>
                             <th>Estatus</th>
@@ -103,30 +103,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>MEC-001</td>
-                            <td>Juan Pérez</td>
-                            <td>Mecánico</td>
-                            <td>Activo</td>
-                            <td>2023-01-15</td>
-                            <td class="acciones">
-                                <button class="btn-editar">Editar</button>
-                                <button class="btn-eliminar">Eliminar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>ALM-001</td>
-                            <td>Maria López</td>
-                            <td>Almacenista</td>
-                            <td>Activo</td>
-                            <td>2022-11-20</td>
-                            <td class="acciones">
-                                <button class="btn-editar">Editar</button>
-                                <button class="btn-eliminar">Eliminar</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="tabla-personal-body">
+                        </tbody>
                 </table>
             </div>
         </main>
@@ -140,35 +118,52 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                 <div class="form-grupo">
                     <label for="nombre">Nombre(s)</label>
-                    <input type="text" id="nombre" placeholder="Ej: Juan Carlos" required>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Carlos" required>
                 </div>
                 <div class="form-grupo">
                     <label for="apellido_paterno">Apellido Paterno</label>
-                    <input type="text" id="apellido_paterno" placeholder="Ej: Pérez" required>
+                    <input type="text" id="apellido_paterno" name="apellido_paterno" placeholder="Ej: Pérez" required>
                 </div>
                 <div class="form-grupo">
                     <label for="apellido_materno">Apellido Materno</label>
-                    <input type="text" id="apellido_materno" placeholder="Ej: García" required>
+                    <input type="text" id="apellido_materno" name="apellido_materno" placeholder="Ej: García" required>
                 </div>
 
                 <div class="form-grupo">
                     <label for="rol">Rol</label>
-                    <select id="rol" required>
+                    <select id="rol" name="rol" required>
                         <option value="" disabled selected>Seleccione un rol</option>
-                        <option value="Mecanico">Mecánico</option>
-                        <option value="Almacenista">Almacenista</option>
-                        <option value="Conductor">Conductor</option>
+                        <option value="1">Administrador</option>
+                        <option value="2">Mesa de Mantenimiento</option>
+                        <option value="3">Técnico Mecánico</option>
+                        <option value="4">Jefe de Taller</option>
+                        <option value="5">Receptor de Taller</option>
+                        <option value="6">Almacenista</option>
+                        <option value="7">Conductor</option>
+
                     </select>
                 </div>
                 <div class="form-grupo">
                     <label for="fecha_ingreso">Fecha de Ingreso</label>
-                    <input type="date" id="fecha_ingreso" required>
+                    <input type="date" id="fecha_ingreso" name="fecha_ingreso" required>
+                </div>
+
+                <hr style="border: 1px solid #ECF0F5; margin: 15px 0;">              
+
+                <div class="form-grupo">
+                    <label for="username">Usuario (Username) *</label>
+                    <input type="text" id="username" name="username" placeholder="Ej: jperez" required>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" placeholder="Ej: jperez@flecha.com" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="password">Contraseña Temporal *</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
                 
-                <div class="form-grupo">
-                    <label for="id_empleado">ID de Empleado (se genera automáticamente)</label>
-                    <input type="text" id="id_empleado" placeholder="Seleccione un rol para generar el ID" readonly required>
-                </div>
                 
                 <button type="submit" class="btn-primario btn-modal">Registrar</button>
             </form>
