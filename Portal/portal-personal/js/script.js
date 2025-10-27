@@ -47,6 +47,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
+    // --- TAREA 3 (Eliminar/Baja): FUNCIÓN PARA ELIMINAR PERSONAL ---
+    async function eliminarPersonal(id_empleado) {
+        // Pedimos confirmación
+        if (!confirm(`¿Estás seguro de que quieres eliminar al empleado con ID ${id_empleado}?`)) {
+            return; // Si el usuario cancela, no hacemos nada
+        }
+
+        try {
+            // Llamamos al API usando 'DELETE'
+            const response = await fetch('../php/api_personal.php', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id=${id_empleado}` // Enviamos el ID en el body
+            });
+
+            const resultado = await response.json();
+
+            if (resultado.success) {
+                alert(resultado.message); // "Empleado eliminado con éxito"
+                cargarPersonal(); // Recargamos la tabla para que desaparezca
+            } else {
+                throw new Error(resultado.message);
+            }
+
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+
+
+
+
     // --- TAREA 1 (Escribir): FUNCIÓN PARA ENVIAR EL FORMULARIO ---
     async function registrarPersonal(evento) {
         evento.preventDefault(); 
@@ -98,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- FUNCIONES Y EVENTOS DEL MODAL ---
     function abrirModal() {
-        if (modalOverlay) modalOverlay.classList.remove('o-culto');
+        if (modalOverlay) modalOverlay.classList.remove('oculto');
     }
     function cerrarModal() {
         if (modalOverlay) {
@@ -117,14 +154,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- MANEJADORES DE EVENTOS ---
-    if (formPersonal) {
+if (formPersonal) {
         formPersonal.addEventListener('submit', registrarPersonal);
     }
-    // --- NUEVO: Escucha cambios en el dropdown de Rol ---
     if (rolSelect) {
         rolSelect.addEventListener('change', generarPrefijoId);
     }
 
+    // --- NUEVO: Listener para los botones de la tabla (Editar/Eliminar) ---
+    if (tablaBody) {
+        tablaBody.addEventListener('click', function(evento) {
+            
+            // Verificamos si el clic fue en un botón de eliminar
+            if (evento.target.classList.contains('btn-eliminar')) {
+                const id = evento.target.dataset.id; // Obtenemos el 'data-id'
+                eliminarPersonal(id);
+            }
+            
+            // (Aquí irá la lógica para 'btn-editar' en el futuro)
+            if (evento.target.classList.contains('btn-editar')) {
+                alert('Función "Editar" aún no implementada.');
+            }
+        });
+    }
     // --- INICIAR TODO ---
     cargarPersonal(); 
     

@@ -95,8 +95,36 @@ try {
             echo json_encode(['success' => true, 'message' => "Empleado registrado ($id_interno_nuevo). Su usuario es $id_interno_nuevo"]);
             
         break;
-    }
+
+        case 'DELETE':
+        // Obtenemos el ID numérico del empleado a borrar
+        // PHP lee el body de la petición DELETE
+        parse_str(file_get_contents("php://input"), $datos);
+        $id_empleado = $datos['id'] ?? null;
+
+        if (empty($id_empleado)) {
+            throw new Exception('No se proporcionó un ID de empleado.');
+        }
+
+        // Preparamos la consulta para borrar
+        $sql_delete = "DELETE FROM empleados WHERE id_empleado = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        $stmt_delete->bind_param("i", $id_empleado);
+
+        if ($stmt_delete->execute()) {
+            if ($stmt_delete->affected_rows > 0) {
+                echo json_encode(['success' => true, 'message' => 'Empleado eliminado con éxito']);
+            } else {
+                throw new Exception('No se encontró ningún empleado con ese ID.');
+            }
+        } else {
+            throw new Exception('Error al eliminar: ' . $stmt_delete->error);
+        }
+        
+        break;
+    } // Fin del switch
 } catch (Exception $e) {
+
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
