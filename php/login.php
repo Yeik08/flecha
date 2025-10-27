@@ -42,20 +42,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // 8. ¡Verifica la contraseña!
         // Compara la contraseña del formulario ($password) con el hash de la BD
         if (password_verify($password, $user['password_hash'])) {
-            
-            // ¡ÉXITO! Contraseña correcta.
-            
-            // 9. Guarda los datos del usuario en la Sesión
-            session_regenerate_id(true); // Seguridad extra
-            $_SESSION['loggedin'] = true;
-            $_SESSION['user_id'] = $user['id_empleado'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['nombre_completo'] = $user['nombre'];
-            $_SESSION['role_id'] = $user['role_id'];
+        // 9. Guarda los datos del usuario en la Sesión
+        session_regenerate_id(true); // Seguridad extra
+        $_SESSION['loggedin'] = true;
+        $_SESSION['user_id'] = $user['id_empleado'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['nombre_completo'] = $user['nombre'];
+        $_SESSION['role_id'] = $user['role_id']; // ID del rol (1, 2, 3... 7)
 
-            // 10. Redirige al Portal
-            header("Location: ../Portal/index.html");
-            exit;
+        // 10. Redirige al Portal CORRECTO según el rol
+        $role_id = $user['role_id'];
+        $url_destino = ""; // Variable para guardar la URL
+
+        // Usamos un 'switch' para asignar la URL basada en el ID del rol
+        switch ($role_id) {
+            case 1: // 1 = Administrador
+                $url_destino = "../Portal/portal-personal/personal.php";
+                break;
+            case 2: // 2 = Mesa de Mantenimiento
+                $url_destino = "../Portal/portal_mesa.html";
+                break;
+            case 3: // 3 = Técnico Mecánico
+                $url_destino = "../Portal/portal_tecnico.html";
+                break;
+            case 4: // 4 = Jefe de Taller (Tu "portal mecanico")
+                $url_destino = "../Portal/portal_mecanico.html";
+                break;
+            case 5: // 5 = Receptor de Taller
+                $url_destino = "../Portal/portal_taller.html";
+                break;
+            case 6: // 6 = Almacenista
+                $url_destino = "../Portal/portal_almacen.html";
+                break;
+            case 7: // 7 = Conductor
+                $url_destino = "../Portal/portal_conductor.html";
+                break;
+
+            default:
+                // Si es un rol sin portal, lo mandamos al login con error
+                $url_destino = "../index.html?error=rol_invalido";
+                break;
+        }
+
+        // 11. Redirigir al usuario a su portal
+        header("Location: " . $url_destino);
+        exit;
 
         } else {
             // Error: Contraseña incorrecta
