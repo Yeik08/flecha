@@ -77,7 +77,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 					<?php echo htmlspecialchars($nombre_usuario); ?>
 
 
-					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+					<a href="../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
 				</div>
 
@@ -151,8 +151,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 <hr style="border: 1px solid #ECF0F5; margin: 15px 0;">              
 
                 <div class="form-grupo">
-                    <label for="username">Usuario (Username) *</label>
-                    <input type="text" id="username" name="username" placeholder="Ej: jperez" required>
+                    <label for="id_empleado">ID de Empleado (se genera automáticamente)</label>
+                    <input type="text" id="id_empleado" placeholder="Seleccione un rol para generar el ID" readonly>
                 </div>
 
                 <div class="form-grupo">
