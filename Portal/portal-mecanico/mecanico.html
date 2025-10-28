@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal almacen</title>
+	<link rel="shortcut icon" href="../img/bus_8502475.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+	   
+	
+    <!-- Contenedor principal -->
+    <div class="contenedor-principal">
+		
+		<!-- Menú superior -->
+		<div class="menu-superior">
+			<!-- Opciones del menú -->
+			<div class="opciones">
+
+				<div class="fr">FLECHA ROJA</div>
+                    
+				</div>
+        
+				<div class="perfil">
+
+					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+			
+				</div>
+
+			</div>
+	</div>
+
+<!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+		<main class="modulo-contenido">
+            <div class="modulo-titulo">
+                <h1>Registro de Salida de Taller</h1>
+            </div>
+
+            <div class="form-container">
+                <h2>Finalizar Orden de Mantenimiento</h2>
+                <form id="form-salida">
+                    <fieldset>
+                        <legend>Información del Mantenimiento</legend>
+                        <div class="campo-form">
+                            <label for="ticket-id">Número de Ticket:</label>
+                            <div class="input-con-boton">
+                                <input type="text" id="ticket-id" name="ticket-id" placeholder="Ingrese el ticket de la orden" required>
+                                <button type="button" id="btn-buscar-ticket">Cargar Datos</button>
+                            </div>
+                        </div>
+                        <div class="columnas-dos">
+                            <div class="campo-form">
+                                <label for="camion-id">ID de Camión:</label>
+                                <input type="text" id="camion-id" name="camion-id" readonly>
+                            </div>
+                            <div class="campo-form">
+                                <label for="tipo-mantenimiento">Tipo de Mantenimiento:</label>
+                                <input type="text" id="tipo-mantenimiento" name="tipo-mantenimiento" readonly>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Detalles de Finalización</legend>
+                        <div class="campo-form">
+                            <label for="fecha-salida">Fecha y Hora de Salida:</label>
+                            <input type="datetime-local" id="fecha-salida" name="fecha-salida" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="estado-final">Estado Final de la Unidad:</label>
+                            <select id="estado-final" name="estado-final" required>
+                                <option value="">Seleccione el estado...</option>
+                                <option value="operativo">Operativo - Listo para ruta</option>
+                                <option value="observaciones">Operativo con Observaciones</option>
+                                <option value="requiere_intervencion">Requiere Otra Intervención</option>
+                            </select>
+                        </div>
+                        <div class="campo-form">
+                            <label for="comentarios">Comentarios del Mecánico:</label>
+                            <textarea id="comentarios" name="comentarios" rows="4" placeholder="Añada cualquier observación relevante sobre el servicio, piezas o el estado general del camión."></textarea>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Evidencia Fotográfica de Salida (Obligatoria)</legend>
+
+                        <div class="campo-form-evidencia">
+                            <label for="foto-filtro-retirado">1. Foto del Filtro Viejo Retirado (Primer Plano):</label>
+                            <input type="file" id="foto-filtro-retirado" name="foto-filtro-retirado" accept="image/*" required>
+                        </div>
+                        
+                        
+                        
+                        <div class="campo-form-evidencia">
+                            <label for="foto-filtro-instalado">2. Foto del Filtro Nuevo Instalado (Primer Plano):</label>
+                            <input type="file" id="foto-filtro-instalado" name="foto-filtro-instalado" accept="image/*" required>
+                        </div>
+
+
+                        <div class="campo-form-evidencia">
+                            <label for="foto-general">2. Foto General del Camión Terminado:</label>
+                            <input type="file" id="foto-general" name="foto-general" accept="image/*" required>
+                        </div>
+                    </fieldset>
+
+                    <div class="acciones-form">
+                        <button type="submit" class="btn-primario">Finalizar y Liberar Camión</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="js/mecanico.js"></script>
+</body>
+</html>

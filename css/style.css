@@ -1,0 +1,111 @@
+/* --- Reseteo Básico y Estilos Globales --- */
+* {
+    box-sizing: border-box; /* Asegura que padding y border no afecten el tamaño final del elemento */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif; /* Fuente */
+    background-color: #316961; /* Color de Fondo */
+    color: #fff; /* Texto blanco*/
+
+    /* Flexbox para centrar el formulario vertical y horizontalmente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 600px; 
+    overflow: hidden; /* Evita scroll*/
+}
+
+.img-izquierda {
+    position: absolute; /* Posicionamiento absoluto respecto a la ventana del navegador */
+    top: 30px;
+    left: 10px;
+    width: 300px; /* Tamaño de imagen */
+}
+
+/* --- Contenedor del Formulario --- */
+.contenedor-inicio {
+    width: 100%;
+    max-width: 400px; /* Ancho máximo para que no se estire demasiado en pantallas grandes */
+    padding: 40px;
+    border-radius: 20px; /* Bordes redondeados*/
+    
+    /*efecto translucido*/
+    background: rgba(255, 255, 255, 0.1); /* Fondo blanco con 90% de transparencia */
+    backdrop-filter: blur(15px); /* Desenfoca lo que está detrás del contenedor */
+    -webkit-backdrop-filter: blur(15px); /* Para máxima compatibilidad con navegadores */
+    
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borde para definir los límites */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Sombra para dar profundidad */
+    
+    text-align: center;
+}
+
+/*contenedor titulos form*/
+.contenedor-inicio h2 {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+.contenedor-inicio p {
+    margin-bottom: 30px;
+    font-weight: 300;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* --- Inputs (Label + Input) --- */
+.inputs {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.inputs label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 400;
+}
+.inputs input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15); /* Fondo ligeramente visible para los inputs */
+    color: #fff; /* Texto del input en blanco */
+    font-size: 16px;
+    outline: none; /* Quitamos el borde azul al hacer foco */
+    transition: all 0.3s ease; /* Transición suave para los efectos */
+}
+
+.inputs input:focus { /* Efecto visual al seleccionar el input */
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* --- Botón de Envío --- */
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f0f0f0;     
+    color: #316961; 
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #fff;
+    transform: translateY(-2px); /* Pequeño efecto de elevación al pasar el mouse */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.activity-feed li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    color: #316961;
+}
