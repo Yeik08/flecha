@@ -1,4 +1,9 @@
 <?php
+
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 header('Content-Type: application/json'); // Siempre responderemos en JSON
 require_once 'db_connect.php'; // Incluimos la conexión
