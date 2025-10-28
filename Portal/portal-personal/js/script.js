@@ -7,16 +7,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const formPersonal = document.getElementById('form-alta-personal');
     const tablaBody = document.getElementById('tabla-personal-body');
 
-    // --- NUEVO: Elementos para el ID automático ---
+    // --- Elementos para el ID automático ---
     const rolSelect = document.getElementById('rol');
     const idEmpleadoInput = document.getElementById('id_empleado');
+
+    // --- RUTA CORRECTA A LA API ---
+    // Sube 3 niveles (js/ -> portal-personal/ -> Portal/ -> flecha-1/) y entra a php/
+    const API_URL = '../../../php/api_personal.php'; 
 
     // --- TAREA 2 (Leer): FUNCIÓN PARA CARGAR Y MOSTRAR PERSONAL ---
     async function cargarPersonal() {
         if (!tablaBody) return; 
         
         try {
-            const response = await fetch('../php/api_personal.php');
+            // CORRECCIÓN 1: Usamos la nueva URL
+            const response = await fetch(API_URL); 
             const resultado = await response.json();
 
             if (!resultado.success) {
@@ -50,26 +55,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- TAREA 3 (Eliminar/Baja): FUNCIÓN PARA ELIMINAR PERSONAL ---
     async function eliminarPersonal(id_empleado) {
-        // Pedimos confirmación
         if (!confirm(`¿Estás seguro de que quieres eliminar al empleado con ID ${id_empleado}?`)) {
-            return; // Si el usuario cancela, no hacemos nada
+            return; 
         }
 
         try {
-            // Llamamos al API usando 'DELETE'
-            const response = await fetch('../php/api_personal.php', {
+            // CORRECCIÓN 2: Usamos la nueva URL
+            const response = await fetch(API_URL, { 
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `id=${id_empleado}` // Enviamos el ID en el body
+                body: `id=${id_empleado}` 
             });
 
             const resultado = await response.json();
 
             if (resultado.success) {
-                alert(resultado.message); // "Empleado eliminado con éxito"
-                cargarPersonal(); // Recargamos la tabla para que desaparezca
+                alert(resultado.message); 
+                cargarPersonal(); 
             } else {
                 throw new Error(resultado.message);
             }
@@ -80,17 +84,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
-
-
-
     // --- TAREA 1 (Escribir): FUNCIÓN PARA ENVIAR EL FORMULARIO ---
     async function registrarPersonal(evento) {
         evento.preventDefault(); 
         const formData = new FormData(formPersonal);
 
         try {
-            const response = await fetch('../php/api_personal.php', {
+            // CORRECCIÓN 3: Usamos la nueva URL
+            const response = await fetch(API_URL, { 
                 method: 'POST',
                 body: formData
             });
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(resultado.message); 
                 cerrarModal();
                 formPersonal.reset();
-                idEmpleadoInput.value = ''; // Limpiamos el prefijo
+                idEmpleadoInput.value = ''; 
                 cargarPersonal(); 
             } else {
                 throw new Error(resultado.message);
@@ -111,26 +112,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // --- NUEVO: LÓGICA PARA GENERAR PREFIJO DE ID ---
+    // --- LÓGICA PARA GENERAR PREFIJO DE ID ---
     function generarPrefijoId() {
         if (!rolSelect || !idEmpleadoInput) return;
         
-        const rolId = rolSelect.value; // Esto es '1', '2', '3', etc.
+        const rolId = rolSelect.value; 
         let prefijo = '';
 
         const prefijos = {
-            '1': 'ADM-', // Administrador
-            '2': 'MES-', // Mesa de Mantenimiento
-            '3': 'MEC-', // Técnico Mecánico
-            '4': 'JFT-', // Jefe de Taller
-            '5': 'RCT-', // Receptor de Taller
-            '6': 'ALM-', // Almacenista
-            '7': 'CON-'  // Conductor
+            '1': 'ADM-', '2': 'MES-', '3': 'MEC-', '4': 'JFT-', 
+            '5': 'RCT-', '6': 'ALM-', '7': 'CON-'
         };
         
-        prefijo = prefijos[rolId] || ''; // Busca el prefijo, si no, deja vacío
-
-        idEmpleadoInput.value = prefijo; // Pone "MEC-" en el input deshabilitado
+        prefijo = prefijos[rolId] || ''; 
+        idEmpleadoInput.value = prefijo; 
     }
 
     // --- FUNCIONES Y EVENTOS DEL MODAL ---
@@ -140,8 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function cerrarModal() {
         if (modalOverlay) {
             modalOverlay.classList.add('oculto');
-            formPersonal.reset(); // Limpia el form al cerrar
-            idEmpleadoInput.value = ''; // Limpia el prefijo
+            formPersonal.reset(); 
+            idEmpleadoInput.value = ''; 
         }
     }
 
@@ -154,29 +149,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- MANEJADORES DE EVENTOS ---
-if (formPersonal) {
+    if (formPersonal) {
         formPersonal.addEventListener('submit', registrarPersonal);
     }
     if (rolSelect) {
         rolSelect.addEventListener('change', generarPrefijoId);
     }
 
-    // --- NUEVO: Listener para los botones de la tabla (Editar/Eliminar) ---
     if (tablaBody) {
         tablaBody.addEventListener('click', function(evento) {
-            
-            // Verificamos si el clic fue en un botón de eliminar
             if (evento.target.classList.contains('btn-eliminar')) {
-                const id = evento.target.dataset.id; // Obtenemos el 'data-id'
+                const id = evento.target.dataset.id; 
                 eliminarPersonal(id);
             }
-            
-            // (Aquí irá la lógica para 'btn-editar' en el futuro)
             if (evento.target.classList.contains('btn-editar')) {
                 alert('Función "Editar" aún no implementada.');
             }
         });
     }
+    
     // --- INICIAR TODO ---
     cargarPersonal(); 
     
