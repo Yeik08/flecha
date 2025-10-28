@@ -1,3 +1,15 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -64,9 +76,7 @@
 						<img src="../img/cinta_principal2.png" class="img-perfil">
 					</a>
 
-					<a href="menu.html">
-						Yeykocf
-					</a>
+                    <?php echo htmlspecialchars($nombre_usuario); ?>
 
 					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
@@ -83,18 +93,18 @@
 
             <div class="acciones-header">
                 <div class="tarjeta-accion" id="kpi-aprobaciones">
-    <h3>Aprobaciones Pendientes</h3>
-    <p class="numero-grande">4</p>
-    <p>Camiones esperando salida de taller.</p>
+                    <h3>Aprobaciones Pendientes</h3>
+                    <p class="numero-grande">4</p>
+                    <p>Camiones esperando salida de taller.</p>
 
-    <!-- Lista desplegable oculta -->
-    <ul id="lista-aprobaciones" class="lista-oculta">
-        <li>ECO-101 — MAN ECLIPSE DD</li>
-        <li>ECO-203 — SCANIA i5</li>
-        <li>ECO-319 — BOXER OF</li>
-        <li>ECO-410 — CENTURY ACM</li>
-    </ul>
-</div>
+                    <!-- Lista desplegable oculta -->
+                    <ul id="lista-aprobaciones" class="lista-oculta">
+                        <li>ECO-101 — MAN ECLIPSE DD</li>
+                        <li>ECO-203 — SCANIA i5</li>
+                        <li>ECO-319 — BOXER OF</li>
+                        <li>ECO-410 — CENTURY ACM</li>
+                    </ul>
+                </div>
 
                 <div class="tarjeta-accion">
                     <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
@@ -104,9 +114,9 @@
 
             <div class="tabla-contenido">
                <table>
-                <div class="buscador">
-    <input type="text" id="buscar-eco" placeholder="Buscar por número ECO o palabra clave...">
-</div>
+                    <div class="buscador">
+                        <input type="text" id="buscar-eco" placeholder="Buscar por número ECO o palabra clave...">
+                    </div>
 
 
                     <thead>
@@ -120,7 +130,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        </tbody>
+                    
+                    </tbody>
                 </table>
             </div>
         </main>
@@ -173,62 +184,65 @@
                             <input type="text" id="numero_serie" name="numero_serie" pattern="[A-H-NPR-Z0-9]{17}" required minlength="17" maxlength="17">
                         </div>
                         <div class="form-lvip">
-    <label for="id_conductor">ID del Conductor Asignado</label>
-    <input type="text" id="id_conductor" name="id_conductor" placeholder="Buscar conductor...">
-    <div id="sugerencias-conductor" class="sugerencias-lista"></div>
-</div>
+                            <label for="id_conductor">ID del Conductor Asignado</label>
+                            <input type="text" id="id_conductor" name="id_conductor" placeholder="Buscar conductor...">
+                            <div id="sugerencias-conductor" class="sugerencias-lista"></div>
+                        </div>
 
                     </div>
 
                     <div class="form-row tres-columnas">
 
-    <div class="form-lvip">
-        <label for="marca">Marca</label>
-        <select id="marca" name="marca" required>
-            <option value="">Selecciona una marca</option>
-            <option value="Scania">Scania</option>
-            <option value="MAN">MAN</option>
-            <option value="Mercedes-Benz">Mercedes-Benz</option>
-            <option value="Volvo">Volvo</option>
-            <option value="International">International</option>
-            <option value="Irizar">Irizar</option>
-            <option value="Volkswagen">Volkswagen</option>
-            <option value="Otro">Otro</option>
-        </select>
-    </div>
+                        <div class="form-lvip">
+                            <label for="marca">Marca</label>
+                            <select id="marca" name="marca" required>
+                                <option value="">Selecciona una marca</option>
+                                <option value="Scania">Scania</option>
+                                <option value="MAN">MAN</option>
+                                <option value="Mercedes-Benz">Mercedes-Benz</option>
+                                <option value="Volvo">Volvo</option>
+                                <option value="International">International</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                                <option value="Otro">Otro (dar de alta)</option>
+                            </select>
+                        </div>
+<!--
+                        <div class="form-lvip">
+                            <label for="carroceria">Carrocería</label>
+                            <select id="carroceria" name="carroceria" required>
+                                <option value="">Selecciona tipo de carrocería</option>
+                                <option value="Ayats">Ayats</option>
+                                <option value="Beccar">Beccar</option>
+                                <option value="Irizar i5">Irizar i5</option>
+                                <option value="Irizar i6">Irizar i6</option>
+                                <option value="Marcopolo">Marcopolo</option>
+                                <option value="Neobus">Neobus</option>
+                                <option value="Otra">Otra</option>
+                            </select>
+                        </div>-->
 
-    <div class="form-lvip">
-        <label for="carroceria">Carrocería</label>
-        <select id="carroceria" name="carroceria" required>
-            <option value="">Selecciona tipo de carrocería</option>
-            <option value="Ayats">Ayats</option>
-            <option value="Beccar">Beccar</option>
-            <option value="Irizar i5">Irizar i5</option>
-            <option value="Irizar i6">Irizar i6</option>
-            <option value="Marcopolo">Marcopolo</option>
-            <option value="Neobus">Neobus</option>
-            <option value="Otra">Otra</option>
-        </select>
-    </div>
+                        <div class="form-lvip">
+                            <label for="anio">Modelo (Año)</label>
+                            <select id="anio" name="anio" required>
+                                <option value="">Selecciona año</option>
+                            </select>
+                        </div>
 
-    <div class="form-lvip">
-        <label for="anio">Modelo (Año)</label>
-        <select id="anio" name="anio" required>
-            <option value="">Selecciona año</option>
-        </select>
-    </div>
-
-</div>
+                    </div>
 
 
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="tipo_unidad">Tecnología de carrococería</label>
                             <select id="tipo_unidad" name="tipo_unidad">
+
+                                <option value="">Selecciona tipo de tecnologia</option>
+                                <option value="scania_i5">SCANIA i5 13.0 MT</option>
+                                <option value="Irizar i6">Irizar i6</option>
+                                <option value="Irizar i6s">Irizar i6s 15 MT</option>
                                 <option value="boxerof">Boxer Of</option>
                                 <option value="century">CENTURY ACM</option>
-                                <option value="torton">MAN ECLIPSE DD/AYATS</option>
-                                <option value="scania_i5">SCANIA i5 13.0 MT</option>
+                                <option value="splinter">splinter</option>                            
                                 <option value="otro">Otro</option>
                             </select>
                         </div>

@@ -1,13 +1,25 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 5) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller</title>
+    <title>Taller - Recepción</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- exif-js para metadatos de imágenes JPEG y PNG -->
+
+
+        <!-- exif-js para metadatos de imágenes JPEG y PNG -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
     <!-- heic2any para convertir imágenes HEIC a JPEG -->
@@ -15,7 +27,8 @@
 </head>
 
 <body>
-	   	
+	   
+	
     <!-- Contenedor principal -->
     <div class="contenedor-principal">
 		
@@ -23,21 +36,25 @@
 		<div class="menu-superior">
 			<!-- Opciones del menú -->
 			<div class="opciones">
-
 				<div class="fr">FLECHA ROJA</div>
+            </div>
+                    
+    		<div class="perfil">
 
-				</div>
-        
-				<div class="perfil">
+				<a href="../index.html">
+					<img src="../img/cinta_principal2.png" class="img-perfil">
+				</a>
+					
+                <?php echo htmlspecialchars($nombre_usuario); ?>
 
-	                <span class="usuario-nombre"></span>
 
-					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+				<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
-				</div>
-
 			</div>
+                
+        </div>
 	</div>
+
 
 <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
     <main class="modulo-contenido">

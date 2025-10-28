@@ -1,3 +1,16 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,7 +33,7 @@
                 <div class="fr">FLECHA ROJA</div>
 
                 <ul class="menu">
-                    <li><a href="/Portal/portal-camiones/camiones.html">Camiones</a></li>
+                    <li><a href="/flecha/Portal/portal-camiones/camiones.php">Camiones</a></li>
                 </ul>
 
                 <ul class="menu">
@@ -28,7 +41,7 @@
                 </ul>
 
                 <ul class="menu">
-                    <li><a href="/Portal/portal-personal/personal.html">Personal</a></li>
+                    <li><a href="/Portal/portal-personal/personal.php">Personal</a></li>
                 </ul>
             </div>
 
@@ -36,6 +49,9 @@
                 <a href="menu.html">
                     <img src="img/cinta_principal2.png" class="img-perfil" />
                 </a>
+
+                <?php echo htmlspecialchars($nombre_usuario); ?>
+
                 <a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
             </div>
         </div>

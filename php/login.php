@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $url_destino = "../Portal/portal-personal/personal.php";
                 break;
             case 2: // 2 = Mesa de Mantenimiento
-                $url_destino = "../Portal/portal_mesa.html";
+                $url_destino = "../Portal/index.php";
                 break;
             case 3: // 3 = Técnico Mecánico
                 $url_destino = "../Portal/portal_tecnico.html";
@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $url_destino = "../Portal/portal_mecanico.html";
                 break;
             case 5: // 5 = Receptor de Taller
-                $url_destino = "../Portal/portal_taller.html";
+                $url_destino = "../Portal/portal-taller/taller.php";
                 break;
             case 6: // 6 = Almacenista
                 $url_destino = "../Portal/portal_almacen.html";
