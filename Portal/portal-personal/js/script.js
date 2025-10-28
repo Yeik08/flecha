@@ -176,4 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
             input.value = input.value.toUpperCase();
         });
     });
-});
+
+}); // <-- Esta es la llave de cierre para 'DOMContentLoaded'
+// LA LLAVE '}' EXTRA QUE ESTABA AQUÍ FUE ELIMINADA
