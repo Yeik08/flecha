@@ -77,7 +77,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 					<?php echo htmlspecialchars($nombre_usuario); ?>
 
 
-					<a href="../php/logout.php"><button type="button">Cerrar sesión</button></a>
+					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
 				</div>
 
@@ -95,11 +95,11 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 <table>
                     <thead>
                         <tr>
-                            <th>ID Interno</th> 
-                            <th>Nombre</th>
-                            <th>Rol</th>
-                            <th>Estatus</th>
-                            <th>Fecha de Ingreso</th>
+                            <th class="sortable" data-column="id_interno">ID Interno</th>
+                            <th class="sortable" data-column="nombre">Nombre</th>
+                            <th class="sortable" data-column="nombre_rol">Rol</th>
+                            <th class="sortable" data-column="estatus">Estatus</th>
+                            <th class="sortable" data-column="fecha_ingreso">Fecha de Ingreso</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
