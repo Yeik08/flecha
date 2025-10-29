@@ -154,9 +154,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </div>
 
                 <form id="form-alta-camion">
-                
-                    <div class.form-row>
-                        <div class="form-lvip">
+
+                    <div class="form-row"> <div class="form-lvip">
                             <label for="condicion">Condición del Vehículo</label>
                             <select id="condicion" name="condicion">
                                 <option value="usado">Usado / En Servicio</option>
@@ -164,7 +163,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             </select>
                         </div>
                     </div>
-
                     <hr class="form-divide">
 
                     <div class="form-row">
@@ -177,7 +175,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <input type="text" id="placas" name="placas" required>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="numero_serie">Número de Serie (VIN)</label>
@@ -188,11 +185,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <input type="text" id="id_conductor" name="id_conductor" placeholder="Buscar conductor...">
                             <div id="sugerencias-conductor" class="sugerencias-lista"></div>
                         </div>
-
                     </div>
-
                     <div class="form-row">
-
                         <div class="form-lvip">
                             <label for="marca">Marca</label>
                             <select id="marca" name="marca" required>
@@ -206,44 +200,18 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <option value="Otro">Otro (dar de alta)</option>
                             </select>
                         </div>
-<!--
-                        <div class="form-lvip">
-                            <label for="carroceria">Carrocería</label>
-                            <select id="carroceria" name="carroceria" required>
-                                <option value="">Selecciona tipo de carrocería</option>
-                                <option value="Ayats">Ayats</option>
-                                <option value="Beccar">Beccar</option>
-                                <option value="Irizar i5">Irizar i5</option>
-                                <option value="Irizar i6">Irizar i6</option>
-                                <option value="Marcopolo">Marcopolo</option>
-                                <option value="Neobus">Neobus</option>
-                                <option value="Otra">Otra</option>
-                            </select>
-                        </div>-->
-
                         <div class="form-lvip">
                             <label for="anio">Modelo (Año)</label>
                             <select id="anio" name="anio" required>
                                 <option value="">Selecciona año</option>
                             </select>
                         </div>
-
                     </div>
-
-
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="tipo_unidad">Tecnología de carrococería</label>
                             <select id="tipo_unidad" name="tipo_unidad">
-
                                 <option value="">Selecciona tipo de tecnologia</option>
-                                <option value="scania_i5">SCANIA i5 13.0 MT</option>
-                                <option value="Irizar i6">Irizar i6</option>
-                                <option value="Irizar i6s">Irizar i6s 15 MT</option>
-                                <option value="boxerof">Boxer Of</option>
-                                <option value="century">CENTURY ACM</option>
-                                <option value="splinter">splinter</option>                            
-                                <option value="otro">Otro</option>
                             </select>
                         </div>
                         <div class="form-lvip">
@@ -256,43 +224,42 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </div>
                     </div>
 
-                    <div id="campos-camion-usado">
-                        <hr class="form-divide">
-                        <div class="form-row">
-                            <div class="form-lvip">
-                                <label for="kilometros">Kilómetros Recorridos</label>
-                                <input type="number" id="kilometros" name="kilometros">
-                            </div>
-                            <div class="form-lvip">
-                                <label for="fecha_mantenimiento">Último Mantenimiento General</label>
-                                <input type="date" id="fecha_mantenimiento" name="fecha_mantenimiento">
-                            </div>
+                    <hr class="form-divide">
+                    
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="kilometros">Kilómetros Recorridos</label>
+                            <input type="number" id="kilometros" name="kilometros">
                         </div>
-
-                        <hr class="form-divide">
-                        <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros</p>
-
-                        <div class="form-row">
-                            <div class="form-lvip">
-                                <label for="fecha_cambio_filtro">Último Cambio de Filtro</label>
-                                <input type="date" id="fecha_cambio_filtro" name="fecha_cambio_filtro">
-                            </div>
-                            <div class="form-lvip">
-                                <label for="marca_filtro">Marca de Filtro</label>
-                                <input type="text" id="marca_filtro" name="marca_filtro">
-                            </div>
+                        
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_mantenimiento">Último Mantenimiento General</label>
+                            <input type="date" id="fecha_mantenimiento" name="fecha_mantenimiento">
                         </div>
-                        <div class="form-row">
-                            
-                            <div class="form-lvip">
-                                <label for="numero_serie_filtro_aceite">Número de Serie</label>
-                                <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
-                            </div>
-                            
-                            <div class="form-lvip">
-                                <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
-                                <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
-                            </div>
+                    </div>
+
+                    <hr class="form-divide">
+                    <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros</p>
+
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="marca_filtro">Marca de Filtro</label>
+                            <input type="text" id="marca_filtro" name="marca_filtro">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="numero_serie_filtro_aceite">Número de Serie (Filtro)</label>
+                            <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_cambio_filtro" >Último Cambio de Filtro</label>
+                            <input type="date" id="fecha_cambio_filtro" name="fecha_cambio_filtro">
+                        </div>
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
+                            <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
                         </div>
                     </div>
 
