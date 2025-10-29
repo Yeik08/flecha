@@ -163,6 +163,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <option value="nuevo">Nuevo</option>
                             </select>
                         </div>
+
+                        
                     </div>
 
                     <hr class="form-divide">
