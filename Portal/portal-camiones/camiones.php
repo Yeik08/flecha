@@ -163,8 +163,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <option value="nuevo">Nuevo</option>
                             </select>
                         </div>
-
-                        
                     </div>
 
                     <hr class="form-divide">
@@ -193,7 +191,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                     </div>
 
-                    <div class="form-row tres-columnas">
+                    <div class="form-row">
 
                         <div class="form-lvip">
                             <label for="marca">Marca</label>
@@ -317,27 +315,50 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                     <div class="paso-sube">
                         <div class="paso-numero">1</div>
+
                         <div class="paso-info">
-                            <h3>Descargar Plantilla</h3>
-                            <p>Usa este archivo como guía para asegurar que los datos son correctos</p>
+                            <h3>Definir Condición</h3>
+                            <p>Selecciona si los camiones en el archivo son nuevos o usados</p>
                         </div>
-                        <button id="btn-descargar-plantilla" class="btn-secundario">Descargar</button>
+
+                        <select id="condicion-archivo" class="select-paso">
+                            <option value="usado">Usado / En Servicio</option>
+                            <option value="nuevo">Nuevo</option> 
+                        </select>
                     </div>
 
                     <div class="paso-sube">
                         <div class="paso-numero">2</div>
                         <div class="paso-info">
-                            <h3>Subir Datos de Alta</h3>
-                            <p>Selecciona el archivo CSV con la lista de camiones</p>
-                            <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                            <h3>Descargar Plantilla de Alta</h3>
+                            <p>Usa este archivo como guía para los datos de los camiones</p>
                         </div>
+                        <button id="btn-descargar-plantilla-alta" class="btn-secundario">Descargar</button>
                     </div>
 
                     <div class="paso-sube">
                         <div class="paso-numero">3</div>
                         <div class="paso-info">
+                            <h3>Subir Datos de Alta</h3>
+                            <p>Selecciona el archivo CSV (Nuevos o Usados) con la lista</p>
+                            <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                        </div>
+                    </div>
+                    
+                    <hr class="form-divide"> <div class="paso-sube">
+                        <div class="paso-numero">4</div>
+                        <div class="paso-info">
+                            <h3>Descargar Plantilla de Recorridos</h3>
+                            <p>Plantilla opcional para subir el historial de KM de las unidades</p>
+                        </div>
+                        <button id="btn-descargar-recorridos-archivo" class="btn-secundario">Descargar</button>
+                    </div>
+
+                    <div class="paso-sube">
+                        <div class="paso-numero">5</div>
+                        <div class="paso-info">
                             <h3>Subir Historial de Recorridos</h3>
-                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</s/p>
                             <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" >
                         </div>
                     </div>
