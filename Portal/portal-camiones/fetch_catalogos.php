@@ -1,25 +1,25 @@
 <?php
-// php/fetch_catalogos.php
+// Portal/portal-camiones/fetch_catalogos.php
 header('Content-Type: application/json');
 session_start();
 
-// 1. Incluir el archivo de conexión
-require_once 'db_connect.php'; // $conn debería estar disponible ahora (o ser 'false')
-
-// 2. VERIFICACIÓN DE CONEXIÓN
-// Esta es la parte más importante
-if ($conn === false || !$conn) {
-    http_response_code(500); // Internal Server Error
-    // Devuelve un error JSON, no HTML
-    echo json_encode(['error' => 'No se pudo establecer la conexión a la base de datos. Revisa config.php.']);
-    exit; // Detiene el script limpiamente
+// --- Bloque de seguridad ---
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
+    http_response_code(403); // No autorizado
+    echo json_encode(['error' => 'Acceso no autorizado. Inicie sesión de nuevo.']);
+    exit; 
 }
 
+// 1. Incluir el archivo de conexión
+// Ruta corregida: Sube 2 niveles (desde portal-camiones/ y Portal/) para llegar a la raíz y entrar a php/
+require_once '../../php/db_connect.php'; 
+
+// Si el script llega aquí, la conexión fue exitosa (gracias a die() en db_connect).
 $tipo = $_GET['tipo'] ?? '';
 $respuesta = [];
 
 try {
-    // 3. Ejecutar la consulta SQL según el tipo
+    // 3. Ejecutar la consulta SQL (usando el bucle 'while' que sí funciona)
     switch ($tipo) {
         
         case 'tecnologias':
@@ -28,7 +28,10 @@ try {
                     ORDER BY nombre_tecnologia";
             $result = $conn->query($sql);
             if ($result) {
-                $respuesta = $result->fetch_all(MYSQLI_ASSOC);
+                $respuesta = []; 
+                while ($row = $result->fetch_assoc()) {
+                    $respuesta[] = $row;
+                }
                 $result->free();
             } else {
                 throw new Exception("Error en consulta Tecnologías: " . $conn->error);
@@ -36,23 +39,26 @@ try {
             break;
 
         case 'conductores':
-            // Asegúrate que id_rol = 3 y estatus = 'activo' sean correctos
             $sql = "SELECT id_empleado AS id_usuario, nombre_completo
                     FROM empleados
                     WHERE id_rol = 3 AND estatus = 'activo'
                     ORDER BY nombre_completo";
             $result = $conn->query($sql);
             if ($result) {
-                $conductores = $result->fetch_all(MYSQLI_ASSOC);
+                $conductores_db = []; 
+                while ($row = $result->fetch_assoc()) {
+                    $conductores_db[] = $row;
+                }
                 $result->free();
-                foreach ($conductores as $conductor) {
+                
+                foreach ($conductores_db as $conductor) {
                     $respuesta[] = [
                         'id_usuario' => $conductor['id_usuario'],
                         'nombre_completo' => $conductor['nombre_completo'] . ' (' . $conductor['id_usuario'] . ')'
                     ];
                 }
             } else {
-                 throw new Exception("Error en consulta Conductores: " . $conn->error);
+                 throw new Exception("Error en consulta Conductores: ". $conn->error);
             }
             break;
 
