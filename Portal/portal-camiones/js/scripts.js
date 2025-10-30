@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectTecnologia) {
             try {
                 // RUTA CORREGIDA: Sube dos niveles desde js/ a la raíz
-                const response = await fetch('../../../php/fetch_catalogos.php?tipo=tecnologias');
+                const response = await fetch('/flecha/php/fetch_catalogos.php?tipo=tecnologias');
                 if (!response.ok) throw new Error('Error al cargar tecnologías (HTTP ' + response.status + ')');
                 const tecnologias = await response.json();
                 
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // RUTA CORREGIDA Y PARÁMETRO CORREGIDO
 
-            const response = await fetch('../../../php/fetch_catalogos.php?tipo=conductores');
+            const response = await fetch('/flecha/php/fetch_catalogos.php?tipo=conductores');
             if (!response.ok) throw new Error('Error al cargar conductores (HTTP ' + response.status + ')');
             const conductores = await response.json();
             

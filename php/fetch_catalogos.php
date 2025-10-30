@@ -1,61 +1,59 @@
 <?php
-// fetch_catalogos.php (en la raíz del proyecto)
-header('Content-Type: application/json'); 
+// php/fetch_catalogos.php (Con nombres confirmados por image_41049d.png)
+header('Content-Type: application/json');
 session_start();
 
-// 1. Incluir el archivo de conexión
-require_once 'db_connect.php'; // $conn ya está disponible aquí
+require_once 'db_connect.php'; // Incluye tu conexión $conn
 
-// Verificar que la conexión se estableció
-if ($conn->connect_error) {
-    http_response_code(500); 
-    echo json_encode(['error' => 'Error de conexión a BD']);
-    exit; 
+// Verifica conexión
+if ($conn === false || !$conn || $conn->connect_error) {
+    http_response_code(500);
+    echo json_encode(['error' => 'No se pudo establecer la conexión a la base de datos.']);
+    exit;
 }
 
-$tipo = $_GET['tipo'] ?? ''; 
+$tipo = $_GET['tipo'] ?? '';
 $respuesta = [];
 
 try {
-    // 3. Ejecutar la consulta SQL según el tipo (usando MySQLi)
     switch ($tipo) {
-        
         case 'tecnologias':
-            // --- CORRECCIONES AQUÍ ---
-            $sql = "SELECT 
-                        id, 
-                        nombre_tecnologia AS nombre -- Renombramos la columna para que coincida con lo que espera el JS
-                    FROM 
-                        tb_tecnologias_carroceria -- Nombre correcto de la tabla
-                    -- WHERE activo = 1 -- Quitado porque no existe en tu tabla
-                    ORDER BY 
-                        nombre_tecnologia"; // Ordenar por el nombre real de la columna
-            // --- FIN CORRECCIONES ---
-                        
+            // Usa los nombres correctos de tabla y columna
+            $sql = "SELECT
+                        id,
+                        nombre_tecnologia AS nombre
+                    FROM
+                        tb_tecnologias_carroceria
+                    ORDER BY
+                        nombre_tecnologia";
             $result = $conn->query($sql);
-
             if ($result) {
-                $respuesta = $result->fetch_all(MYSQLI_ASSOC); 
-                $result->free(); 
+                $respuesta = $result->fetch_all(MYSQLI_ASSOC);
+                $result->free();
             } else {
                 throw new Exception("Error en consulta Tecnologías: " . $conn->error);
             }
             break;
 
         case 'conductores':
-            // Ajusta 'id_rol = 3' si tu rol de conductor es diferente
-            $sql = "SELECT id_usuario, nombre_completo 
-                    FROM usuarios 
-                    WHERE id_rol = 3 AND estatus = 'activo' 
-                    ORDER BY nombre_completo";
+             // Usa los nombres correctos de tabla y columnas
+             // Asegúrate que id_rol = 3 y estatus = 'activo' sean correctos para tus conductores
+            $sql = "SELECT
+                        id_empleado AS id_usuario, -- Renombra id_empleado
+                        nombre_completo
+                    FROM
+                        empleados
+                    WHERE
+                        id_rol = 3 AND estatus = 'activo'
+                    ORDER BY
+                        nombre_completo";
             $result = $conn->query($sql);
-
             if ($result) {
                 $conductores = $result->fetch_all(MYSQLI_ASSOC);
                 $result->free();
                 foreach ($conductores as $conductor) {
                     $respuesta[] = [
-                        'id_usuario' => $conductor['id_usuario'],
+                        'id_usuario' => $conductor['id_usuario'], // Usa el alias
                         'nombre_completo' => $conductor['nombre_completo'] . ' (' . $conductor['id_usuario'] . ')'
                     ];
                 }
@@ -66,22 +64,17 @@ try {
 
         default:
             $respuesta = ['error' => 'Tipo de catálogo no válido'];
-            http_response_code(400); 
+            http_response_code(400);
             break;
     }
-
-    // 4. Cerrar la conexión
     $conn->close();
-
-    // 5. Devolver la respuesta como JSON
     echo json_encode($respuesta);
 
 } catch (Exception $e) {
-    // 6. Manejo de errores
-    if (isset($conn) && $conn instanceof mysqli) {
-        $conn->close(); 
+    if (isset($conn) && $conn instanceof mysqli && !$conn->connect_error) {
+         $conn->close();
     }
-    http_response_code(500); 
+    http_response_code(500);
     echo json_encode(['error' => 'Error en el servidor: ' . $e->getMessage()]);
 }
 ?>
