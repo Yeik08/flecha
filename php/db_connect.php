@@ -1,7 +1,6 @@
 <?php
 /*
 * db_connect.php
-* Se encarga de establecer la conexión con la base de datos.
 * VERSIÓN CORREGIDA: No usa die() para ser compatible con API/fetch.
 */
 
