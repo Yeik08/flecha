@@ -39,25 +39,28 @@ try {
             break;
 
         case 'conductores':
-            $sql = "SELECT id_empleado AS id_usuario, nombre_completo
+            // 1. Corregimos el SQL:
+            //    - Seleccionamos `id_interno` (ej: "CON-007") y lo llamamos `id_usuario` para que el JS (scripts.js) lo entienda.
+            //    - Usamos CONCAT() para unir nombre, apellido_p y apellido_m en un solo campo llamado `nombre_completo`.
+            $sql = "SELECT 
+                        id_interno AS id_usuario, 
+                        CONCAT(nombre, ' ', apellido_p, ' ', apellido_m) AS nombre_completo
                     FROM empleados
-                    WHERE id_rol = 3 AND estatus = 'activo'
-                    ORDER BY nombre_completo";
+                    WHERE role_id = 7 AND estatus = 'activo'
+                    ORDER BY nombre_completo"; 
+            
             $result = $conn->query($sql);
+            
             if ($result) {
-                $conductores_db = []; 
+                // 2. Usamos un bucle simple para pasar los datos al JSON.
+                // El JavaScript (scripts.js) ya espera los campos "id_usuario" y "nombre_completo".
+                $respuesta = []; 
                 while ($row = $result->fetch_assoc()) {
-                    $conductores_db[] = $row;
+                    $respuesta[] = $row;
                 }
                 $result->free();
-                
-                foreach ($conductores_db as $conductor) {
-                    $respuesta[] = [
-                        'id_usuario' => $conductor['id_usuario'],
-                        'nombre_completo' => $conductor['nombre_completo'] . ' (' . $conductor['id_usuario'] . ')'
-                    ];
-                }
             } else {
+                 // Si la consulta falla, lanzamos un error
                  throw new Exception("Error en consulta Conductores: ". $conn->error);
             }
             break;

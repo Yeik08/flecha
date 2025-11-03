@@ -83,10 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectTecnologia) {
             try {
                 // RUTA RELATIVA: el archivo `fetch_catalogos.php` está en el mismo directorio que esta página (camiones.php)
-                const response = await fetch('fetch_catalogos.php');
+                const response = await fetch('fetch_catalogos.php?tipo=tecnologias'); // <--- LÍNEA CORR')');
+                
                 if (!response.ok) throw new Error('Error al cargar tecnologías (HTTP ' + response.status + ')');
                 const tecnologias = await response.json();
-                
                 selectTecnologia.innerHTML = '<option value="">Selecciona tipo de tecnologia</option>';
                 tecnologias.forEach(tec => {
                     const opcion = document.createElement("option");
