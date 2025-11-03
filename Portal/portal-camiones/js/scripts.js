@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // --- Cargar Tecnologías ---
         if (selectTecnologia) {
             try {
-                // RUTA CORREGIDA: Sube dos niveles desde js/ a la raíz
-                const response = await fetch('../fetch_catalogos.php?tipo=tecnologias');
+                // RUTA RELATIVA: el archivo `fetch_catalogos.php` está en el mismo directorio que esta página (camiones.php)
+                const response = await fetch('fetch_catalogos.php');
                 if (!response.ok) throw new Error('Error al cargar tecnologías (HTTP ' + response.status + ')');
                 const tecnologias = await response.json();
                 
@@ -102,9 +102,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // --- Cargar Conductores ---
         try {
-            // RUTA CORREGIDA Y PARÁMETRO CORREGIDO
-
-            const response = await fetch('../fetch_catalogos.php?tipo=conductores');
+            // RUTA RELATIVA CORRECTA a `fetch_catalogos.php` (mismo directorio que camiones.php)
+            const response = await fetch('fetch_catalogos.php?tipo=conductores');
             if (!response.ok) throw new Error('Error al cargar conductores (HTTP ' + response.status + ')');
             const conductores = await response.json();
             
