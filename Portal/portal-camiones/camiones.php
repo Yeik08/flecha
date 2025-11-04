@@ -178,7 +178,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="numero_serie">Número de Serie (VIN)</label>
-                            <input type="text" id="numero_serie" name="numero_serie" required minlength="17" maxlength="17">
+                            <input type="text" id="numero_serie" name="numero_serie"  required minlength="17" maxlength="17">
                         </div>
                         <div class="form-lvip">
                             <label for="id_conductor">ID del Conductor Asignado</label>
