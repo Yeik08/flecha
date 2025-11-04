@@ -202,4 +202,64 @@ document.addEventListener('DOMContentLoaded', function() {
     if (inputBuscar && tabla) { /* Tu lógica de búsqueda en tabla */ }
     document.querySelectorAll('input[type="text"]').forEach(input => { /* Tu lógica de mayúsculas */ });
 
+
+
+    // (Añadir esto dentro de tu DOMContentLoaded en scripts.js)
+
+// --- 10. LÓGICA DE ENVÍO DEL FORMULARIO DE ALTA MANUAL ---
+
+const formAltaCamion = document.getElementById('form-alta-camion');
+if (formAltaCamion) {
+    formAltaCamion.addEventListener('submit', async function(e) {
+        e.preventDefault(); // Evita que la página se recargue
+
+        // (Opcional: puedes añadir una confirmación visual aquí, ej. SweetAlert)
+        // alert("Registrando camión...");
+
+        const formData = new FormData(formAltaCamion);
+        
+        // (Opcional: validaciones de campos en JS)
+        if (formData.get('identificador') === '' || formData.get('placas') === '') {
+            alert('Por favor, llena los campos de ID y Placas.');
+            return;
+        }
+
+        try {
+            // Enviamos los datos a nuestro nuevo script PHP
+            const response = await fetch('registrar_camion.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                // Si el servidor responde con un error (403, 500, etc.)
+                throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                // ¡Éxito!
+                alert(data.message); // "Camión registrado con éxito..."
+                formAltaCamion.reset(); // Limpia el formulario
+                
+                // Cierra el modal (busca un botón de cerrar y simula un clic)
+                const btnCerrar = document.querySelector('.modal-cerrar');
+                if (btnCerrar) btnCerrar.click();
+                
+                // (En un futuro, aquí llamarías a una función para recargar la tabla de camiones)
+                // recargarTablaCamiones(); 
+            } else {
+                // Error reportado por el PHP (ej. duplicado)
+                alert(`Error al registrar: ${data.message}`);
+            }
+
+        } catch (error) {
+            // Error de red o del fetch
+            console.error('Error en el fetch:', error);
+            alert('Error de conexión. No se pudo contactar al servidor.');
+        }
+    });
+}
+
 }); // FIN DEL DOMContentLoaded
