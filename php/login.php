@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $url_destino = "../Portal/portal-taller/taller.php";
                 break;
             case 6: // 6 = Almacenista
-                $url_destino = "../Portal/portal_almacen.html";
+                $url_destino = "../Portal/portal-almacen/almacen.php";
                 break;
             case 7: // 7 = Conductor
                 $url_destino = "../Portal/portal_conductor.html";

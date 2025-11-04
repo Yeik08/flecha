@@ -243,19 +243,42 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                     <div class="form-row">
                         <div class="form-lvip">
-                            <label for="marca_filtro">Marca de Filtro</label>
+                            <label for="marca_filtro">Marca de Filtro de aceite</label>
                             <input type="text" id="marca_filtro" name="marca_filtro">
                         </div>
                         <div class="form-lvip">
-                            <label for="numero_serie_filtro_aceite">Número de Serie (Filtro)</label>
+                            <label for="numero_serie_filtro_aceite">Número de Serie (Filtro de aceite)</label>
                             <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
                         </div>
                     </div>
 
                     <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="marca_filtro_centrifugo">Marca de Filtro de centrifugo</label>
+                            <input type="text" id="marca_filtro_centrifugo" name="marca_filtro_centrifugo">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="numero_serie_filtro_centrifugo">Número de Serie (Filtro de centrifugo)</label>
+                            <input type="text" id="numero_serie_filtro_centrifugo" name="numero_serie_filtro_centrifugo">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-lvip ocultar-si-es-nuevo">
-                            <label for="fecha_cambio_filtro" >Último Cambio de Filtro</label>
+                            <label for="fecha_cambio_filtro" >Último Cambio de Filtro de aceite</label>
                             <input type="date" id="fecha_cambio_filtro" name="fecha_cambio_filtro">
+                        </div>
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_cambio_filtro_centrifugo">Ultimo Cambio de Filtro de centrifugo</label>
+                            <input type="date" id="fecha_cambio_filtro_centrifugo" name="fecha_cambio_filtro_centrifugo">
+                        </div>
+                    </div>
+
+
+                    <div class="form-row">
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="tipo_aceite" >Lubricante</label>
+                            <input type="text" id="tipo_aceite" name="tipo_aceite">
                         </div>
                         <div class="form-lvip ocultar-si-es-nuevo">
                             <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
