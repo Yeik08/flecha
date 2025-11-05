@@ -348,3 +348,20 @@ tbody tr:hover {
 .acciones-form button {
   padding: 12px 20px;
 }
+
+/* Estilo para el select de tipo de inventario */
+#tipo-inventario {
+  padding: 12px;
+  border: 1px solid #acc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  color: #333;
+  background-color: white;
+}
+
+#tipo-inventario:focus {
+  outline: none;
+  border-color: #316960;
+}
