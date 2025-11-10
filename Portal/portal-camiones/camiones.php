@@ -1,3 +1,15 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -64,9 +76,7 @@
 						<img src="../img/cinta_principal2.png" class="img-perfil">
 					</a>
 
-					<a href="menu.html">
-						Yeykocf
-					</a>
+                    <?php echo htmlspecialchars($nombre_usuario); ?>
 
 					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
@@ -82,11 +92,20 @@
             </div>
 
             <div class="acciones-header">
-                <div class="tarjeta-accion">
+                <div class="tarjeta-accion" id="kpi-aprobaciones">
                     <h3>Aprobaciones Pendientes</h3>
                     <p class="numero-grande">4</p>
                     <p>Camiones esperando salida de taller.</p>
+
+                    <!-- Lista desplegable oculta -->
+                    <ul id="lista-aprobaciones" class="lista-oculta">
+                        <li>ECO-101 — MAN ECLIPSE DD</li>
+                        <li>ECO-203 — SCANIA i5</li>
+                        <li>ECO-319 — BOXER OF</li>
+                        <li>ECO-410 — CENTURY ACM</li>
+                    </ul>
                 </div>
+
                 <div class="tarjeta-accion">
                     <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
                     <p>Dar de alta un vehículo en el sistema.</p>
@@ -95,6 +114,11 @@
 
             <div class="tabla-contenido">
                <table>
+                    <div class="buscador">
+                        <input type="text" id="buscar-eco" placeholder="Buscar por número ECO o palabra clave...">
+                    </div>
+
+
                     <thead>
                         <tr>
                             <th>ID del Camión</th>
@@ -106,7 +130,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        </tbody>
+                    
+                    </tbody>
                 </table>
             </div>
         </main>
@@ -129,9 +154,8 @@
                 </div>
 
                 <form id="form-alta-camion">
-                
-                    <div class.form-row>
-                        <div class="form-lvip">
+
+                    <div class="form-row"> <div class="form-lvip">
                             <label for="condicion">Condición del Vehículo</label>
                             <select id="condicion" name="condicion">
                                 <option value="usado">Usado / En Servicio</option>
@@ -139,7 +163,6 @@
                             </select>
                         </div>
                     </div>
-
                     <hr class="form-divide">
 
                     <div class="form-row">
@@ -152,42 +175,43 @@
                             <input type="text" id="placas" name="placas" required>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="numero_serie">Número de Serie (VIN)</label>
-                            <input type="text" id="numero_serie" name="numero_serie" pattern="[A-H-NPR-Z0-9]{17}" required minlength="17" maxlength="17">
+                            <input type="text" id="numero_serie" name="numero_serie"  required minlength="17" maxlength="17">
                         </div>
                         <div class="form-lvip">
                             <label for="id_conductor">ID del Conductor Asignado</label>
-                            <input type="text" id="id_conductor" name="id_conductor">
+                            <input type="text" id="id_conductor" name="id_conductor" placeholder="Buscar conductor...">
+                            <div id="sugerencias-conductor" class="sugerencias-lista"></div>
                         </div>
                     </div>
-
-                    <div class="form-row tres-columnas">
-                        <div class="form-lvip">
-                            <label for="marca">Marca</label>
-                            <input type="text" id="marca" name="marca">
-                        </div>
-                        <div class="form-lvip">
-                            <label for="carroceria">Carroceria</label>
-                            <input type="text" id="modelo" name="modelo">
-                        </div>
-                        <div class="form-lvip">
-                            <label for="modelo">Modelo</label>
-                            <input type="number" id="anio" name="anio" min="1990" max="2026">
-                        </div>
-                    </div>
-
                     <div class="form-row">
                         <div class="form-lvip">
-                            <label for="tipo_unidad">Tipo de Tecnología</label>
+                            <label for="marca">Marca</label>
+                            <select id="marca" name="marca" required>
+                                <option value="">Selecciona una marca</option>
+                                <option value="Scania">Scania</option>
+                                <option value="MAN">MAN</option>
+                                <option value="Mercedes-Benz">Mercedes-Benz</option>
+                                <option value="Volvo">Volvo</option>
+                                <option value="International">International</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                                <option value="Otro">Otro (dar de alta)</option>
+                            </select>
+                        </div>
+                        <div class="form-lvip">
+                            <label for="anio">Modelo (Año)</label>
+                            <select id="anio" name="anio" required>
+                                <option value="">Selecciona año</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="tipo_unidad">Tecnología de carrococería</label>
                             <select id="tipo_unidad" name="tipo_unidad">
-                                <option value="boxerof">Boxer Of</option>
-                                <option value="century">CENTURY ACM</option>
-                                <option value="torton">MAN ECLIPSE DD/AYATS</option>
-                                <option value="scania_i5">SCANIA i5 13.0 MT</option>
-                                <option value="otro">Otro</option>
+                                <option value="">Selecciona tipo de tecnologia</option>
                             </select>
                         </div>
                         <div class="form-lvip">
@@ -200,43 +224,65 @@
                         </div>
                     </div>
 
-                    <div id="campos-camion-usado">
-                        <hr class="form-divide">
-                        <div class="form-row">
-                            <div class="form-lvip">
-                                <label for="kilometros">Kilómetros Recorridos</label>
-                                <input type="number" id="kilometros" name="kilometros">
-                            </div>
-                            <div class="form-lvip">
-                                <label for="fecha_mantenimiento">Último Mantenimiento General</label>
-                                <input type="date" id="fecha_mantenimiento" name="fecha_mantenimiento">
-                            </div>
+                    <hr class="form-divide">
+                    
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="kilometros">Kilómetros Recorridos</label>
+                            <input type="number" id="kilometros" name="kilometros">
                         </div>
-
-                        <hr class="form-divide">
-                        <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros (Solo para camiones usados)</p>
-
-                        <div class="form-row">
-                            <div class="form-lvip">
-                                <label for="fecha_cambio_filtro">Último Cambio de Filtro</label>
-                                <input type="date" id="fecha_cambio_filtro" name="fecha_cambio_filtro">
-                            </div>
-                            <div class="form-lvip">
-                                <label for="marca_filtro">Marca de Filtro</label>
-                                <input type="text" id="marca_filtro" name="marca_filtro">
-                            </div>
+                        
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_mantenimiento">Último Mantenimiento General</label>
+                            <input type="date" id="fecha_mantenimiento" name="fecha_mantenimiento">
                         </div>
-                        <div class="form-row">
-                            
-                            <div class="form-lvip">
-                                <label for="numero_serie_filtro_aceite">Número de Serie</label>
-                                <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
-                            </div>
-                            
-                            <div class="form-lvip">
-                                <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
-                                <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
-                            </div>
+                    </div>
+
+                    <hr class="form-divide">
+                    <p style="text-align: center; color: #666; margin-bottom: 15px;">Información de Filtros</p>
+
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="marca_filtro">Marca de Filtro de aceite</label>
+                            <input type="text" id="marca_filtro" name="marca_filtro">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="numero_serie_filtro_aceite">Número de Serie (Filtro de aceite)</label>
+                            <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-lvip">
+                            <label for="marca_filtro_centrifugo">Marca de Filtro de centrifugo</label>
+                            <input type="text" id="marca_filtro_centrifugo" name="marca_filtro_centrifugo">
+                        </div>
+                        <div class="form-lvip">
+                            <label for="numero_serie_filtro_centrifugo">Número de Serie (Filtro de centrifugo)</label>
+                            <input type="text" id="numero_serie_filtro_centrifugo" name="numero_serie_filtro_centrifugo">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_cambio_filtro" >Último Cambio de Filtro de aceite</label>
+                            <input type="date" id="fecha_cambio_filtro" name="fecha_cambio_filtro">
+                        </div>
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="fecha_cambio_filtro_centrifugo">Ultimo Cambio de Filtro de centrifugo</label>
+                            <input type="date" id="fecha_cambio_filtro_centrifugo" name="fecha_cambio_filtro_centrifugo">
+                        </div>
+                    </div>
+
+
+                    <div class="form-row">
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="tipo_aceite" >Lubricante</label>
+                            <input type="text" id="tipo_aceite" name="tipo_aceite">
+                        </div>
+                        <div class="form-lvip ocultar-si-es-nuevo">
+                            <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
+                            <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
                         </div>
                     </div>
 
@@ -259,27 +305,50 @@
 
                     <div class="paso-sube">
                         <div class="paso-numero">1</div>
+
                         <div class="paso-info">
-                            <h3>Descargar Plantilla</h3>
-                            <p>Usa este archivo como guía para asegurar que los datos son correctos</p>
+                            <h3>Definir Condición</h3>
+                            <p>Selecciona si los camiones en el archivo son nuevos o usados</p>
                         </div>
-                        <button id="btn-descargar-plantilla" class="btn-secundario">Descargar</button>
+
+                        <select id="condicion-archivo" class="select-paso">
+                            <option value="usado">Usado / En Servicio</option>
+                            <option value="nuevo">Nuevo</option> 
+                        </select>
                     </div>
 
                     <div class="paso-sube">
                         <div class="paso-numero">2</div>
                         <div class="paso-info">
-                            <h3>Subir Datos de Alta</h3>
-                            <p>Selecciona el archivo CSV con la lista de camiones</p>
-                            <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                            <h3>Descargar Plantilla de Alta</h3>
+                            <p>Usa este archivo como guía para los datos de los camiones</p>
                         </div>
+                        <button id="btn-descargar-plantilla-alta" class="btn-secundario">Descargar</button>
                     </div>
 
                     <div class="paso-sube">
                         <div class="paso-numero">3</div>
                         <div class="paso-info">
+                            <h3>Subir Datos de Alta</h3>
+                            <p>Selecciona el archivo CSV (Nuevos o Usados) con la lista</p>
+                            <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
+                        </div>
+                    </div>
+                    
+                    <hr class="form-divide"> <div class="paso-sube">
+                        <div class="paso-numero">4</div>
+                        <div class="paso-info">
+                            <h3>Descargar Plantilla de Recorridos</h3>
+                            <p>Plantilla opcional para subir el historial de KM de las unidades</p>
+                        </div>
+                        <button id="btn-descargar-recorridos-archivo" class="btn-secundario">Descargar</button>
+                    </div>
+
+                    <div class="paso-sube">
+                        <div class="paso-numero">5</div>
+                        <div class="paso-info">
                             <h3>Subir Historial de Recorridos</h3>
-                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</s/p>
                             <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" >
                         </div>
                     </div>

@@ -1,13 +1,25 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 5) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller</title>
+    <title>Taller - Recepción</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- exif-js para metadatos de imágenes JPEG y PNG -->
+
+
+        <!-- exif-js para metadatos de imágenes JPEG y PNG -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
     <!-- heic2any para convertir imágenes HEIC a JPEG -->
@@ -15,7 +27,8 @@
 </head>
 
 <body>
-	   	
+	   
+	
     <!-- Contenedor principal -->
     <div class="contenedor-principal">
 		
@@ -23,59 +36,56 @@
 		<div class="menu-superior">
 			<!-- Opciones del menú -->
 			<div class="opciones">
-
 				<div class="fr">FLECHA ROJA</div>
+            </div>
+                    
+    		<div class="perfil">
 
-					<ul class="menu">
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle">Alta de camiones</a>
-								<ul class="submenu">
-									<li><a id="submenu" href="#">Ver Camiones</a></li>
-									<li><a id="submenu" href="#">Alta</a></li>
-								</ul>
-						</li>
-					</ul>
+				<a href="../index.html">
+					<img src="../img/cinta_principal2.png" class="img-perfil">
+				</a>
+					
+                <?php echo htmlspecialchars($nombre_usuario); ?>
+
+
+				<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
 			
-					<ul class="menu">
-						<li><a href="../portal-inventario/alta-inventario.html">Inventario</a></li>
-					</ul>
-
-					<ul class="menu">
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle">Reportes</a>
-							<ul class="submenu">
-								<li><a id="submenu" href="#">Personalizado</a></li>
-								<li><a id="submenu" href="#">Plantillas</a></li>
-							</ul>
-						</li>
-					</ul>
-
-				</div>
-        
-				<div class="perfil">
-
-					<a href="../index.html">
-						<img src="../img/cinta_principal2.png" class="img-perfil">
-					</a>
-
-					<a href="menu.html">
-						Yeykocf
-					</a>
-
-					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
-			
-				</div>
-
 			</div>
+                
+        </div>
 	</div>
+
 
 <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
     <main class="modulo-contenido">
+        
         <div class="tabla-titulo">
             <h2>Estado de la Flota en Taller</h2>
             <button class="btn-primario" id="btn-registrar-entrada">+ Registrar Entrada de Camión</button>
         </div>
-
+        <div class="kpi-notificaciones">
+  <div class="kpi-card kpi-correcto" id="kpi-correcto">
+    ✔ Todas las unidades al día
+    <ul class="lista-kpi lista-correcto">
+      <li>Unidad ECO-112 — Último mantenimiento:5 15/09/2025</li>
+      <li>Unidad ECO-201 — Último mantenimiento: 01/09/2025</li>
+    </ul>
+  </div>
+  <div class="kpi-card kpi-proximo" id="kpi-proximo">
+    ⚠ Próximos mantenimientos: 0
+    <ul class="lista-kpi lista-proximo">
+      <li>Unidad ECO-080 — Revisión próxima en 5 días</li>
+      <li>Unidad ECO-134 — Cambio de filtro pendiente</li>
+    </ul>
+  </div>
+  <div class="kpi-card kpi-vencido" id="kpi-vencido">
+    ⛔ Mantenimientos vencidos: 0
+    <ul class="lista-kpi lista-vencido">
+      <li>Unidad ECO-045 — Mantenimiento vencido desde 10/09/2025</li>
+      <li>Unidad ECO-099 — Vencido desde 01/10/2025</li>
+    </ul>
+  </div>
+</div>
             <div class="tabla-contenido">
                 <table>
                     <thead>
@@ -120,8 +130,15 @@
             <h2>Registrar Entrada de Camión a Taller</h2>
             <form id="form-registro">
                 <div class="campo-form">
-                    <label for="unidad">ID de Unidad:</label>
-                    <input type="text" id="unidad" name="unidad" required>
+                    <label for="id_unidad">ID de Unidad:</label>
+                    <input list="unidades" id="id_unidad" name="id_unidad" placeholder="Buscar unidad...">
+                    <datalist id="unidades">
+                    <option value="Unidad ECO-045">
+                    <option value="Unidad ECO-080">
+                    <option value="Unidad ECO-003">
+                    <option value="Unidad ECO-099">
+                    </datalist>
+
                 </div>
                 <div class="campo-form">
                     <label for="fecha-hora">Fecha y Hora de Entrada:</label>
@@ -131,35 +148,34 @@
                     <label for="tipo-mantenimiento">Tipo de Mantenimiento:</label>
                     <select id="tipo-mantenimiento" name="tipo-mantenimiento" required>
                         <option value="">Selecciona Mantenimiento</option>
-                        <option value="cambio_filtro">Cambio de Filtro</option>
+                        <option value="cambio_filtro">Cambio de aceite y filtros</option>
               <!--          <option value="revision_frenos">Revisión de Frenos</option>
                         <option value="electrico">Sistema Eléctrico</option>-->
                     </select>
                 </div>
                 <div class="campo-form">
-                    <label for="mecanico">ID Mecánico a Cargo:</label>
-                    <input type="text" id="mecanico" name="mecanico" required>
-                </div>
-                <div class="campo-form">
-                    <label for="conductor">ID Conductor que Entrega:</label>
-                    <input type="text" id="conductor" name="conductor" required>
-                </div>
-                <div class="campo-form">
-                    <label for="ubicacion">Ubicación (Taller):</label> 
-                    <select id="ubicacion" name="ubicacion" required>
-                        <option value="poniente">Poniente</option>
-                        <option value="magdalena">magdalena</option>
-                    </select>
+                   
+    <label for="id_unidad">ID mecánico a cargo:</label>
+                    <input list="mecánico" id="id_mecánico" name="id_mecánico" placeholder="Buscar mecánico..">
+                    <datalist id="mecánico">
+                    <option value="MEC 01 LUIS ROBLE">
+                    <option value="MEC 02 JUAN PEREZ">
+                    <option value="MEC 03 CARLOS SANCHEZ">
+                    <option value="MEC 04 ANTONIO LOPEZ">
+                    </datalist>
                 </div>
 
-                 <div class="campo-form">
-                    <label for="puntualidad">Puntualidad:</label>
-                    <select id="puntualidad" name="puntualidad" required>
-                        <option value="a_tiempo">A tiempo</option>
-                        <option value="adelantado">Adelantado</option>
-                        <option value="atrasado">Atrasado</option>
-                    </select>
+                <div class="campo-form">
+    <label for="id_conductor">ID CONDUCTOR DE LA UNIDAD:</label>
+                    <input list="conductor" id="id_conductor" name="id_conductor" placeholder="Buscar conductor..">
+                    <datalist id="conductor">
+                    <option value="DRV 01 LUIS ROBLE">
+                    <option value="DRV 02 JUAN PEREZ">
+                    <option value="DRV 03 CARLOS SANCHEZ">
+                    <option value="DRV 04 ANTONIO LOPEZ">
+                    </datalist>
                 </div>
+
                 <div class="campo-form">
                     <label for="foto-camion">Foto de Evidencia (Entrada):</label>
                     <input type="file" id="foto-camion" name="foto-camion" accept="image/*" required>
@@ -202,3 +218,4 @@
 <script src="js/scripts.js"></script>
 </body>
 </html>
+

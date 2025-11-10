@@ -358,3 +358,25 @@ tbody tr:hover {
     cursor: not-allowed;      /* Muestra un cursor de "prohibido" al pasar el mouse */
     color: #666;             /* Un color de texto más opaco */
 }
+
+
+/* En Portal/portal-personal/css/style.css */
+th.sortable {
+    cursor: pointer;
+    position: relative;
+    padding-right: 25px; /* Espacio para el icono */
+}
+th.sortable::after { /* Icono de flecha (simple) */
+    content: ' \2195'; /* Flecha arriba-abajo */
+    position: absolute;
+    right: 10px;
+    opacity: 0.3;
+}
+th.sortable.asc::after {
+    content: ' \2191'; /* Flecha arriba */
+    opacity: 1;
+}
+th.sortable.desc::after {
+    content: ' \2193'; /* Flecha abajo */
+    opacity: 1;
+}

@@ -19,17 +19,20 @@ document.addEventListener('DOMContentLoaded', function() {
         alert(`Buscando información para el ticket: ${ticketId}...`);
 
         // Simulamos una respuesta exitosa del backend
-        setTimeout(() => {
-            const camionIdInput = document.getElementById('camion-id');
-            const filtroViejoMarcaInput = document.getElementById('filtro-viejo-marca');
+       setTimeout(() => {
+    const camionIdInput = document.getElementById('camion-id');
+    const filtroViejoMarcaInput = document.getElementById('filtro-viejo-marca');
+    const mecanicoIdInput = document.getElementById('mecanico-id');
+    const almacenSelect = document.getElementById('almacen');
 
-            // Llenamos los campos con datos de ejemplo
-            camionIdInput.value = 'ECO-112';
-            filtroViejoMarcaInput.value = 'PATITO1';
-            
-            alert('Información del ticket cargada.');
-        }, 1000); // Esperamos 1 segundo para simular la red
-    });
+    // Llenamos los campos con datos simulados del ticket
+    camionIdInput.value = 'ECO-112';
+    mecanicoIdInput.value = 'MEC-045';
+    filtroViejoMarcaInput.value = 'PATITO1';
+    almacenSelect.value = 'poniente'; // Puede ser 'magdalena' u 'otro'
+
+    alert('Información del ticket cargada.');
+}, 1000);
 
     // Evento para manejar el envío del formulario
     formIntercambio.addEventListener('submit', function(event) {

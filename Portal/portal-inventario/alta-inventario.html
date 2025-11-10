@@ -4,50 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario</title>
-    <link rel="shortcut icon" href="../img/bus_8502475.png">
+	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script> <!-- Agregado SheetJS para manejo de Excel -->
 </head>
 
 <body>
+	   
+	
     <!-- Contenedor principal -->
     <div class="contenedor-principal">
-        <div class="menu-superior">
-            <!-- Opciones del menú -->
-            <div class="opciones">
-                <div class="fr">FLECHA ROJA</div>
+		
+		<!-- Menú superior -->
+		<div class="menu-superior">
+			<!-- Opciones del menú -->
+			<div class="opciones">
 
-                <ul class="menu">
-                    <li><a href="../portal-camiones/camiones.html">Camiones</a></li>
-                </ul>
+				<div class="fr">FLECHA ROJA</div>
 
-                <ul class="menu">
-                    <li><a href="#">Inventario</a></li>
-                </ul>
-                
-                <ul class="menu">
-                    <li><a href="../portal-personal/personal.html">Personal</a></li>
-                </ul>
-            </div>
+                    <ul class="menu">
+						<li><a href="../portal-camiones/camiones.html">Camiones</a></li>
+                    </ul>
+
+<!--
+					<ul class="menu">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle">Alta de camiones</a>
+								<ul class="submenu">
+									<li><a id="submenu" href="../portal-camiones/camiones.html">Ver Camiones</a></li>
+									<li><a id="submenu" href="#">Alta</a></li>
+								</ul>
+						</li>
+					</ul>-->
+			
+					<ul class="menu">
+						<li><a href="#">Inventario</a></li>
+					</ul>
+                    
+                    <ul class="menu">
+                        <li><a href="../portal-personal/personal.html">Personal</a></li>
+                    </ul>
+
+<!--                    
+					<ul class="menu">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle">Alta de Personal</a>
+							<ul class="submenu">
+								<li><a id="submenu" href="#">Mecanicos/almacen</a></li>
+								<li><a id="submenu" href="#">Choferes</a></li>
+							</ul>
+						</li>
+					</ul>
+
+-->
+
+
+				</div>
         
-            <div class="perfil">
-                <a href="../index.html">
-                    <img src="../img/cinta_principal2.png" class="img-perfil">
-                </a>
+				<div class="perfil">
 
-                <a href="menu.html">
-                    Yeykocf
-                </a>
+					<a href="../index.html">
+						<img src="../img/cinta_principal2.png" class="img-perfil">
+					</a>
 
-                <a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
-            </div>
-        </div>
-    </div>
+					<a href="menu.html">
+						Yeykocf
+					</a>
 
-    <!-- Body -->
-    <main class="modulo-contenido">
-        <div class="modulo-titulo">
-            <h1>Gestión de Inventario de Filtros y Lubricantes</h1>
+					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+			
+				</div>
+
+			</div>
+	</div>
+
+<!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+	<main class="modulo-contenido">
+        
+    	<div class="modulo-titulo">
+            <h1>Gestión de Inventario de Filtros</h1>
         </div>
 
         <div class="tarjetas">
@@ -56,8 +90,8 @@
                 <p>1,245</p>
             </div>
             <div class="tarjeta">
-                <h3>Total de Lubricantes</h3>
-                <p>200</p>
+                <h3>Tipos de Filtro</h3>
+                <p>15</p>
             </div>
             <div class="tarjeta alerta">
                 <h3>Inventario Bajo</h3>
@@ -71,23 +105,23 @@
 
         <div class="tabla-contenido">
             <div class="tabla-titulo">
-                <h2>Filtros y Lubricantes Disponibles</h2>
-                <button class="btn-primario" id="btn-agregar-inventario">+ Agregar Inventario</button>
+                <h2>Filtros Disponibles</h2>
+                <button class="btn-primario" id="btn-agregar-filtro">+ Agregar Filtro</button>
             </div>
             
             <table>
-                <!-- CABECERA DE TABLA -->
+				<!--CABEZERA DE TABLAS-->
                 <thead>
-                    <tr>
+                    <tr> <!--COLUMNAS TITULOS-->
                         <th>ID</th>
-                        <th>Tipo</th>
+                        <th>Tipo de Filtro</th>
                         <th>Marca</th>
                         <th>Cantidad en Inventario</th>
                         <th>Ubicación</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <!-- CUERPO DE TABLA -->
+				<!--CUERPO DE TABLA-->
                 <tbody>
                     <tr>
                         <td>FR-ACE-001</td>
@@ -126,82 +160,50 @@
             </table>
         </div>
 
-        <!-- Formulario de selección de tipo de inventario -->
-        <div class="contenedor-formulario" id="formulario-seleccion" style="display: none;">
-            <div class="modulo-titulo">
-                <h2>Selecciona Tipo de Inventario</h2>
-            </div>
-            <form>
-                <div class="campo-form">
-                    <label>Selecciona el tipo de inventario:</label>
-                    <select id="tipo-inventario" required>
-                        <option value="filtro">Filtro</option>
-                        <option value="lubricante">Lubricante</option>
-                    </select>
-                </div>
-                <div class="acciones-form">
-                    <button type="button" id="btn-confirmar-tipo" class="btn-primario">Confirmar</button>
-                    <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Formulario de registro de filtro o lubricante -->
         <div class="contenedor-formulario" id="formulario-registro" style="display: none;">
+
             <div class="modulo-titulo">
-                <h2 id="titulo-formulario">Registrar Filtro</h2>
+                <h2>Registro de Nuevo Filtro</h2>
             </div>
 
-            <form class="form-registro" id="form-inventario">
-                <!-- ID -->
+            <form class="form-registro">
+                <!--CONTATENAR-->
                 <div class="campo-form">
-                    <label>ID del Inventario</label>
-                    <input type="text" id="inventario-id" placeholder="Ej. FR-ACE-002" required>
+                    <label class="filtro-id">ID del Filtro</label>
+                    <input type="number" id="filtro-id" placeholder="Ej. FR-ACE-002"> 
                 </div>
 
-                <!-- Número de serie o lote -->
-                <div class="campo-form" id="campo-numero-serie">
-                    <label>Número de Serie</label>
-                    <input type="text" id="numero-serie" placeholder="Ej. FR-ACE-100" required>
-                </div>
-
-                <div class="campo-form" id="campo-numero-lote" style="display: none;">
-                    <label>Número de Lote</label>
-                    <input type="text" id="numero-lote" placeholder="Ej. LUB-001" required>
-                </div>
-
-                <!-- Ubicación -->
+                <!--LISTA-->
                 <div class="campo-form">
-                    <label>Ubicación</label>
-                    <input type="text" id="ubicacion" placeholder="Ej. Taller Tenango" required>
+                    <label class="filtro-tipo">Tipo de Filtro</label>
+                    <input type="text" id="filtro-tipo" placeholder="Ej. Filtro de Aceite">
                 </div>
 
-                <!-- Cantidad -->
                 <div class="campo-form">
-                    <label>Cantidad</label>
-                    <input type="number" id="cantidad" placeholder="Ej. 10" required>
+                    <label class="filtro-marca">Marca</label>
+                    <input type="text" id="filtro-marca" placeholder="Ej. PATITO2">
+                </div>
+                
+                <div class="campo-form">
+                    <label class="filtro-cantidad">Cantidad</label>
+                    <input type="number" id="filtro-cantidad" placeholder="Ej. 100">
                 </div>
 
-                <!-- Botones de acción -->
+                <!--LISTA-->
+                <div class="campo-form">
+                    <label class="filtro-ubicacion">Ubicación</label>
+                    <input type="text" id="filtro-ubicacion" placeholder="Ej. Taller Tenango">
+                </div>
+
                 <div class="acciones-form">
-                    <button type="submit" class="btn-primario">Guardar Inventario</button>
-                    <button type="button" class="btn-eliminar" id="btn-cancelar-formulario">Cancelar</button>
-                </div>
+                    <button type="submit" class="btn-primario"> Guardar Filtro</button>
+                    <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
+                </div>   
+                <!--AGREGAR FOTOS-->
             </form>
-
-            <!-- Subir archivo -->
-            <div class="campo-form">
-                <label>Subir archivo de Inventario (Excel)</label>
-                <input type="file" id="upload-excel" accept=".xlsx, .xls" />
-            </div>
-
-            <!-- Botón para descargar Excel -->
-            <div class="acciones-form" id="acciones-descarga">
-                <button type="button" class="btn-primario" id="btn-descargar-excel">Descargar Excel</button>
-            </div>
         </div>
     </main>
 
-    <script src="js/script.js"></script>
+ <script src="js/script.js"></script>
 </body>
 </html>

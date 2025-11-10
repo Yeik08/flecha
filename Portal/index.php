@@ -1,0 +1,208 @@
+<?php
+session_start(); // Inicia la sesión
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
+header("Location: ../index.html?error=acceso_denegado");
+exit;
+}
+
+$nombre_usuario = $_SESSION['nombre_completo']; 
+?>
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel Principal</title>
+    <link rel="shortcut icon" href="../img/Principales/favicon.ico" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+
+    <!-- Contenedor principal -->
+    <div class="contenedor-principal">
+        <!-- Menú superior -->
+        <div class="menu-superior">
+            <!-- Opciones del menú -->
+            <div class="opciones">
+                <div class="fr">FLECHA ROJA</div>
+
+                <ul class="menu">
+                    <li><a href="/flecha/Portal/portal-camiones/camiones.php">Camiones</a></li>
+                </ul>
+
+                <ul class="menu">
+                    <li><a href="/Portal/portal-inventario/alta-inventario.html">Inventario</a></li>
+                </ul>
+
+                <ul class="menu">
+                    <li><a href="/Portal/portal-personal/personal.php">Personal</a></li>
+                </ul>
+            </div>
+
+            <div class="perfil">
+                <a href="menu.html">
+                    <img src="img/cinta_principal2.png" class="img-perfil" />
+                </a>
+
+                <?php echo htmlspecialchars($nombre_usuario); ?>
+
+                <a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <main>
+        <div class="bienvenida">
+            <h1>¡Bienvenido de vuelta, Luis!</h1>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Tarjetas KPI existentes -->
+            <div class="card kpi-card" id="operando">
+                <h2>CAMIONES OPERANDO</h2>
+                <p class="kpi-number">85</p>
+                <p class="kpi-description">Listos para ruta</p>
+                <ul class="camiones-lista oculto">
+                    <li>ECO-101</li>
+                    <li>ECO-102</li>
+                    <li>ECO-103</li>
+                </ul>
+            </div>
+
+            <div class="card kpi-card" id="taller">
+                <h2>EN TALLER</h2>
+                <p class="kpi-number">15</p>
+                <p class="kpi-description">En mantenimiento</p>
+                <ul class="camiones-lista oculto">
+                    <li>ECO-201</li>
+                    <li>ECO-202</li>
+                    <li>ECO-203</li>
+                </ul>
+            </div>
+
+            <div class="card kpi-card" id="vencidos">
+                <h2>MANTENIMIENTOS VENCIDOS</h2>
+                <p class="kpi-number">3</p>
+                <p class="kpi-description">Requieren atención inmediata</p>
+                <ul class="camiones-lista oculto">
+                    <li>ECO-301</li>
+                    <li>ECO-302</li>
+                    <li>ECO-303</li>
+                </ul>
+            </div>
+
+            <!-- Nuevas tarjetas -->
+            <!-- KPI: NUEVA SOLICITUD DE ENTRADA -->
+<div class="card kpi-card nueva-solicitud-entrada" id="entrada">
+  <h2>NUEVA SOLICITUD DE ENTRADA</h2>
+  <p class="kpi-number">4</p>
+  <p class="kpi-description">Solicitudes pendientes</p>
+  <ul class="camiones-lista oculto">
+    <li>ECO-451</li>
+    <li>ECO-452</li>
+    <li>ECO-453</li>
+    <li>ECO-454</li>
+  </ul>
+</div>
+
+<!-- KPI: NUEVA SOLICITUD DE SALIDA -->
+<div class="card kpi-card nueva-solicitud-salida" id="salida">
+  <h2>NUEVA SOLICITUD DE SALIDA</h2>
+  <p class="kpi-number">2</p>
+  <p class="kpi-description">Solicitudes aprobadas</p>
+  <ul class="camiones-lista oculto">
+    <li>ECO-301</li>
+    <li>ECO-305</li>
+  </ul>
+</div>
+
+
+            <!-- Widgets grandes existentes -->
+            <div class="card widget-large">
+                <h2>ESTADO DE LA FLOTA</h2>
+                <canvas id="graficaFlota"></canvas>
+            </div>
+
+            <div class="card widget-large">
+                <h2>ACTIVIDAD RECIENTE</h2>
+                <ul class="activity-feed">
+                    <li>
+                        Se registró el cambio de aceite para el camión ECO-112.
+                        <span class="time">hace 5 minutos</span>
+                    </li>
+                    <li>
+                        Se actualizó el stock de la pieza "Filtro de aceite".
+                        <span class="time">hace 1 hora</span>
+                    </li>
+                    <li>
+                        El camión ECO-080 fue marcado como "Operativo".
+                        <span class="time">hace 3 horas</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const kpiCards = document.querySelectorAll(".kpi-card");
+
+  kpiCards.forEach(card => {
+    card.addEventListener("click", (event) => {
+      if (event.target.tagName === "LI") return;
+
+      const lista = card.querySelector(".camiones-lista");
+      if (lista) {
+        lista.classList.toggle("oculto");
+        card.classList.toggle("expandido");
+      }
+    });
+  });
+
+  // === GRAFICA DE LA FLOTA ===
+  const ctx = document.getElementById("graficaFlota");
+  if (ctx) {
+    const operando = parseInt(document.querySelector("#operando .kpi-number")?.textContent || 0);
+    const taller = parseInt(document.querySelector("#taller .kpi-number")?.textContent || 0);
+
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Operando", "En Taller"],
+        datasets: [{
+          data: [operando, taller],
+          backgroundColor: ["#2ecc71", "#e74c3c"],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { color: "#555" }
+          },
+          title: {
+            display: true,
+            text: "Distribución de la Flota",
+            color: "#316961",
+            font: { size: 18, weight: "bold" }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+
+</body>
+</html>
