@@ -348,7 +348,6 @@ tbody tr:hover {
 .acciones-form button {
   padding: 12px 20px;
 }
-<<<<<<< HEAD
 
 /* Estilo para el select de tipo de inventario */
 #tipo-inventario {
@@ -365,39 +364,4 @@ tbody tr:hover {
 #tipo-inventario:focus {
   outline: none;
   border-color: #316960;
-=======
-.detalle {
-  margin: 10px 0;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #f9f9f9;
-  display: none; /* ocultos por defecto */
-}
-
-.detalle ul {
-  margin: 5px 0 0 20px;
-}
-
-.tarjeta {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.tarjeta:hover {
-  transform: scale(1.05);
-}
-#formulario-registro {
-  margin-top: 20px;
-  background: #f8f9fa;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 15px;
-}
-
-#formulario-registro input,
-#formulario-registro select {
-  width: 100%;
-  padding: 8px;
->>>>>>> 01b4da6130ced3a24738885cf11e61a109a26b33
 }
