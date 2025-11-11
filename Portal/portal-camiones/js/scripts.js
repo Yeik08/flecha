@@ -77,6 +77,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectTecnologia = document.getElementById("tipo_unidad");
     const selectAnio = document.getElementById("anio");
 
+    const selectMarcaAceite = document.getElementById("marca_filtro");
+    const selectMarcaCentrifugo = document.getElementById("marca_filtro_centrifugo");
+    const selectLubricante = document.getElementById("tipo_aceite"); 
+
     async function cargarCatalogos() {
         
         // --- Cargar Tecnologías ---
@@ -127,6 +131,72 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectAnio.appendChild(opcion);
             }
         }
+
+
+        // --- Cargar Marcas de Filtro de Aceite ---
+
+        if (selectMarcaAceite) {
+            try {
+                const response = await fetch('fetch_catalogos.php?tipo=filtros_aceite');
+                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                const marcas = await response.json();
+                
+                selectMarcaAceite.innerHTML = '<option value="">Selecciona una marca</option>';
+                marcas.forEach(item => {
+                    const opcion = document.createElement("option");
+                    opcion.value = item.marca; // El valor será "SCANIA", "Mann-Filter", etc.
+                    opcion.textContent = item.marca.toUpperCase();
+                    selectMarcaAceite.appendChild(opcion);
+                });
+            } catch (error) {
+                console.error('Error en fetch Filtros Aceite:', error); 
+                selectMarcaAceite.innerHTML = '<option value="">Error al cargar marcas</option>';
+            }
+        }
+        
+        // --- (NUEVO) Cargar Marcas Filtro Centrifugo ---
+        if (selectMarcaCentrifugo) {
+            try {
+                const response = await fetch('fetch_catalogos.php?tipo=filtros_centrifugo');
+                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                const marcas = await response.json();
+                
+                selectMarcaCentrifugo.innerHTML = '<option value="">Selecciona una marca</option>';
+                marcas.forEach(item => {
+                    const opcion = document.createElement("option");
+                    opcion.value = item.marca; // El valor será "SCANIA", etc.
+                    opcion.textContent = item.marca.toUpperCase();
+                    selectMarcaCentrifugo.appendChild(opcion);
+                });
+            } catch (error) {
+                console.error('Error en fetch Filtros Centrifugo:', error); 
+                selectMarcaCentrifugo.innerHTML = '<option value="">Error al cargar marcas</option>';
+            }
+        }
+
+      if (selectLubricante) {
+            try {
+                const response = await fetch('fetch_catalogos.php?tipo=lubricantes');
+                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                const lubricantes = await response.json();
+                
+                selectLubricante.innerHTML = '<option value="">Selecciona un lubricante</option>';
+                lubricantes.forEach(item => {
+                    const opcion = document.createElement("option");
+                    // Usamos el nombre como valor, ya que registrar_camion.php
+                    // espera el nombre del lubricante.
+                    opcion.value = item.nombre; 
+                    opcion.textContent = item.nombre.toUpperCase();
+                    selectLubricante.appendChild(opcion);
+                });
+            } catch (error) {
+                console.error('Error en fetch Lubricantes:', error); 
+                selectLubricante.innerHTML = '<option value="">Error al cargar lubricantes</option>';
+            }
+        }
+
+
+
     }
     
     cargarCatalogos();

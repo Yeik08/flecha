@@ -64,6 +64,49 @@ try {
                  throw new Exception("Error en consulta Conductores: ". $conn->error);
             }
             break;
+        case 'filtros_aceite':
+            // Selecciona marcas únicas de tipo 'Aceite'
+            $sql = "SELECT DISTINCT marca FROM tb_cat_filtros WHERE tipo_filtro = 'Aceite' ORDER BY marca";
+            $result = $conn->query($sql);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $respuesta[] = $row; // Devuelve ej: [{"marca":"SCANIA"}]
+                }
+                $result->free();
+            } else {
+                throw new Exception("Error en consulta Filtros Aceite: " . $conn->error);
+            }
+            break;
+        
+        case 'filtros_centrifugo':
+            // Selecciona marcas únicas de tipo 'Centrifugo'
+            $sql = "SELECT DISTINCT marca FROM tb_cat_filtros WHERE tipo_filtro = 'Centrifugo' ORDER BY marca";
+            $result = $conn->query($sql);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $respuesta[] = $row; // Devuelve ej: [{"marca":"SCANIA"}]
+                }
+                $result->free();
+            } else {
+                throw new Exception("Error en consulta Filtros Centrifugo: " . $conn->error);
+            }
+            break;  
+            
+        case 'lubricantes':
+            // Selecciona productos del catálogo de lubricantes
+            $sql = "SELECT nombre_producto AS nombre 
+                    FROM tb_cat_lubricantes 
+                    ORDER BY nombre_producto";
+            $result = $conn->query($sql);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $respuesta[] = $row; // Devuelve ej: [{"nombre":"SAE 10W30 MULTIGRADO"}]
+                }
+                $result->free();
+            } else {
+                throw new Exception("Error en consulta Lubricantes: " . $conn->error);
+            }
+            break;  
 
         default:
             $respuesta = ['error' => 'Tipo de catálogo no válido'];
