@@ -6,7 +6,8 @@ error_reporting(E_ALL);
 
 /*
 * Portal/portal-camiones/registrar_camion.php
-* VERSIÓN CORREGIDA: Busca el ID numérico del conductor.
+* VERSIÓN FINAL CORREGIDA:
+* - Arregla los tipos de datos en bind_param (el error de 'estatus').
 */
 
 session_start();
@@ -32,27 +33,37 @@ $conn->begin_transaction();
 
 try {
 
-    // --- 3. OBTENER ID NUMÉRICO DEL CONDUCTOR --- // <<< CORRECCIÓN
-    $id_conductor_numerico = null; // Empezamos en null
-    
+    // --- 3. OBTENER ID NUMÉRICO DEL CONDUCTOR ---
+    $id_conductor_numerico = null;
     if (!empty($_POST['id_conductor'])) {
-        $id_conductor_interno = $_POST['id_conductor']; // Esto es "CON-007"
-        
-        // Preparamos una consulta para buscar el ID numérico
+        $id_conductor_interno = $_POST['id_conductor'];
         $stmt_find_conductor = $conn->prepare("SELECT id_empleado FROM empleados WHERE id_interno = ? AND role_id = 7 LIMIT 1");
         $stmt_find_conductor->bind_param("s", $id_conductor_interno);
         $stmt_find_conductor->execute();
         $result_conductor = $stmt_find_conductor->get_result();
         
         if ($result_conductor->num_rows > 0) {
-            $id_conductor_numerico = $result_conductor->fetch_assoc()['id_empleado']; // Esto es 7
+            $id_conductor_numerico = $result_conductor->fetch_assoc()['id_empleado'];
         } else {
-            // Si el usuario escribió un ID que no existe (ej. "CON-999")
-            throw new Exception("El ID de conductor '{$id_conductor_interno}' no fue encontrado en la base de datos.");
+            throw new Exception("El ID de conductor '{$id_conductor_interno}' no fue encontrado.");
         }
     }
-    // Si el campo estaba vacío, $id_conductor_numerico se queda como null, lo cual es correcto.
 
+    // --- TRADUCIR ESTATUS ---
+    $estatus_form = $_POST['estatus_inicial'] ?? 'inactivo';
+    $estatus_db = 'Inactivo'; 
+
+    switch ($estatus_form) {
+        case 'trabajando':
+            $estatus_db = 'Activo';
+            break;
+        case 'mantenimiento':
+            $estatus_db = 'En Taller';
+            break;
+        case 'inactivo':
+            $estatus_db = 'Inactivo';
+            break;
+    }
 
     // --- 4. Registrar el Camión Principal ---
     $sql_camion = "INSERT INTO tb_camiones (
@@ -65,57 +76,63 @@ try {
     
     $stmt_camion = $conn->prepare($sql_camion);
     
-    // Asignar variables
     $fecha_mant = empty($_POST['fecha_mantenimiento']) ? null : $_POST['fecha_mantenimiento'];
     $fecha_filtro_aceite = empty($_POST['fecha_cambio_filtro']) ? null : $_POST['fecha_cambio_filtro'];
     $fecha_filtro_cent = empty($_POST['fecha_cambio_filtro_centrifugo']) ? null : $_POST['fecha_cambio_filtro_centrifugo'];
     
-    // Los 'name' del formulario
-    // <<< CORRECCIÓN: El 5to tipo de dato cambió de 's' a 'i' (string a integer)
-    $stmt_camion->bind_param("ssssisisisssssssss", 
+    // ==================================================================
+    // <<<--- AQUÍ ESTÁ LA CORRECCIÓN ---
+    //
+    // ANTES (Incorrecto): "ssssisisisssssssss"
+    // AHORA (Correcto):   "ssssisidsdssssssss"
+    //
+    // 7. anio (s)
+    // 8. id_tecnologia (i)
+    // 9. estatus (s)
+    // 10. kilometros (d)
+    //
+    $stmt_camion->bind_param("ssssisidsdssssssss", 
         $_POST['identificador'],
         $_POST['condicion'],
         $_POST['placas'],
         $_POST['numero_serie'],
-        $id_conductor_numerico, // <<< CORRECCIÓN: Usamos el ID numérico
+        $id_conductor_numerico,
         $_POST['marca'],
         $_POST['anio'],
         $_POST['tipo_unidad'],
-        $_POST['estatus_inicial'],
+        $estatus_db, // ¡Corregido!
         $_POST['kilometros'],
         $fecha_mant, 
-        
         $_POST['marca_filtro'],
         $_POST['numero_serie_filtro_aceite'],
         $fecha_filtro_aceite,
-        
         $_POST['marca_filtro_centrifugo'],
         $_POST['numero_serie_filtro_centrifugo'],
         $fecha_filtro_cent,
-        
         $_POST['tipo_aceite']
     );
+    // ==================================================================
     
     $stmt_camion->execute();
     
     $nuevo_camion_id = $conn->insert_id;
-    
-    // --- 5. Registrar Filtros en el Inventario (Misma lógica que antes) ---
+    if ($nuevo_camion_id === 0) {
+        throw new Exception("El camión se registró, pero no se pudo obtener el nuevo ID.");
+    }
+
+    // --- 5. Registrar Filtros en el Inventario ---
 
     // --- 5a. Filtro de Aceite ---
     if (!empty($_POST['numero_serie_filtro_aceite'])) {
         
         $id_cat_filtro_aceite = null;
-        // CORRECCIÓN: Usamos el nombre 'marca_filtro' del formulario
         $stmt_find_aceite = $conn->prepare("SELECT id FROM tb_cat_filtros WHERE marca = ? AND tipo_filtro = 'Aceite' LIMIT 1");
         $stmt_find_aceite->bind_param("s", $_POST['marca_filtro']); 
         $stmt_find_aceite->execute();
         $result_aceite = $stmt_find_aceite->get_result();
-
         if ($result_aceite->num_rows > 0) {
             $id_cat_filtro_aceite = $result_aceite->fetch_assoc()['id'];
         } else {
-            // Si la marca/tipo no existe, la creamos
             $stmt_new_cat_aceite = $conn->prepare("INSERT INTO tb_cat_filtros (marca, numero_parte, tipo_filtro) VALUES (?, 'N/A', 'Aceite')");
             $stmt_new_cat_aceite->bind_param("s", $_POST['marca_filtro']);
             $stmt_new_cat_aceite->execute();
@@ -125,9 +142,7 @@ try {
         $sql_inv_aceite = "INSERT INTO tb_inventario_filtros 
             (id_cat_filtro, numero_serie, id_ubicacion, estatus, id_camion_instalado) 
             VALUES (?, ?, ?, 'Instalado', ?)";
-        
-        $ubicacion_taller = 1; // Asumimos ID 1 = 'Taller Magdalena'
-        
+        $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena'
         $stmt_inv_aceite = $conn->prepare($sql_inv_aceite);
         $stmt_inv_aceite->bind_param("isii", 
             $id_cat_filtro_aceite,
@@ -140,18 +155,14 @@ try {
 
     // --- 5b. Filtro Centrífugo ---
     if (!empty($_POST['numero_serie_filtro_centrifugo'])) {
-        
         $id_cat_filtro_cent = null;
-        // CORRECCIÓN: Usamos el nombre 'marca_filtro_centrifugo' del formulario
         $stmt_find_cent = $conn->prepare("SELECT id FROM tb_cat_filtros WHERE marca = ? AND tipo_filtro = 'Centrifugo' LIMIT 1");
         $stmt_find_cent->bind_param("s", $_POST['marca_filtro_centrifugo']);
         $stmt_find_cent->execute();
         $result_cent = $stmt_find_cent->get_result();
-
          if ($result_cent->num_rows > 0) {
             $id_cat_filtro_cent = $result_cent->fetch_assoc()['id'];
         } else {
-            // Si la marca/tipo no existe, la creamos
             $stmt_new_cat_cent = $conn->prepare("INSERT INTO tb_cat_filtros (marca, numero_parte, tipo_filtro) VALUES (?, 'N/A', 'Centrifugo')");
             $stmt_new_cat_cent->bind_param("s", $_POST['marca_filtro_centrifugo']);
             $stmt_new_cat_cent->execute();
@@ -161,8 +172,7 @@ try {
         $sql_inv_cent = "INSERT INTO tb_inventario_filtros 
             (id_cat_filtro, numero_serie, id_ubicacion, estatus, id_camion_instalado) 
             VALUES (?, ?, ?, 'Instalado', ?)";
-            
-        $ubicacion_taller = 1; // Asumimos ID 1 = 'Taller Magdalena'
+        $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena'
         $stmt_inv_cent = $conn->prepare($sql_inv_cent);
         $stmt_inv_cent->bind_param("isii", 
             $id_cat_filtro_cent,
@@ -180,10 +190,10 @@ try {
 } catch (Exception $e) {
     $conn->rollback();
     http_response_code(500);
-    if ($conn->errno == 1062) {
+    // Usamos 'isset($conn->errno)' para evitar errores si la conexión falló antes
+    if (isset($conn->errno) && $conn->errno == 1062) {
         echo json_encode(['success' => false, 'message' => 'Error: Ya existe un camión con ese VIN, Placas o N° Económico.']);
     } else {
-        // Devuelve el mensaje de error específico (ej. "Conductor no encontrado")
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
 }
