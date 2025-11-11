@@ -108,6 +108,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                 <div class="tarjeta-accion">
                     <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
+                    <button class="btn-secundario" id="btn-abrir-modal-telemetria">Subir Telemetría</button>
                     <p>Dar de alta un vehículo en el sistema.</p>
                 </div>
             </div>
@@ -358,11 +359,17 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         <div class="paso-numero">5</div>
                         <div class="paso-info">
                             <h3>Subir Historial de Recorridos</h3>
-                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</s/p>
-                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" >
+                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                            
+                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
                         </div>
                     </div>
                 </div>
+
+
+
+
+
 
                 <div id="preview-container" class="preview-container">
 

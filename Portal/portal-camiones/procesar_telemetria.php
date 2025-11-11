@@ -1,6 +1,6 @@
 <?php
 session_start();
-// (Aquí va tu código de seguridad y conexión a db_connect.php)
+header('Content-Type: application/json');
 
 // --- 1. Seguridad y Conexión ---
 if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
@@ -11,25 +11,57 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
 
 require_once '../../php/db_connect.php'; 
 
-// 1. Recibir el archivo CSV (ej: $_FILES['archivo_telemetria'])
-$csv_file = $_FILES['archivo_telemetria']['tmp_name'];
+if ($conn === false) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Error de conexión a BD.']);
+    exit;
+}
 
-// 2. Leer el CSV (saltando la primera fila de encabezados)
-$file = fopen($csv_file, 'r');
-fgetcsv($file); // Omitir encabezados
+// --- 2. Validar la Recepción del Archivo ---
+// La llave 'archivo_recorridos' debe coincidir con el 'name' en FormData de JS
+if (!isset($_FILES['archivo_recorridos']) || $_FILES['archivo_recorridos']['error'] != UPLOAD_ERR_OK) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error: No se recibió el archivo o hubo un error en la subida. Asegúrate de que el input se llame "archivo_recorridos".'
+    ]);
+    exit;
+}
 
-while (($columna = fgetcsv($file, 1000, ",")) !== FALSE) {
-    
-    // 3. Obtener datos de la fila
-    $unidad = $columna[0];
-    $anio = $columna[1];
-    $mes = $columna[2];
-    $km_mes = $columna[3];
-    $t_conduciendo = $columna[4];
-    $t_detenido = $columna[5];
-    $t_ralenti = $columna[6];
+$csv_file = $_FILES['archivo_recorridos']['tmp_name'];
 
-    try {
+// --- 3. Procesar el CSV ---
+$conn->begin_transaction();
+$fila = 0;
+$errores = [];
+$exitosos = 0;
+
+try {
+    $file = fopen($csv_file, 'r');
+    if ($file === FALSE) {
+        throw new Exception("No se pudo abrir el archivo CSV.");
+    }
+
+    fgetcsv($file); // Omitir la fila de encabezados
+    $fila = 1;
+
+    while (($columna = fgetcsv($file, 1000, ",")) !== FALSE) {
+        $fila++;
+        
+        // Asignar datos de la plantilla de telemetría
+        $unidad = $columna[0] ?? null;
+        $anio = $columna[1] ?? null;
+        $mes = $columna[2] ?? null;
+        $km_mes = $columna[3] ?? null;
+        $t_conduciendo = $columna[4] ?? null;
+        $t_detenido = $columna[5] ?? null;
+        $t_ralenti = $columna[6] ?? null;
+
+        if (empty($unidad) || empty($anio) || empty($mes)) {
+            $errores[] = "Fila $fila: Faltan datos clave (Unidad, Año o Mes).";
+            continue;
+        }
+
         // 4. Buscar el ID del camión
         $stmt_camion = $conn->prepare("SELECT id FROM tb_camiones WHERE numero_economico = ?");
         $stmt_camion->bind_param("s", $unidad);
@@ -40,7 +72,6 @@ while (($columna = fgetcsv($file, 1000, ",")) !== FALSE) {
             $camion_id = $result_camion->fetch_assoc()['id'];
 
             // 5. Insertar o Actualizar la telemetría
-            // (Usamos ON DUPLICATE KEY UPDATE por si suben un mes que ya existía)
             $sql_insert = "INSERT INTO tb_telemetria_historico 
                 (camion_id, anio, mes, kilometraje_mes, tiempo_conduciendo_horas, tiempo_detenido_horas, tiempo_ralenti_horas) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -54,17 +85,28 @@ while (($columna = fgetcsv($file, 1000, ",")) !== FALSE) {
             $stmt_insert->bind_param("iiidddd", $camion_id, $anio, $mes, $km_mes, $t_conduciendo, $t_detenido, $t_ralenti);
             $stmt_insert->execute();
 
-            // 6. ¡RECALCULAR MANTENIMIENTO! (Tu lógica clave)
+            // 6. Recalcular Mantenimiento (Tu función de la respuesta anterior)
             recalcularMantenimiento($conn, $camion_id);
+            $exitosos++;
+            
+        } else {
+            $errores[] = "Fila $fila: No se encontró el camión con N° Económico '$unidad'.";
         }
-    } catch (Exception $e) {
-        // Registrar error de esta fila
     }
+    fclose($file);
+
+    if (empty($errores)) {
+        $conn->commit();
+        echo json_encode(['success' => true, 'message' => "Proceso completado. $exitosos registros actualizados con éxito."]);
+    } else {
+        throw new Exception("Proceso completado con errores: " . implode(" | ", $errores));
+    }
+
+} catch (Exception $e) {
+    $conn->rollback();
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-fclose($file);
-
-// --- FIN DEL SCRIPT PRINCIPAL ---
-
 
 /*
 * Esta es la función que "agenda" el mantenimiento
