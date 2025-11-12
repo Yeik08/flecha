@@ -107,7 +107,10 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </div>
 
                 <div class="tarjeta-accion">
-                    <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
+                    <div class="acciones-titulo">
+                        <button id="btn-abrir-modal" class="btn-primario">+ Registrar Nuevo Camión</button>
+                        <button class="btn-secundario" id="btn-abrir-modal-telemetria">Subir Telemetría</button>
+                    </div>
                     <p>Dar de alta un vehículo en el sistema.</p>
                 </div>
             </div>
@@ -244,8 +247,11 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <div class="form-row">
                         <div class="form-lvip">
                             <label for="marca_filtro">Marca de Filtro de aceite</label>
-                            <input type="text" id="marca_filtro" name="marca_filtro">
+                            <select id="marca_filtro" name="marca_filtro">
+                                <option value="">Cargando marcas...</option>
+                            </select>
                         </div>
+
                         <div class="form-lvip">
                             <label for="numero_serie_filtro_aceite">Número de Serie (Filtro de aceite)</label>
                             <input type="text" id="numero_serie_filtro_aceite" name="numero_serie_filtro_aceite">
@@ -254,11 +260,13 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                     <div class="form-row">
                         <div class="form-lvip">
-                            <label for="marca_filtro_centrifugo">Marca de Filtro de centrifugo</label>
-                            <input type="text" id="marca_filtro_centrifugo" name="marca_filtro_centrifugo">
+                            <label for="marca_filtro_centrifugo">Marca de Filtro de centrífugo</label>
+                            <select id="marca_filtro_centrifugo" name="marca_filtro_centrifugo">
+                                <option value="">Cargando marcas...</option>
+                            </select>
                         </div>
                         <div class="form-lvip">
-                            <label for="numero_serie_filtro_centrifugo">Número de Serie (Filtro de centrifugo)</label>
+                            <label for="numero_serie_filtro_centrifugo">Número de Serie (Filtro de centrífugo)</label>
                             <input type="text" id="numero_serie_filtro_centrifugo" name="numero_serie_filtro_centrifugo">
                         </div>
                     </div>
@@ -276,13 +284,20 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
 
                     <div class="form-row">
-                        <div class="form-lvip ocultar-si-es-nuevo">
+                        <div class="form-lvip">   
                             <label for="tipo_aceite" >Lubricante</label>
-                            <input type="text" id="tipo_aceite" name="tipo_aceite">
+                                <select id="tipo_aceite" name="tipo_aceite" required>
+                                    <option value="">Cargando lubricantes...</option>
+                                </select>
                         </div>
-                        <div class="form-lvip ocultar-si-es-nuevo">
-                            <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
-                            <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
+
+
+
+
+                        <div class="form-lvip ocultar-si-es-nuevo"> <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
+ <!--                           <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
+-->                                              <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
+
                         </div>
                     </div>
 
@@ -348,11 +363,17 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         <div class="paso-numero">5</div>
                         <div class="paso-info">
                             <h3>Subir Historial de Recorridos</h3>
-                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</s/p>
-                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" >
+                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                            
+                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
                         </div>
                     </div>
                 </div>
+
+
+
+
+
 
                 <div id="preview-container" class="preview-container">
 
