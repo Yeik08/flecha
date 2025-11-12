@@ -36,31 +36,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 2b. LÓGICA DEL MODAL DE SUBIR TELEMETRÍA (INDEPENDIENTE) ---
     // (Esta es la nueva lógica que solicitaste)
-    const modalTelemetria = document.getElementById('modal-subir-historial');
+    const modalTelemetria = document.getElementById('modal-formulario'); // <<< CORRECCIÓN: Usamos el modal principal
     const btnAbrirModalTelemetria = document.getElementById('btn-abrir-modal-telemetria');
+    const tabArchivo = document.querySelector('.carga-link[data-tab="tab-archivo"]'); // <<< CORRECCIÓN: Buscamos la pestaña
     
-    if (modalTelemetria && btnAbrirModalTelemetria && btnsCerrarModal.length > 0) {
+    if (modalTelemetria && btnAbrirModalTelemetria && tabArchivo) {
         
-        // Abrir el modal de Telemetría
+        // Abrir el modal y cambiar a la pestaña de "Archivo"
         btnAbrirModalTelemetria.addEventListener('click', (e) => {
             e.preventDefault();
+            
+            // 1. Abrimos el modal principal
             modalTelemetria.classList.remove('oculto');
+            
+            // 2. Simulamos un clic en la pestaña "Subir Archivo"
+            // (Esto reutiliza la lógica de la sección "3. LÓGICA DE PESTAÑAS")
+            tabArchivo.click(); 
         });
 
-        // Reutilizar los botones de cerrar para este modal también
-        btnsCerrarModal.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modalTelemetria.classList.add('oculto');
-            });
-        });
-
-        // Cerrar si se da clic fuera
-        modalTelemetria.addEventListener('click', e => {
-            if (e.target === modalTelemetria) {
-                modalTelemetria.classList.add('oculto');
-            }
-        });
+        // (La lógica para cerrar el modal ya está en la sección "2." y "2c.",
+        //  así que no necesitamos añadirla aquí de nuevo)
     }
+
+
+
+
+
+
+
+
 
     // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA ---
     // (Esta es la nueva lógica que solicitaste)
@@ -317,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 7. LÓGICA DE PESTAÑA ARCHIVO (Modal Alta) ---
-    const btnDescargarAlta = document.getElementById('btn-descargar-plantilla-archivo');
+    const btnDescargarAlta = document.getElementById('btn-descargar-plantilla-alta');
     const selectCondicionArchivo = document.getElementById('condicion-archivo');
 
     if (btnDescargarAlta && selectCondicionArchivo) {
