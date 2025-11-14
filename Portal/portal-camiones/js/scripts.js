@@ -1,6 +1,9 @@
 /**
- * scripts.js - VERSIÓN COMPLETA (v5)
- * - Incluye lógica para modal de telemetría independiente.
+ * scripts.js - VERSIÓN DEFINITIVA (v7)
+ * - Separa la lógica de los modales (Alta vs Telemetría).
+ * - Añade listener para el nuevo botón 'btn-guardar-archivo-masivo'.
+ * - Corrige el listener de 'btn-guardar-csv' para que solo maneje telemetría.
+ * - Corrige el botón 'btn-abrir-modal-telemetria' para que abra el modal correcto.
  */
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -20,119 +23,94 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- 2. LÓGICA DEL MODAL DE ALTA DE CAMIÓN ---
-    const modal = document.getElementById('modal-formulario');
-    const btnAbrirModal = document.getElementById('btn-abrir-modal');
+    const modalAltaCamion = document.getElementById('modal-formulario');
+    const btnAbrirModalAlta = document.getElementById('btn-abrir-modal');
     const btnsCerrarModal = document.querySelectorAll('.modal-cerrar, .btn-cerrar-modal');
 
-    if (modal && btnAbrirModal) {
-        const abrirModal = () => modal.classList.remove('oculto');
-        const cerrarModal = () => modal.classList.add('oculto');
-        btnAbrirModal.addEventListener('click', abrirModal);
+    if (modalAltaCamion && btnAbrirModalAlta) {
+        const abrirModal = () => modalAltaCamion.classList.remove('oculto');
+        const cerrarModal = () => modalAltaCamion.classList.add('oculto');
+        
+        btnAbrirModalAlta.addEventListener('click', abrirModal);
         btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
-        modal.addEventListener('click', e => {
-            if (e.target === modal) cerrarModal();
+        modalAltaCamion.addEventListener('click', e => {
+            if (e.target === modalAltaCamion) cerrarModal();
         });
     }
 
-    // --- 2b. LÓGICA DEL MODAL DE SUBIR TELEMETRÍA (INDEPENDIENTE) ---
-    // (Esta es la nueva lógica que solicitaste)
-    const modalTelemetria = document.getElementById('modal-formulario'); // <<< CORRECCIÓN: Usamos el modal principal
+    // --- 2b. LÓGICA DEL MODAL DE SUBIR TELEMETRÍA ---
+    const modalTelemetria = document.getElementById('modal-subir-historial');
     const btnAbrirModalTelemetria = document.getElementById('btn-abrir-modal-telemetria');
-    const tabArchivo = document.querySelector('.carga-link[data-tab="tab-archivo"]'); // <<< CORRECCIÓN: Buscamos la pestaña
     
-    if (modalTelemetria && btnAbrirModalTelemetria && tabArchivo) {
-        
-        // Abrir el modal y cambiar a la pestaña de "Archivo"
+    if (modalTelemetria && btnAbrirModalTelemetria) {
+        // CORRECCIÓN: Abre el modal de telemetría, no el de alta
         btnAbrirModalTelemetria.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // 1. Abrimos el modal principal
             modalTelemetria.classList.remove('oculto');
-            
-            // 2. Simulamos un clic en la pestaña "Subir Archivo"
-            // (Esto reutiliza la lógica de la sección "3. LÓGICA DE PESTAÑAS")
-            tabArchivo.click(); 
         });
 
-        // (La lógica para cerrar el modal ya está en la sección "2." y "2c.",
-        //  así que no necesitamos añadirla aquí de nuevo)
+        // Aseguramos que los botones de cerrar también cierren este modal
+        btnsCerrarModal.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalTelemetria.classList.add('oculto');
+            });
+        });
+        modalTelemetria.addEventListener('click', e => {
+            if (e.target === modalTelemetria) {
+                modalTelemetria.classList.add('oculto');
+            }
+        });
     }
 
-
-
-
-
-
-
-
-
     // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA ---
-    // (Esta es la nueva lógica que solicitaste)
-    const btnGuardarCsv = document.getElementById('btn-guardar-csv');
+    const btnGuardarCsvTelemetria = document.getElementById('btn-guardar-csv');
     const inputCsvRecorridos = document.getElementById('input-csv-recorridos');
 
-    if (btnGuardarCsv && inputCsvRecorridos) {
+    if (btnGuardarCsvTelemetria && inputCsvRecorridos) {
         
-        // Habilitar el botón de guardar solo si se selecciona un archivo
         inputCsvRecorridos.addEventListener('change', () => {
-            if (inputCsvRecorridos.files.length > 0) {
-                btnGuardarCsv.disabled = false;
-            } else {
-                btnGuardarCsv.disabled = true;
-            }
+            btnGuardarCsvTelemetria.disabled = (inputCsvRecorridos.files.length === 0);
         });
 
-        // Enviar el archivo al hacer clic en Guardar
-        btnGuardarCsv.addEventListener('click', async (e) => {
+        btnGuardarCsvTelemetria.addEventListener('click', async (e) => {
             e.preventDefault();
-
             if (inputCsvRecorridos.files.length === 0) {
-                alert("Por favor, selecciona un archivo CSV para subir.");
+                alert("Por favor, selecciona un archivo CSV de telemetría para subir.");
                 return;
             }
-
             const file = inputCsvRecorridos.files[0];
             const formData = new FormData();
-            
-            // Esta llave 'archivo_recorridos' DEBE coincidir con el 'name'
-            // que pusiste en el HTML y el que espera 'procesar_telemetria.php'
-            formData.append('archivo_recorridos', file); 
+            formData.append('archivo_recorridos', file); // 'name' del input
 
-            btnGuardarCsv.disabled = true;
-            btnGuardarCsv.textContent = 'Procesando...';
+            btnGuardarCsvTelemetria.disabled = true;
+            btnGuardarCsvTelemetria.textContent = 'Procesando...';
 
             try {
                 const response = await fetch('procesar_telemetria.php', {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await response.json();
-
                 if (data.success) {
                     alert("¡Éxito! " + data.message);
-                    modalTelemetria.classList.add('oculto'); // Cierra el modal
+                    modalTelemetria.classList.add('oculto');
                 } else {
                     alert("Error al procesar el archivo:\n" + data.message);
                 }
-
             } catch (error) {
                 console.error('Error en el fetch de telemetría:', error);
                 alert('Error de conexión. No se pudo contactar al servidor.');
             } finally {
-                // Reactivar el botón
-                btnGuardarCsv.disabled = false;
-                btnGuardarCsv.textContent = 'Confirmar y Guardar';
-                inputCsvRecorridos.value = ''; // Limpiar el input
+                btnGuardarCsvTelemetria.disabled = false;
+                btnGuardarCsvTelemetria.textContent = 'Confirmar y Guardar';
+                inputCsvRecorridos.value = ''; 
             }
         });
     }
 
-
     // --- 3. LÓGICA DE PESTAÑAS (MANUAL / ARCHIVO) ---
     const tabLinks = document.querySelectorAll('.carga-link');
     const tabContents = document.querySelectorAll('.tab-content');
-
     if (tabLinks.length > 0) {
         tabLinks.forEach(link => {
             link.addEventListener('click', () => {
@@ -150,13 +128,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 4. LÓGICA FORMULARIO MANUAL: OCULTAR CAMPOS ---
     const condicionVehiculo = document.getElementById('condicion');
     const camposSoloParaUsado = document.querySelectorAll('.ocultar-si-es-nuevo');
-
     if (condicionVehiculo && camposSoloParaUsado.length > 0) {
         const toggleCamposUsado = () => {
+            // Quitamos la lógica del 'display:flex' y usamos una clase
             if (condicionVehiculo.value === 'nuevo') {
-                camposSoloParaUsado.forEach(campo => { campo.style.display = 'none'; });
+                camposSoloParaUsado.forEach(campo => { campo.classList.add('oculto-simple'); });
             } else {
-                camposSoloParaUsado.forEach(campo => { campo.style.display = 'flex'; });
+                camposSoloParaUsado.forEach(campo => { campo.classList.remove('oculto-simple'); });
             }
         };
         toggleCamposUsado(); 
@@ -164,20 +142,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 5. LÓGICA DE CARGA DINÁMICA DE CATÁLOGOS ---
+    // (Esta sección está bien y no necesita cambios)
     let conductoresData = []; 
     const selectTecnologia = document.getElementById("tipo_unidad");
     const selectAnio = document.getElementById("anio");
     const selectMarcaAceite = document.getElementById("marca_filtro");
     const selectMarcaCentrifugo = document.getElementById("marca_filtro_centrifugo");
     const selectLubricante = document.getElementById("tipo_aceite"); 
-
     async function cargarCatalogos() {
-        
-        // --- Cargar Tecnologías ---
         if (selectTecnologia) {
             try {
                 const response = await fetch('fetch_catalogos.php?tipo=tecnologias');
-                if (!response.ok) throw new Error('Error al cargar tecnologías (HTTP ' + response.status + ')');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const tecnologias = await response.json();
                 selectTecnologia.innerHTML = '<option value="">Selecciona tipo de tecnologia</option>';
                 tecnologias.forEach(tec => {
@@ -186,27 +162,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     opcion.textContent = tec.nombre.toUpperCase();
                     selectTecnologia.appendChild(opcion);
                 });
-            } catch (error) {
-                console.error('Error en fetch Tecnologías:', error); 
-                selectTecnologia.innerHTML = '<option value="">Error al cargar datos</option>';
-            }
+            } catch (error) { console.error('Error en fetch Tecnologías:', error); }
         }
-
-        // --- Cargar Conductores ---
         try {
             const response = await fetch('fetch_catalogos.php?tipo=conductores');
-            if (!response.ok) throw new Error('Error al cargar conductores (HTTP ' + response.status + ')');
+            if (!response.ok) throw new Error('HTTP ' + response.status);
             const conductores = await response.json();
-            conductoresData = conductores.map(c => ({
-                id: c.id_usuario,
-                nombre: c.nombre_completo.toUpperCase()
-            }));
-        } catch (error) {
-            console.error('Error en fetch Conductores:', error); 
-            conductoresData = [{ id: "ERROR", nombre: "NO SE PUDO CARGAR LA LISTA" }];
-        }
-
-        // --- Generar Años ---
+            conductoresData = conductores.map(c => ({ id: c.id_usuario, nombre: c.nombre_completo.toUpperCase() }));
+        } catch (error) { console.error('Error en fetch Conductores:', error); }
         if (selectAnio) {
             const anioActual = new Date().getFullYear();
             selectAnio.innerHTML = '<option value="">Selecciona año</option>'; 
@@ -217,12 +180,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectAnio.appendChild(opcion);
             }
         }
-
-        // --- Cargar Marcas de Filtro de Aceite ---
         if (selectMarcaAceite) {
             try {
                 const response = await fetch('fetch_catalogos.php?tipo=filtros_aceite');
-                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const marcas = await response.json();
                 selectMarcaAceite.innerHTML = '<option value="">Selecciona una marca</option>';
                 marcas.forEach(item => {
@@ -231,17 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     opcion.textContent = item.marca.toUpperCase();
                     selectMarcaAceite.appendChild(opcion);
                 });
-            } catch (error) {
-                console.error('Error en fetch Filtros Aceite:', error); 
-                selectMarcaAceite.innerHTML = '<option value="">Error al cargar marcas</option>';
-            }
+            } catch (error) { console.error('Error en fetch Filtros Aceite:', error); }
         }
-        
-        // --- Cargar Marcas Filtro Centrifugo ---
         if (selectMarcaCentrifugo) {
             try {
                 const response = await fetch('fetch_catalogos.php?tipo=filtros_centrifugo');
-                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const marcas = await response.json();
                 selectMarcaCentrifugo.innerHTML = '<option value="">Selecciona una marca</option>';
                 marcas.forEach(item => {
@@ -250,17 +206,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     opcion.textContent = item.marca.toUpperCase();
                     selectMarcaCentrifugo.appendChild(opcion);
                 });
-            } catch (error) {
-                console.error('Error en fetch Filtros Centrifugo:', error); 
-                selectMarcaCentrifugo.innerHTML = '<option value="">Error al cargar marcas</option>';
-            }
+            } catch (error) { console.error('Error en fetch Filtros Centrifugo:', error); }
         }
-
-        // --- Cargar Lubricantes ---
         if (selectLubricante) {
             try {
                 const response = await fetch('fetch_catalogos.php?tipo=lubricantes');
-                if (!response.ok) throw new Error('Error HTTP ' + response.status);
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const lubricantes = await response.json();
                 selectLubricante.innerHTML = '<option value="">Selecciona un lubricante</option>';
                 lubricantes.forEach(item => {
@@ -269,31 +220,93 @@ document.addEventListener('DOMContentLoaded', function() {
                     opcion.textContent = item.nombre.toUpperCase();
                     selectLubricante.appendChild(opcion);
                 });
-            } catch (error) {
-                console.error('Error en fetch Lubricantes:', error); 
-                selectLubricante.innerHTML = '<option value="">Error al cargar lubricantes</option>';
-            }
+            } catch (error) { console.error('Error en fetch Lubricantes:', error); }
         }
     }
-    
-    // Llamar a la función al cargar la página
     cargarCatalogos();
+    cargarTablaCamiones();
+
+    // --- 5b. LÓGICA PARA CARGAR LA TABLA PRINCIPAL DE CAMIONES ---
+    async function cargarTablaCamiones() {
+        const tbody = document.querySelector(".tabla-contenido tbody");
+        if (!tbody) return; // Si no hay tabla, no hacemos nada
+
+        tbody.innerHTML = '<tr><td colspan="6">Cargando camiones...</td></tr>';
+
+        try {
+            const response = await fetch('api_camiones.php');
+            if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+            
+            const datos = await response.json();
+
+            if (!datos.success) throw new Error(datos.message);
+
+            if (datos.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No se encontraron camiones registrados.</td></tr>';
+                return;
+            }
+
+            // Limpiamos la tabla
+            tbody.innerHTML = '';
+
+            // Construimos cada fila
+            datos.data.forEach(camion => {
+                // Preparamos los datos
+                let estatusClase = '';
+                switch (camion.estatus) {
+                    case 'Activo': estatusClase = 'estatus-activo'; break;
+                    case 'En Taller': estatusClase = 'estatus-taller'; break;
+                    case 'Inactivo': estatusClase = 'estatus-inactivo'; break;
+                }
+
+                // Determinamos el próximo mantenimiento
+                let proximoMto = 'N/A';
+                if (camion.mantenimiento_requerido === 'Si') {
+                    proximoMto = '<span class="mto-requerido">¡Mantenimiento Requerido!</span>';
+                } else if (camion.fecha_ult_mantenimiento) {
+                    proximoMto = 'Programado'; // (Aquí iría tu lógica de cálculo de fecha)
+                }
+
+                // Creamos la fila
+                const filaHTML = `
+                    <tr>
+                        <td><strong>${camion.numero_economico}</strong></td>
+                        <td>${camion.placas}</td>
+                        <td><span class="estatus-tag ${estatusClase}">${camion.estatus}</span></td>
+                        <td>${camion.fecha_ult_mantenimiento || 'N/A'}</td>
+                        <td>${proximoMto}</td>
+                        <td class="acciones">
+                            <button class="btn-editar" data-id="${camion.id}">Ver/Editar</button>
+                            <button class="btn-historial" data-id="${camion.id}">Historial</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += filaHTML;
+            });
+
+        } catch (error) {
+            console.error('Error al cargar la tabla de camiones:', error);
+            tbody.innerHTML = `<tr><td colspan="6">Error al cargar los datos: ${error.message}</td></tr>`;
+        }
+    }
+
+
+
+
+
+
+
 
     // --- 6. BÚSQUEDA INTELIGENTE DE CONDUCTOR ---
+    // (Esta sección está bien y no necesita cambios)
     const inputConductor = document.getElementById("id_conductor");
     const listaSugerencias = document.getElementById("sugerencias-conductor");
-
     if (inputConductor && listaSugerencias) {
         inputConductor.addEventListener("input", () => {
             const valor = inputConductor.value.trim().toUpperCase();
             listaSugerencias.innerHTML = ""; 
-            if (valor === "") {
-                listaSugerencias.style.display = "none";
-                return;
-            }
-            const filtrados = conductoresData.filter(c =>
-                c.id.toUpperCase().includes(valor) || c.nombre.includes(valor)
-            );
+            if (valor === "") { listaSugerencias.style.display = "none"; return; }
+            const filtrados = conductoresData.filter(c => c.id.toUpperCase().includes(valor) || c.nombre.includes(valor));
             if (filtrados.length > 0) {
                 listaSugerencias.style.display = "block";
                 filtrados.forEach(c => {
@@ -320,39 +333,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 7. LÓGICA DE PESTAÑA ARCHIVO (Modal Alta) ---
+    // --- 7. LÓGICA DE DESCARGA DE PLANTILLA (ALTA MASIVA) ---
+    // (Esta sección está bien, solo corregimos el ID del botón)
     const btnDescargarAlta = document.getElementById('btn-descargar-plantilla-alta');
     const selectCondicionArchivo = document.getElementById('condicion-archivo');
-
     if (btnDescargarAlta && selectCondicionArchivo) {
         btnDescargarAlta.addEventListener('click', (e) => {
             e.preventDefault();
             const tipoPlantilla = selectCondicionArchivo.value;
             let csvContent = "";
             let fileName = "";
-            const headersNuevos = [
-                "numero_economico", "condicion", "placas", "vin", "Marca", "Anio", 
-                "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", 
-                "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", 
-                "marca_filtro_centrifugo_actual", "serie_filtro_centrifugo_actual", "lubricante_actual"
-            ];
-            const headersViejos = [
-                "numero_economico", "condicion", "placas", "vin", "Marca", "Anio", 
-                "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", 
-                "fecha_ult_mantenimiento", "fecha_ult_cambio_aceite", 
-                "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", 
-                "fecha_ult_cambio_centrifugo", "marca_filtro_centrifugo_actual", 
-                "serie_filtro_centrifugo_actual", "lubricante_actual"
-            ];
-
+            const headersNuevos = ["numero_economico", "condicion", "placas", "vin", "Marca", "Anio", "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", "marca_filtro_centrifugo_actual", "serie_filtro_centrifugo_actual", "lubricante_actual"];
+            const headersViejos = ["numero_economico", "condicion", "placas", "vin", "Marca", "Anio", "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", "fecha_ult_mantenimiento", "fecha_ult_cambio_aceite", "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", "fecha_ult_cambio_centrifugo", "marca_filtro_centrifugo_actual", "serie_filtro_centrifugo_actual", "lubricante_actual"];
             if (tipoPlantilla === 'nuevo') {
                 fileName = "plantilla_camiones_nuevos.csv";
                 csvContent = headersNuevos.join(",") + "\n";
-                csvContent += "ECO-1180,nuevo,PLACA123,VIN123456789,Scania,2025,3,CON-011,trabajando,1500,SCANIA,SCASERIE123,SCANIA,SCASERIE456,SAE 10W30 MULTIGRADO\n";
+                csvContent += "ECO-1180,nuevo,PLACA123,VIN123456789,Scania,2025,ID 1=SCANIA i5 13.0 MT / ID 2=Irizar i6/ ID 3=Irizar i6s 15 MT,CON-011,Activo/Inactivo/En Taller/Vendido,1500,SCANIA,SCASERIE123,SCANIA,SCASERIE456,SAE 10W30 MULTIGRADO/SAE 15W30\n";
             } else if (tipoPlantilla === 'usado') {
                 fileName = "plantilla_camiones_usados.csv";
                 csvContent = headersViejos.join(",") + "\n";
-                csvContent += "ECO-1130,usado,PLACA456,VIN987654321,Scania,2021,3,CON-012,trabajando,450000,2025-01-01,2025-05-01,SCANIA,SCASERIE789,2025-05-01,SCANIA,SCASERIE101,SAE 15W30\n";
+                csvContent += "ECO-1130,usado,PLACA456,VIN987654321,Scania,2021,ID 1=SCANIA i5 13.0 MT / ID 2=Irizar i6/ ID 3=Irizar i6s 15 MT,CON-012,Activo/Inactivo/En Taller/Vendido,450000,2025-01-01,2025-05-01,SCANIA,SCASERIE789,2025-05-01,SCANIA,SCASERIE101,SAE 10W30 MULTIGRADO/SAE 15W30\n";
             } else {
                 alert("Por favor, selecciona una condición (Nuevo o Usado) para descargar la plantilla.");
                 return;
@@ -361,16 +361,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 8. LÓGICA DE PESTAÑA ARCHIVO (Modal Telemetría) ---
+    // --- 8. LÓGICA DE DESCARGA DE PLANTILLA (TELEMETRÍA) ---
+    // (Esta sección está bien y no necesita cambios)
     const btnDescargarRecorridos = document.getElementById('btn-descargar-recorridos-archivo');
-    
     if (btnDescargarRecorridos) {
         btnDescargarRecorridos.addEventListener('click', (e) => {
             e.preventDefault();
-            const headers = [
-                "UNIDAD", "ANIO", "MES", "KILOMETRAJE_MES", 
-                "TIEMPO_CONDUCIENDO_HORAS", "TIEMPO_DETENIDO_HORAS", "TIEMPO_RALENTI_HORAS"
-            ];
+            const headers = ["UNIDAD", "ANIO", "MES", "KILOMETRAJE_MES", "TIEMPO_CONDUCIENDO_HORAS", "TIEMPO_DETENIDO_HORAS", "TIEMPO_RALENTI_HORAS"];
             let csvContent = headers.join(",") + "\n";
             csvContent += "ECO-1133,2025,10,9500,180.5,40.2,30.0\n";
             descargarCSV(csvContent, "plantilla_telemetria.csv");
@@ -393,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 9. LÓGICA DE UI ADICIONAL (KPI, BÚSQUEDA TABLA) ---
-    // (Código sin cambios)
+    // (Esta sección está bien y no necesita cambios)
     const kpi = document.getElementById("kpi-aprobaciones");
     const lista = document.getElementById("lista-aprobaciones");
     if (kpi && lista) { kpi.addEventListener("click", () => { lista.classList.toggle("mostrar"); }); }
@@ -402,43 +399,80 @@ document.addEventListener('DOMContentLoaded', function() {
     if (inputBuscar && tabla) { /* Tu lógica de búsqueda en tabla */ }
     
     // --- 10. LÓGICA DE ENVÍO DEL FORMULARIO DE ALTA MANUAL ---
+    // (Esta sección está bien y no necesita cambios)
     const formAltaCamion = document.getElementById('form-alta-camion');
     if (formAltaCamion) {
         formAltaCamion.addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const formData = new FormData(formAltaCamion);
-            
             if (formData.get('identificador') === '' || formData.get('placas') === '') {
                 alert('Por favor, llena los campos de ID y Placas.');
                 return;
             }
-
             try {
-                const response = await fetch('registrar_camion.php', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
-                }
-
+                const response = await fetch('registrar_camion.php', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
                 const data = await response.json();
-
                 if (data.success) {
                     alert(data.message);
                     formAltaCamion.reset();
-                    // Cierra el modal principal
                     const btnCerrar = document.querySelector('#modal-formulario .modal-cerrar');
                     if (btnCerrar) btnCerrar.click();
-                    // (Aquí llamarías a recargar la tabla)
                 } else {
                     alert(`Error al registrar: ${data.message}`);
                 }
-
             } catch (error) {
                 console.error('Error en el fetch:', error);
                 alert('Error de conexión. No se pudo contactar al servidor.');
+            }
+        });
+    }
+
+    // --- 11. (NUEVO) LÓGICA DE ENVÍO DE ALTA MASIVA (CSV CAMIONES) ---
+    const btnGuardarArchivoMasivo = document.getElementById('btn-guardar-archivo-masivo');
+    const inputCsvAlta = document.getElementById('input-csv-alta');
+    const formAltaArchivo = document.getElementById('form-alta-archivo');
+
+    if (btnGuardarArchivoMasivo && inputCsvAlta && formAltaArchivo) {
+        
+        inputCsvAlta.addEventListener('change', () => {
+            btnGuardarArchivoMasivo.disabled = (inputCsvAlta.files.length === 0);
+        });
+
+        btnGuardarArchivoMasivo.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (inputCsvAlta.files.length === 0) {
+                alert("Por favor, selecciona un archivo CSV de camiones para subir.");
+                return;
+            }
+            
+            const formData = new FormData(formAltaArchivo); 
+            // El archivo ya está en el formData gracias al 'name="archivo_camiones"'
+
+            btnGuardarArchivoMasivo.disabled = true;
+            btnGuardarArchivoMasivo.textContent = 'Procesando...';
+
+            try {
+                // Asumimos que creaste 'registrar_camion_masivo.php'
+                const response = await fetch('registrar_camion_masivo.php', { 
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert("¡Éxito! " + data.message);
+                    formAltaArchivo.reset();
+                    modalAltaCamion.classList.add('oculto'); // Cierra el modal principal
+                } else {
+                    alert("Error al procesar el archivo:\n" + data.message);
+                }
+            } catch (error) {
+                console.error('Error en el fetch de alta masiva:', error);
+                alert('Error de conexión. No se pudo contactar al servidor.');
+            } finally {
+                btnGuardarArchivoMasivo.disabled = false;
+                btnGuardarArchivoMasivo.textContent = 'Confirmar y Guardar';
+                inputCsvAlta.value = ''; 
             }
         });
     }

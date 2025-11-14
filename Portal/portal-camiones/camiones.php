@@ -292,13 +292,14 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </div>
 
 
-
+ <!--  
 
                         <div class="form-lvip ocultar-si-es-nuevo"> <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
- <!--                           <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
--->                                              <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
 
-                        </div>
+                                                   <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
+                      <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
+
+                        </div>-->  
                     </div>
 
                     <div class="form-acciones">
@@ -311,79 +312,84 @@ $nombre_usuario = $_SESSION['nombre_completo'];
          <!--	---------------------------------------------- MACHOTE ----------------------------------------------	 -->
 
             <div id="tab-archivo" class="tab-content">
-                <div class="form-header">
-                    <h2>Carga Masiva de Camiones</h2>
-                    <p>Sube los archivos CSV con los datos de los nuevos vehículos</p>
-                </div>
 
-                <div class="seccion-sube">
 
-                    <div class="paso-sube">
-                        <div class="paso-numero">1</div>
-
-                        <div class="paso-info">
-                            <h3>Definir Condición</h3>
-                            <p>Selecciona si los camiones en el archivo son nuevos o usados</p>
-                        </div>
-
-                        <select id="condicion-archivo" class="select-paso">
-                            <option value="usado">Usado / En Servicio</option>
-                            <option value="nuevo">Nuevo</option> 
-                        </select>
+                <form id="form-alta-archivo">
+                    <div class="form-header">
+                        <h2>Carga Masiva de Camiones</h2>
+                        <p>Sube los archivos CSV con los datos de los nuevos vehículos</p>
                     </div>
 
-                    <div class="paso-sube">
-                        <div class="paso-numero">2</div>
-                        <div class="paso-info">
-                            <h3>Descargar Plantilla de Alta</h3>
-                            <p>Usa este archivo como guía para los datos de los camiones</p>
+                    <div class="seccion-sube">
+
+                        <div class="paso-sube">
+                            <div class="paso-numero">1</div>
+
+                            <div class="paso-info">
+                                <h3>Definir Condición</h3>
+                                <p>Selecciona si los camiones en el archivo son nuevos o usados</p>
+                            </div>
+
+                            <select id="condicion-archivo" class="select-paso">
+                                <option value="usado">Usado / En Servicio</option>
+                                <option value="nuevo">Nuevo</option> 
+                            </select>
                         </div>
-                        <button id="btn-descargar-plantilla-alta" class="btn-secundario">Descargar</button>
+
+                        <div class="paso-sube">
+                            <div class="paso-numero">2</div>
+                            <div class="paso-info">
+                                <h3>Descargar Plantilla de Alta</h3>
+                                <p>Usa este archivo como guía para los datos de los camiones</p>
+                            </div>
+                            <button id="btn-descargar-plantilla-alta" class="btn-secundario">Descargar</button>
+                        </div>
+
+                        <div class="paso-sube">
+                            <div class="paso-numero">3</div>
+                            <div class="paso-info">
+                                <h3>Subir Datos de Alta</h3>
+                                <p>Selecciona el archivo CSV (Nuevos o Usados) con la lista</p>
+                                <input type="file" id="input-csv-alta" class="input-file" accept=".csv" name="archivo_camiones" >
+                            </div>
+                        </div>
+                        
+
+                        <div class="form-acciones">
+                            <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
+                            <button type="submit" class="btn-primario" id="btn-guardar-archivo-masivo">Confirmar y Guardar</button>                
+                        </div>
+
+                        <hr class="form-divide"> <div class="paso-sube">
+                            <div class="paso-numero">4</div>
+                            <div class="paso-info">
+                                <h3>Descargar Plantilla de Recorridos</h3>
+                                <p>Plantilla opcional para subir el historial de KM de las unidades</p>
+                            </div>
+                            <button id="btn-descargar-recorridos-archivo" class="btn-secundario">Descargar</button>
+                        </div>
+
+                        <div class="paso-sube">
+                            <div class="paso-numero">5</div>
+                            <div class="paso-info">
+                                <h3>Subir Historial de Recorridos</h3>
+                                <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+
+                                <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="paso-sube">
-                        <div class="paso-numero">3</div>
-                        <div class="paso-info">
-                            <h3>Subir Datos de Alta</h3>
-                            <p>Selecciona el archivo CSV (Nuevos o Usados) con la lista</p>
-                            <input type="file" id="input-csv-alta" class="input-file" accept=".csv" >
-                        </div>
-                    </div>
-                    
-                    <hr class="form-divide"> <div class="paso-sube">
-                        <div class="paso-numero">4</div>
-                        <div class="paso-info">
-                            <h3>Descargar Plantilla de Recorridos</h3>
-                            <p>Plantilla opcional para subir el historial de KM de las unidades</p>
-                        </div>
-                        <button id="btn-descargar-recorridos-archivo" class="btn-secundario">Descargar</button>
+                    <div id="preview-container" class="preview-container">
+
                     </div>
 
-                    <div class="paso-sube">
-                        <div class="paso-numero">5</div>
-                        <div class="paso-info">
-                            <h3>Subir Historial de Recorridos</h3>
-                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
-                            
-                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
-                        </div>
+                    <div class="form-acciones">
+                        <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
+                        <button type="submit" class="btn-primario" id="btn-guardar-csv" >Confirmar y Guardar</button>                
                     </div>
-                </div>
 
-
-
-
-
-
-                <div id="preview-container" class="preview-container">
-
-                </div>
-
-                <div class="form-acciones">
-                    <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
-                    <button type="submit" class="btn-primario" id="btn-guardar-csv" disabled>Confirmar y Guardar</button>                
-                </div>
-
+                </form>
             </div>
         </div>
     </div>

@@ -815,3 +815,58 @@ select {
 .sugerencias-lista div:hover {
     background-color: #e6f0ff;
 }
+/* (Al final de /css/style.css) */
+
+/* --- Estilos para la Tabla de Camiones --- */
+.tabla-contenido tbody td {
+    color: #333;
+    font-size: 0.9em;
+}
+
+.tabla-contenido tbody td strong {
+    color: #000;
+    font-weight: 600;
+}
+
+.estatus-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+    font-size: 0.8em;
+}
+
+.estatus-activo { background-color: #28a745; }
+.estatus-taller { background-color: #ffc107; color: #333; }
+.estatus-inactivo { background-color: #6c757d; }
+
+.mto-requerido {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.acciones .btn-editar,
+.acciones .btn-historial {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-right: 5px;
+}
+
+.btn-editar {
+    background-color: #007bff;
+    color: white;
+}
+.btn-editar:hover {
+    background-color: #0056b3;
+}
+
+.btn-historial {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-historial:hover {
+    background-color: #5a6268;
+}
