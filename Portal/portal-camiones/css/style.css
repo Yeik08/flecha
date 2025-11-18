@@ -870,3 +870,7 @@ select {
 .btn-historial:hover {
     background-color: #5a6268;
 }
+
+.oculto-simple {
+    display: none !important;
+}

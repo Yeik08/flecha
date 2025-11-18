@@ -6,8 +6,9 @@ error_reporting(E_ALL);
 
 /*
 * Portal/portal-camiones/registrar_camion.php
-* VERSIÓN FINAL CORREGIDA:
-* - Arregla los tipos de datos en bind_param (el error de 'estatus').
+* VERSIÓN MEJORADA (v3):
+* - Añade validación proactiva para duplicados (N° Eco, VIN, Placas, Series Filtros).
+* - Devuelve mensajes de error 409 (Conflict) específicos.
 */
 
 session_start();
@@ -33,6 +34,68 @@ $conn->begin_transaction();
 
 try {
 
+    // =========================================
+    // --- 2. VALIDACIÓN PROACTIVA DE DUPLICADOS ---
+    // =========================================
+    
+    // Obtenemos todos los campos que deben ser únicos
+    $numero_economico = $_POST['identificador'];
+    $placas = $_POST['placas'];
+    $vin = $_POST['numero_serie'];
+    $serie_filtro_aceite = $_POST['numero_serie_filtro_aceite'];
+    $serie_filtro_centrifugo = $_POST['numero_serie_filtro_centrifugo'];
+
+    $errores_duplicados = [];
+
+    // 2a. Validar Camión (N° Eco, VIN, Placas)
+    // Hacemos subconsultas eficientes para verificar cada campo único
+    $sql_check_camion = "SELECT 
+        (SELECT 1 FROM tb_camiones WHERE numero_economico = ? LIMIT 1) as 'eco_dup',
+        (SELECT 1 FROM tb_camiones WHERE vin = ? LIMIT 1) as 'vin_dup',
+        (SELECT 1 FROM tb_camiones WHERE placas = ? LIMIT 1) as 'placas_dup'
+    ";
+    
+    $stmt_check = $conn->prepare($sql_check_camion);
+    $stmt_check->bind_param("sss", $numero_economico, $vin, $placas);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result()->fetch_assoc();
+
+    if ($result_check['eco_dup']) { $errores_duplicados[] = "El N° Económico '{$numero_economico}' ya está registrado."; }
+    if ($result_check['vin_dup']) { $errores_duplicados[] = "El VIN '{$vin}' ya está registrado."; }
+    if ($result_check['placas_dup']) { $errores_duplicados[] = "Las placas '{$placas}' ya están registradas."; }
+
+    // 2b. Validar N° de Serie de Filtros (si se proporcionaron)
+    if (!empty($serie_filtro_aceite) || !empty($serie_filtro_centrifugo)) {
+        $stmt_check_filtro = $conn->prepare("SELECT id FROM tb_inventario_filtros WHERE numero_serie = ? LIMIT 1");
+        
+        if (!empty($serie_filtro_aceite)) {
+            $stmt_check_filtro->bind_param("s", $serie_filtro_aceite);
+            $stmt_check_filtro->execute();
+            if ($stmt_check_filtro->get_result()->num_rows > 0) {
+                $errores_duplicados[] = "El N° de Serie '{$serie_filtro_aceite}' (Aceite) ya está registrado en el inventario.";
+            }
+        }
+        if (!empty($serie_filtro_centrifugo)) {
+            $stmt_check_filtro->bind_param("s", $serie_filtro_centrifugo);
+            $stmt_check_filtro->execute();
+            if ($stmt_check_filtro->get_result()->num_rows > 0) {
+                $errores_duplicados[] = "El N° de Serie '{$serie_filtro_centrifugo}' (Centrífugo) ya está registrado en el inventario.";
+            }
+        }
+    }
+
+    // 2c. Si se encontraron errores, detener la ejecución y reportar.
+    if (!empty($errores_duplicados)) {
+        http_response_code(409); // 409 Conflict (el código HTTP correcto para duplicados)
+        // No necesitamos rollback porque aún no hemos hecho ningún INSERT
+        echo json_encode(['success' => false, 'message' => implode(" ", $errores_duplicados)]);
+        exit; // Detenemos el script
+    }
+    // =========================================
+    // --- FIN DE LA VALIDACIÓN PROACTIVA ---
+    // =========================================
+
+
     // --- 3. OBTENER ID NUMÉRICO DEL CONDUCTOR ---
     $id_conductor_numerico = null;
     if (!empty($_POST['id_conductor'])) {
@@ -54,15 +117,9 @@ try {
     $estatus_db = 'Inactivo'; 
 
     switch ($estatus_form) {
-        case 'trabajando':
-            $estatus_db = 'Activo';
-            break;
-        case 'mantenimiento':
-            $estatus_db = 'En Taller';
-            break;
-        case 'inactivo':
-            $estatus_db = 'Inactivo';
-            break;
+        case 'trabajando': $estatus_db = 'Activo'; break;
+        case 'mantenimiento': $estatus_db = 'En Taller'; break;
+        case 'inactivo': $estatus_db = 'Inactivo'; break;
     }
 
     // --- 4. Registrar el Camión Principal ---
@@ -80,17 +137,7 @@ try {
     $fecha_filtro_aceite = empty($_POST['fecha_cambio_filtro']) ? null : $_POST['fecha_cambio_filtro'];
     $fecha_filtro_cent = empty($_POST['fecha_cambio_filtro_centrifugo']) ? null : $_POST['fecha_cambio_filtro_centrifugo'];
     
-    // ==================================================================
-    // <<<--- AQUÍ ESTÁ LA CORRECCIÓN ---
-    //
-    // ANTES (Incorrecto): "ssssisisisssssssss"
-    // AHORA (Correcto):   "ssssisidsdssssssss"
-    //
-    // 7. anio (s)
-    // 8. id_tecnologia (i)
-    // 9. estatus (s)
-    // 10. kilometros (d)
-    //
+    // (Tu corrección del bind_param ya estaba bien)
     $stmt_camion->bind_param("ssssisidsdssssssss", 
         $_POST['identificador'],
         $_POST['condicion'],
@@ -100,7 +147,7 @@ try {
         $_POST['marca'],
         $_POST['anio'],
         $_POST['tipo_unidad'],
-        $estatus_db, // ¡Corregido!
+        $estatus_db,
         $_POST['kilometros'],
         $fecha_mant, 
         $_POST['marca_filtro'],
@@ -111,19 +158,22 @@ try {
         $fecha_filtro_cent,
         $_POST['tipo_aceite']
     );
-    // ==================================================================
     
     $stmt_camion->execute();
     
     $nuevo_camion_id = $conn->insert_id;
     if ($nuevo_camion_id === 0) {
-        throw new Exception("El camión se registró, pero no se pudo obtener el nuevo ID.");
+        // Esta comprobación es buena, pero si el INSERT falla, 
+        // la línea anterior $stmt_camion->execute() ya habría lanzado una excepción.
+        // La dejamos como doble seguridad.
+        throw new Exception("El camión NO se registró. Error desconocido.");
     }
 
     // --- 5. Registrar Filtros en el Inventario ---
+    $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena' (Asumido)
 
     // --- 5a. Filtro de Aceite ---
-    if (!empty($_POST['numero_serie_filtro_aceite'])) {
+    if (!empty($serie_filtro_aceite)) {
         
         $id_cat_filtro_aceite = null;
         $stmt_find_aceite = $conn->prepare("SELECT id FROM tb_cat_filtros WHERE marca = ? AND tipo_filtro = 'Aceite' LIMIT 1");
@@ -133,6 +183,7 @@ try {
         if ($result_aceite->num_rows > 0) {
             $id_cat_filtro_aceite = $result_aceite->fetch_assoc()['id'];
         } else {
+            // Si la marca no existe en el catálogo, la crea
             $stmt_new_cat_aceite = $conn->prepare("INSERT INTO tb_cat_filtros (marca, numero_parte, tipo_filtro) VALUES (?, 'N/A', 'Aceite')");
             $stmt_new_cat_aceite->bind_param("s", $_POST['marca_filtro']);
             $stmt_new_cat_aceite->execute();
@@ -142,11 +193,10 @@ try {
         $sql_inv_aceite = "INSERT INTO tb_inventario_filtros 
             (id_cat_filtro, numero_serie, id_ubicacion, estatus, id_camion_instalado) 
             VALUES (?, ?, ?, 'Instalado', ?)";
-        $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena'
         $stmt_inv_aceite = $conn->prepare($sql_inv_aceite);
         $stmt_inv_aceite->bind_param("isii", 
             $id_cat_filtro_aceite,
-            $_POST['numero_serie_filtro_aceite'],
+            $serie_filtro_aceite, // Usamos la variable validada
             $ubicacion_taller,
             $nuevo_camion_id
         );
@@ -154,7 +204,7 @@ try {
     }
 
     // --- 5b. Filtro Centrífugo ---
-    if (!empty($_POST['numero_serie_filtro_centrifugo'])) {
+    if (!empty($serie_filtro_centrifugo)) {
         $id_cat_filtro_cent = null;
         $stmt_find_cent = $conn->prepare("SELECT id FROM tb_cat_filtros WHERE marca = ? AND tipo_filtro = 'Centrifugo' LIMIT 1");
         $stmt_find_cent->bind_param("s", $_POST['marca_filtro_centrifugo']);
@@ -163,6 +213,7 @@ try {
          if ($result_cent->num_rows > 0) {
             $id_cat_filtro_cent = $result_cent->fetch_assoc()['id'];
         } else {
+            // Si la marca no existe, la crea
             $stmt_new_cat_cent = $conn->prepare("INSERT INTO tb_cat_filtros (marca, numero_parte, tipo_filtro) VALUES (?, 'N/A', 'Centrifugo')");
             $stmt_new_cat_cent->bind_param("s", $_POST['marca_filtro_centrifugo']);
             $stmt_new_cat_cent->execute();
@@ -172,11 +223,10 @@ try {
         $sql_inv_cent = "INSERT INTO tb_inventario_filtros 
             (id_cat_filtro, numero_serie, id_ubicacion, estatus, id_camion_instalado) 
             VALUES (?, ?, ?, 'Instalado', ?)";
-        $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena'
         $stmt_inv_cent = $conn->prepare($sql_inv_cent);
         $stmt_inv_cent->bind_param("isii", 
             $id_cat_filtro_cent,
-            $_POST['numero_serie_filtro_centrifugo'],
+            $serie_filtro_centrifugo, // Usamos la variable validada
             $ubicacion_taller,
             $nuevo_camion_id
         );
@@ -189,11 +239,14 @@ try {
 
 } catch (Exception $e) {
     $conn->rollback();
-    http_response_code(500);
-    // Usamos 'isset($conn->errno)' para evitar errores si la conexión falló antes
+    
+    // Dejamos el chequeo del 1062 como un *seguro* por si algo se nos escapa,
+    // pero la validación proactiva ya debería haber manejado esto.
     if (isset($conn->errno) && $conn->errno == 1062) {
-        echo json_encode(['success' => false, 'message' => 'Error: Ya existe un camión con ese VIN, Placas o N° Económico.']);
+        http_response_code(409); // 409 Conflict
+        echo json_encode(['success' => false, 'message' => 'Error: Conflicto de duplicado (VIN, Placas o N° Económico).']);
     } else {
+        http_response_code(500);
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
 }

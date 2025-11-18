@@ -1,16 +1,16 @@
 <?php
 /*
 * Portal/portal-camiones/registrar_camion_masivo.php
-* VERSIÓN DEFINITIVA:
-* - Inicializa las variables de fecha en NULL para que 'bind_param' no falle
-* al registrar camiones "nuevos".
-* - Quita 'display_errors' para evitar corrupción de JSON.
+* VERSIÓN DEFINITIVA (v10):
+* - Añade '?? null' a la lectura de columnas para evitar
+* "Undefined offset" y arreglar el error fantasma de JSON.
 */
 
-// --- Quitamos los 'display_errors' ---
-// ini_set('display_errors', 1); // <--- Borrado
-// ini_set('display_startup_errors', 1); // <--- Borrado
-// error_reporting(E_ALL); // <--- Borrado
+// --- Quitamos los 'display_errors' para un JSON limpio ---
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(0);
+// ---------------------------------------------------
 
 session_start();
 header('Content-Type: application/json');
@@ -89,29 +89,28 @@ try {
         
         try {
             // --- 5a. Obtener datos de la fila ---
-            $numero_economico = $columna[$mapa_columnas['numero_economico']];
-            $condicion = $columna[$mapa_columnas['condicion']];
-            $placas = $columna[$mapa_columnas['placas']];
-            $vin = $columna[$mapa_columnas['vin']];
-            $marca = $columna[$mapa_columnas['Marca']];
-            $anio = $columna[$mapa_columnas['Anio']];
-            $id_tecnologia = $columna[$mapa_columnas['id_tecnologia']];
-            $id_conductor_interno = $columna[$mapa_columnas['ID_Conductor']];
-            $estatus_form = $columna[$mapa_columnas['estatus']];
-            $kilometraje = $columna[$mapa_columnas['kilometraje_total']];
-            $marca_filtro_aceite = $columna[$mapa_columnas['marca_filtro_aceite_actual']];
-            $serie_filtro_aceite = $columna[$mapa_columnas['serie_filtro_aceite_actual']];
-            $marca_filtro_cent = $columna[$mapa_columnas['marca_filtro_centrifugo_actual']];
-            $serie_filtro_cent = $columna[$mapa_columnas['serie_filtro_centrifugo_actual']];
-            $lubricante = $columna[$mapa_columnas['lubricante_actual']];
-
             // --- (INICIO DE CORRECCIÓN) ---
-            // Inicializamos las fechas como null por defecto
+            // Añadimos '?? null' para evitar "Undefined offset"
+            $numero_economico = $columna[$mapa_columnas['numero_economico']] ?? null;
+            $condicion = $columna[$mapa_columnas['condicion']] ?? null;
+            $placas = $columna[$mapa_columnas['placas']] ?? null;
+            $vin = $columna[$mapa_columnas['vin']] ?? null;
+            $marca = $columna[$mapa_columnas['Marca']] ?? null;
+            $anio = $columna[$mapa_columnas['Anio']] ?? null;
+            $id_tecnologia = $columna[$mapa_columnas['id_tecnologia']] ?? null;
+            $id_conductor_interno = $columna[$mapa_columnas['ID_Conductor']] ?? null;
+            $estatus_form = $columna[$mapa_columnas['estatus']] ?? null;
+            $kilometraje = $columna[$mapa_columnas['kilometraje_total']] ?? null;
+            $marca_filtro_aceite = $columna[$mapa_columnas['marca_filtro_aceite_actual']] ?? null;
+            $serie_filtro_aceite = $columna[$mapa_columnas['serie_filtro_aceite_actual']] ?? null;
+            $marca_filtro_cent = $columna[$mapa_columnas['marca_filtro_centrifugo_actual']] ?? null;
+            $serie_filtro_cent = $columna[$mapa_columnas['serie_filtro_centrifugo_actual']] ?? null;
+            $lubricante = $columna[$mapa_columnas['lubricante_actual']] ?? null;
+
             $fecha_mant = null;
             $fecha_filtro_aceite = null;
             $fecha_filtro_cent = null;
 
-            // SOLO si el tipo es 'usado', intentamos leer las fechas
             if ($tipo_carga == 'usado') {
                 $fecha_mant_raw = $columna[$mapa_columnas['fecha_ult_mantenimiento']] ?? null;
                 $fecha_filtro_aceite_raw = $columna[$mapa_columnas['fecha_ult_cambio_aceite']] ?? null;
@@ -161,7 +160,13 @@ try {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt_camion = $conn->prepare($sql_camion);
-            $stmt_camion->bind_param("ssssisidsdssssssss", 
+/*
+* CORRECCIÓN: 
+* El 8vo parámetro ($id_tecnologia) es INT, no DOUBLE.
+* Se cambia "ssssisidsd..." por "ssssisiisd...".
+*/
+            $stmt_camion->bind_param("ssssisiisdssssssss",
+
                 $numero_economico, $condicion, $placas, $vin, $id_conductor_numerico, 
                 $marca, $anio, $id_tecnologia, $estatus_db, $kilometraje, $fecha_mant,
                 $marca_filtro_aceite, $serie_filtro_aceite, $fecha_filtro_aceite,
@@ -213,7 +218,9 @@ try {
         $conn->commit();
         echo json_encode(['success' => true, 'message' => "Proceso completado. $exitosos camiones registrados con éxito."]);
     } else {
-        throw new Exception("Proceso completado. $exitosos éxitos. Errores: " . implode(" | ", $errores));
+        // Hacemos commit parcial de los éxitos, pero reportamos los errores
+        $conn->commit(); 
+        echo json_encode(['success' => true, 'message' => "Proceso completado. $exitosos éxitos. Errores: " . implode(" | ", $errores)]);
     }
 
 } catch (Exception $e) {

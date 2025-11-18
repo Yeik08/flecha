@@ -32,29 +32,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const cerrarModal = () => modalAltaCamion.classList.add('oculto');
         
         btnAbrirModalAlta.addEventListener('click', abrirModal);
-        btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
-        modalAltaCamion.addEventListener('click', e => {
+
+        //btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
+        //modalAltaCamion.addEventListener('click', e => {
+          //  if (e.target === modalAltaCamion) cerrarModal();
+          btnsCerrarModal.forEach(btn => btn.addEventListener('click', () => {
+            modalAltaCamion.classList.add('oculto');
+            modalTelemetria.classList.add('oculto');
+        }));
+                modalAltaCamion.addEventListener('click', e => {
             if (e.target === modalAltaCamion) cerrarModal();
         });
     }
 
+
     // --- 2b. LÓGICA DEL MODAL DE SUBIR TELEMETRÍA ---
-    const modalTelemetria = document.getElementById('modal-subir-historial');
+    const modalTelemetria = document.getElementById('modal-subir-telemetria');
     const btnAbrirModalTelemetria = document.getElementById('btn-abrir-modal-telemetria');
     
     if (modalTelemetria && btnAbrirModalTelemetria) {
-        // CORRECCIÓN: Abre el modal de telemetría, no el de alta
+        // Abre el modal de telemetría
         btnAbrirModalTelemetria.addEventListener('click', (e) => {
             e.preventDefault();
             modalTelemetria.classList.remove('oculto');
         });
-
-        // Aseguramos que los botones de cerrar también cierren este modal
-        btnsCerrarModal.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modalTelemetria.classList.add('oculto');
-            });
-        });
+        
         modalTelemetria.addEventListener('click', e => {
             if (e.target === modalTelemetria) {
                 modalTelemetria.classList.add('oculto');
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA ---
-    const btnGuardarCsvTelemetria = document.getElementById('btn-guardar-csv');
+    const btnGuardarCsvTelemetria = document.getElementById('btn-guardar-csv-telemetria');
     const inputCsvRecorridos = document.getElementById('input-csv-recorridos');
 
     if (btnGuardarCsvTelemetria && inputCsvRecorridos) {
@@ -80,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const file = inputCsvRecorridos.files[0];
             const formData = new FormData();
-            formData.append('archivo_recorridos', file); // 'name' del input
+            formData.append('archivo_recorridos', file); 
 
             btnGuardarCsvTelemetria.disabled = true;
             btnGuardarCsvTelemetria.textContent = 'Procesando...';
@@ -107,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     // --- 3. LÓGICA DE PESTAÑAS (MANUAL / ARCHIVO) ---
     const tabLinks = document.querySelectorAll('.carga-link');
@@ -224,6 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     cargarCatalogos();
+
+
     cargarTablaCamiones();
 
     // --- 5b. LÓGICA PARA CARGAR LA TABLA PRINCIPAL DE CAMIONES ---
@@ -289,12 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = `<tr><td colspan="6">Error al cargar los datos: ${error.message}</td></tr>`;
         }
     }
-
-
-
-
-
-
 
 
     // --- 6. BÚSQUEDA INTELIGENTE DE CONDUCTOR ---

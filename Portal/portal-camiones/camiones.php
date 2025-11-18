@@ -292,14 +292,14 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </div>
 
 
- <!--  
+                            <!--  
 
-                        <div class="form-lvip ocultar-si-es-nuevo"> <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
+                                 <div class="form-lvip ocultar-si-es-nuevo"> <label for="recorridos-manual">Archivo de Recorridos (CSV)</label>
 
                                                    <input type="file" id="recorridos-manual" class="input-file" accept=".csv" name="nrecorridos-manu">
-                      <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
+                               <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
 
-                        </div>-->  
+                                </div>-->  
                     </div>
 
                     <div class="form-acciones">
@@ -309,7 +309,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </form>
             </div>
             
-         <!--	---------------------------------------------- MACHOTE ----------------------------------------------	 -->
+                             <!--	---------------------------------------------- MACHOTE ----------------------------------------------	 -->
 
             <div id="tab-archivo" class="tab-content">
 
@@ -330,7 +330,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <p>Selecciona si los camiones en el archivo son nuevos o usados</p>
                             </div>
 
-                            <select id="condicion-archivo" class="select-paso">
+                            <select id="condicion-archivo" class="select-paso" name="condicion-archivo">
                                 <option value="usado">Usado / En Servicio</option>
                                 <option value="nuevo">Nuevo</option> 
                             </select>
@@ -359,8 +359,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
                             <button type="submit" class="btn-primario" id="btn-guardar-archivo-masivo">Confirmar y Guardar</button>                
                         </div>
-
-                        <hr class="form-divide"> <div class="paso-sube">
+                        <!--    ---------------------------------------------- RECORRIDOS ----------------------------------------------
+                        <hr class="form-divide"> 
+                        <div class="paso-sube">
                             <div class="paso-numero">4</div>
                             <div class="paso-info">
                                 <h3>Descargar Plantilla de Recorridos</h3>
@@ -377,9 +378,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                                 <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
                             </div>
-                        </div>
+                        </div>-->
                     </div>
-
+                        <!--
                     <div id="preview-container" class="preview-container">
 
                     </div>
@@ -387,12 +388,57 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <div class="form-acciones">
                         <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
                         <button type="submit" class="btn-primario" id="btn-guardar-csv" >Confirmar y Guardar</button>                
-                    </div>
-
+                    </div>      
+                    -->
                 </form>
             </div>
+
         </div>
     </div>
+
+
+
+    <div id="modal-subir-telemetria" class="modal-overlay oculto">
+        <div class="modal-contenido">
+            <button class="modal-cerrar">&times;</button>
+            
+            <form id="form-subir-telemetria">
+                <div class="form-header">
+                    <h2>Subir Historial de Telemetría</h2>
+                    <p>Sube el archivo CSV con los recorridos mensuales de las unidades.</p>
+                </div>
+
+                <div class="seccion-sube">
+                    <div class="paso-sube">
+                        <div class="paso-numero">1</div>
+                        <div class="paso-info">
+                            <h3>Descargar Plantilla de Recorridos</h3>
+                            <p>Usa esta plantilla para registrar los datos de telemetría.</p>
+                        </div>
+                        <button id="btn-descargar-recorridos-archivo" class="btn-secundario">Descargar</button>
+                    </div>
+
+                    <div class="paso-sube">
+                        <div class="paso-numero">2</div>
+                        <div class="paso-info">
+                            <h3>Subir Historial de Recorridos</h3>
+                            <p>Selecciona el archivo CSV con los kilómetros de las unidades</p>
+                            <input type="file" id="input-csv-recorridos" class="input-file" accept=".csv" name="archivo_recorridos">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-acciones">
+                    <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
+                    <button type="submit" class="btn-primario" id="btn-guardar-csv-telemetria" disabled>Confirmar y Guardar</button>                
+                </div>
+            </form> 
+        </div>
+    </div>
+
+
+
+    
 
     <script src="js/scripts.js"></script>
 </body>
