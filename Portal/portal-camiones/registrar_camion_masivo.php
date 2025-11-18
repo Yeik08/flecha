@@ -7,8 +7,12 @@
 */
 
 // --- Quitamos los 'display_errors' para un JSON limpio ---
+//ini_set('display_errors', 0);
+//ini_set('display_startup_errors', 0);
+//error_reporting(0);
+
+
 ini_set('display_errors', 0);
-ini_set('display_startup_errors', 0);
 error_reporting(0);
 // ---------------------------------------------------
 
@@ -151,6 +155,7 @@ try {
             }
 
             // --- 5c. Insertar Camión ---
+// --- 5c. Insertar Camión ---
             $sql_camion = "INSERT INTO tb_camiones (
                 numero_economico, condicion, placas, vin, id_conductor_asignado, marca, anio, id_tecnologia, estatus, 
                 kilometraje_total, fecha_ult_mantenimiento, 
@@ -160,20 +165,22 @@ try {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt_camion = $conn->prepare($sql_camion);
-/*
-* CORRECCIÓN: 
-* El 8vo parámetro ($id_tecnologia) es INT, no DOUBLE.
-* Se cambia "ssssisidsd..." por "ssssisiisd...".
-*/
-            $stmt_camion->bind_param("ssssisiisdssssssss",
-
+            
+            $stmt_camion->bind_param("ssssisiisdssssssss", 
                 $numero_economico, $condicion, $placas, $vin, $id_conductor_numerico, 
                 $marca, $anio, $id_tecnologia, $estatus_db, $kilometraje, $fecha_mant,
                 $marca_filtro_aceite, $serie_filtro_aceite, $fecha_filtro_aceite,
                 $marca_filtro_cent, $serie_filtro_cent, $fecha_filtro_cent,
                 $lubricante
             );
-            $stmt_camion->execute();
+            
+            // --- CORRECCIÓN DE AUDITOR: Verificar si la ejecución falló ---
+            if (!$stmt_camion->execute()) {
+                // Si falla, lanzamos una excepción con el error real de la BD
+                throw new Exception("Error al guardar Camión: " . $stmt_camion->error);
+            }
+            // -------------------------------------------------------------
+            
             $nuevo_camion_id = $conn->insert_id;
 
             // --- 5d. Insertar Filtros en Inventario ---
