@@ -530,4 +530,84 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
+
+// --- 12. LÓGICA DE EDICIÓN DE CAMIÓN ---
+    
+    const modalEditar = document.getElementById('modal-editar');
+    
+    // A. Abrir modal y cargar datos
+    // Usamos "event delegation" porque la tabla se crea dinámicamente
+    const tablaCuerpo = document.querySelector(".tabla-contenido tbody");
+    if (tablaCuerpo) {
+        tablaCuerpo.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('btn-editar')) {
+                const idCamion = e.target.getAttribute('data-id');
+                
+                // Abrir modal
+                if(modalEditar) modalEditar.classList.remove('oculto');
+                
+                // Cargar datos
+                try {
+                    const response = await fetch(`api_camiones.php?id=${idCamion}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const c = data.data;
+                        document.getElementById('titulo-eco-editar').textContent = c.numero_economico;
+                        document.getElementById('edit_id_camion').value = c.id;
+                        document.getElementById('edit_estatus').value = c.estatus;
+                        document.getElementById('edit_kilometraje').value = c.kilometraje_total;
+                        document.getElementById('edit_placas').value = c.placas;
+                        document.getElementById('edit_conductor').value = c.id_interno_conductor || ''; // Muestra CON-001
+                    } else {
+                        alert("Error al cargar datos: " + data.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Error de conexión al cargar camión.");
+                }
+            }
+        });
+    }
+
+    // B. Guardar cambios
+    const formEditar = document.getElementById('form-editar-camion');
+    if (formEditar) {
+        formEditar.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(formEditar);
+            
+            try {
+                const response = await fetch('editar_camion.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    modalEditar.classList.add('oculto');
+                    cargarTablaCamiones(); // Recargar la tabla para ver cambios
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (error) {
+                alert("Error de conexión al guardar.");
+            }
+        });
+    }
+    
+    // C. Cerrar modal editar
+    if (modalEditar) {
+        modalEditar.addEventListener('click', e => {
+            if (e.target === modalEditar) modalEditar.classList.add('oculto');
+        });
+    }
+
+
+
+
+
+
 }); // FIN DEL DOMContentLoaded

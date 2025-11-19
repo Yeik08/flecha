@@ -436,6 +436,54 @@ $nombre_usuario = $_SESSION['nombre_completo'];
         </div>
     </div>
 
+    <div id="modal-editar" class="modal-overlay oculto">
+        <div class="modal-contenido">
+            <button class="modal-cerrar">&times;</button>
+            
+            <div class="form-header">
+                <h2>Editar Camión <span id="titulo-eco-editar"></span></h2>
+                <p>Modifica el estatus, conductor o corrige datos.</p>
+            </div>
+
+            <form id="form-editar-camion">
+                <input type="hidden" id="edit_id_camion" name="id_camion">
+
+                <div class="form-row">
+                    <div class="form-lvip">
+                        <label>Estatus Actual</label>
+                        <select id="edit_estatus" name="estatus">
+                            <option value="Activo">Activo</option>
+                            <option value="En Taller">En Taller</option>
+                            <option value="Inactivo">Inactivo</option>
+                            <option value="Vendido">Vendido</option>
+                        </select>
+                    </div>
+                    <div class="form-lvip">
+                        <label>Kilometraje Total</label>
+                        <input type="number" id="edit_kilometraje" name="kilometraje_total" step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-lvip">
+                        <label>Conductor Asignado (ID Interno)</label>
+                        <input type="text" id="edit_conductor" name="id_conductor" placeholder="Buscar conductor...">
+                        <div id="sugerencias-conductor-edit" class="sugerencias-lista"></div>
+                    </div>
+                    <div class="form-lvip">
+                        <label>Placas</label>
+                        <input type="text" id="edit_placas" name="placas">
+                    </div>
+                </div>
+
+                <div class="form-acciones">
+                    <button type="button" class="btn-secundario btn-cerrar-modal">Cancelar</button>
+                    <button type="submit" class="btn-primario">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
 
     
