@@ -56,36 +56,14 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 	</div>
 
 
-<!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+                <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
     <main class="modulo-contenido">
         
         <div class="tabla-titulo">
             <h2>Estado de la Flota en Taller</h2>
             <button class="btn-primario" id="btn-registrar-entrada">+ Registrar Entrada de Camión</button>
         </div>
-        <div class="kpi-notificaciones">
-  <div class="kpi-card kpi-correcto" id="kpi-correcto">
-    ✔ Todas las unidades al día
-    <ul class="lista-kpi lista-correcto">
-      <li>Unidad ECO-112 — Último mantenimiento:5 15/09/2025</li>
-      <li>Unidad ECO-201 — Último mantenimiento: 01/09/2025</li>
-    </ul>
-  </div>
-  <div class="kpi-card kpi-proximo" id="kpi-proximo">
-    ⚠ Próximos mantenimientos: 0
-    <ul class="lista-kpi lista-proximo">
-      <li>Unidad ECO-080 — Revisión próxima en 5 días</li>
-      <li>Unidad ECO-134 — Cambio de filtro pendiente</li>
-    </ul>
-  </div>
-  <div class="kpi-card kpi-vencido" id="kpi-vencido">
-    ⛔ Mantenimientos vencidos: 0
-    <ul class="lista-kpi lista-vencido">
-      <li>Unidad ECO-045 — Mantenimiento vencido desde 10/09/2025</li>
-      <li>Unidad ECO-099 — Vencido desde 01/10/2025</li>
-    </ul>
-  </div>
-</div>
+   
             <div class="tabla-contenido">
                 <table>
                     <thead>
@@ -121,8 +99,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     </tbody>
                 </table>
             </div>
-        </main>
-    </div>
+    </main>
 
     <div id="modal-registro" class="modal">
         <div class="modal-contenido">
@@ -130,20 +107,40 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <h2>Registrar Entrada de Camión a Taller</h2>
             <form id="form-registro">
                 <div class="campo-form">
-                    <label for="id_unidad">ID de Unidad:</label>
-                    <input list="unidades" id="id_unidad" name="id_unidad" placeholder="Buscar unidad...">
-                    <datalist id="unidades">
-                    <option value="Unidad ECO-045">
-                    <option value="Unidad ECO-080">
-                    <option value="Unidad ECO-003">
-                    <option value="Unidad ECO-099">
-                    </datalist>
-
+                        <label for="id_unidad">Buscar Unidad:</label>
+                        <input type="text" id="input-buscar-camion" placeholder="Escribe ECO o Placas..." autocomplete="off">
+                        <input type="hidden" id="id_camion_seleccionado" name="id_camion_seleccionado">
+                        <div id="sugerencias-camion" class="sugerencias-lista"></div>
                 </div>
+
+                <div class="form-row">
+                    <div class="campo-form">
+                        <label>Placas:</label>
+                        <input type="text" id="info-placas" readonly style="background:#eee;">
+                    </div>
+                    <div class="campo-form">
+                        <label>Próximo Mantenimiento:</label>
+                        <input type="text" id="info-proximo-mto" readonly style="background:#eee;">
+                    </div>
+                </div>
+
+                <div id="alerta-mto" class="alerta error oculto" style="margin-bottom: 15px;">
+                        ⚠️ Esta unidad requiere mantenimiento preventivo urgente.
+                </div>
+                                
+                <div class="campo-form">
+                        <label>Conductor Asignado:</label>
+                        <input type="text" id="info-conductor-asignado" readonly style="background:#eee;">
+                        <input type="hidden" id="id_conductor_asignado_hidden" name="id_conductor_asignado_hidden">
+                </div>
+
+
+
                 <div class="campo-form">
                     <label for="fecha-hora">Fecha y Hora de Entrada:</label>
                     <input type="datetime-local" id="fecha-hora" name="fecha-hora" required>
                 </div>
+                
                 <div class="campo-form">
                     <label for="tipo-mantenimiento">Tipo de Mantenimiento:</label>
                     <select id="tipo-mantenimiento" name="tipo-mantenimiento" required>
@@ -155,7 +152,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </div>
                 <div class="campo-form">
                    
-    <label for="id_unidad">ID mecánico a cargo:</label>
+                <label for="id_unidad">ID mecánico a cargo:</label>
                     <input list="mecánico" id="id_mecánico" name="id_mecánico" placeholder="Buscar mecánico..">
                     <datalist id="mecánico">
                     <option value="MEC 01 LUIS ROBLE">
@@ -191,9 +188,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
         <div id="modal-aviso" class="modal">
             <div class="modal-contenido">
                 <span class="cerrar-modal" id="cerrar-aviso">&times;</span>
-                <h2>⚠️ Aviso Importante sobre Imágenes de WhatsApp</h2>
+                <h2>⚠️ Aviso Importante sobre Imágenes de WhatsApp ⚠️</h2>
                 <p>
-                    Si la imagen fue descargada desde WhatsApp, es posible que se haya comprimido automáticamente y no sea valida(Solo se admiten imágenes en formato <strong>JPG</strong> o <strong>PNG</strong>).
+                    Si la imagen fue descargada desde WhatsApp, es posible que no sea valida (Solo se admiten imágenes en formato <strong>JPG</strong> o <strong>PNG</strong>).
                 </p>
                 <p>
                     <strong>Para evitar esto, pide que te la envien de la siguiente manera desde WhatsApp:</strong>
@@ -202,7 +199,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <li>Presiona el <strong>Clip</strong> para insertar un archivo.</li>
                     <li>Selecciona <strong>Documento</strong> en lugar de la opción de Galería o Fotos.</li>
                     <li>Busca la carpeta donde tienes almacenada la imagen.</li>
-                    <li>Selecciona la imagen que quieres enviar (esto la enviará como archivo sin perder metadatos).</li>
+                    <li>Selecciona la imagen que quieres enviar (esto la enviará como archivo).</li>
                 </ol>
                 <p>
                     Si la imagen fue tomada con el mismo dispositivo usado, puedes subir la imagen directamente desde la galería sin pasar por WhatsApp.
