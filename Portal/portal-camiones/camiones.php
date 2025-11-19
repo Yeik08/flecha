@@ -127,7 +127,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <th>ID del Camión</th>
                             <th>Placas</th>
                             <th>Estatus</th>
-                            <th>Última Actualización</th>
+                            <th>Último Mantenimiento  <br>(Filtro y Lubricante)</th>
                             <th>Próximo Mantenimiento</th>
                             <th>Acciones</th>
                         </tr>

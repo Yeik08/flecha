@@ -281,13 +281,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Determinamos el próximo mantenimiento
-                let proximoMto = 'N/A';
+                let proximoMto = '<span style="color: #999;">Pendiente cálculo</span>'; // Default
                 if (camion.mantenimiento_requerido === 'Si') {
-                    proximoMto = '<span class="mto-requerido">¡Mantenimiento Requerido!</span>';
-                } else if (camion.fecha_ult_mantenimiento) {
-                    proximoMto = 'Programado'; // (Aquí iría tu lógica de cálculo de fecha)
+                    // Si ya urge, mostramos alerta ROJA con la fecha
+                    const fechaVenc = camion.fecha_estimada_mantenimiento || 'Fecha desc.';
+                    proximoMto = `<span class="mto-requerido">¡URGENTE! (${fechaVenc})</span>`;
+                } else if (camion.fecha_estimada_mantenimiento) {
+                    // Si hay fecha calculada, la mostramos normal
+                    proximoMto = `<strong>${camion.fecha_estimada_mantenimiento}</strong>`; 
                 }
-
                 // Creamos la fila
                 const filaHTML = `
                     <tr>

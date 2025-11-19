@@ -31,7 +31,8 @@ try {
                 placas, 
                 estatus, 
                 fecha_ult_mantenimiento, 
-                mantenimiento_requerido 
+                fecha_estimada_mantenimiento,
+                mantenimiento_requerido
             FROM tb_camiones 
             ORDER BY numero_economico ASC";
     
