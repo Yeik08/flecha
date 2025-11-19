@@ -155,5 +155,105 @@ function recalcularMantenimiento($conn, $camion_id) {
     } else {
         $conn->query("UPDATE tb_camiones SET mantenimiento_requerido = 'No' WHERE id = $camion_id");
     }
+
+// 1. Obtener configuración y último mantenimiento
+    $sql_config = "SELECT 
+        c.fecha_ult_cambio_aceite, 
+        t.intervalo_horas_aceite -- Este es el 1350
+      FROM tb_camiones c
+      LEFT JOIN tb_tecnologias_carroceria t ON c.id_tecnologia = t.id
+      WHERE c.id = ?";
+      
+    $stmt = $conn->prepare($sql_config);
+    $stmt->bind_param("i", $camion_id);
+    $stmt->execute();
+    $config = $stmt->get_result()->fetch_assoc();
+
+    if (!$config || empty($config['fecha_ult_cambio_aceite'])) return; // No se puede calcular sin fecha base
+    
+    $limite_horas = $config['intervalo_horas_aceite'] ?? 1350; // Default 1350 si no tiene tecnología
+    $fecha_base = new DateTime($config['fecha_ult_cambio_aceite']);
+
+    // 2. Calcular el PROMEDIO de los últimos 3 meses (Tu lógica de "Promedio Operativo")
+    // Usamos solo los últimos 3 registros para que sea un promedio "fresco" y real.
+    $sql_promedio = "SELECT AVG(horas_operacion_mes) as promedio 
+                     FROM (
+                        SELECT horas_operacion_mes 
+                        FROM tb_telemetria_historico 
+                        WHERE camion_id = ? 
+                        ORDER BY anio DESC, mes DESC 
+                        LIMIT 3
+                     ) as ultimos_meses";
+                     
+    $stmt_prom = $conn->prepare($sql_promedio);
+    $stmt_prom->bind_param("i", $camion_id);
+    $stmt_prom->execute();
+    $res_prom = $stmt_prom->get_result()->fetch_assoc();
+    
+    $promedio_mensual = floatval($res_prom['promedio']);
+
+    // Evitar división por cero si el camión no ha trabajado
+    if ($promedio_mensual < 1) $promedio_mensual = 1; 
+
+    // 3. LA FÓRMULA MAESTRA (Tu requerimiento)
+    // Ejemplo: 1350 / 242.1 = 5.57 meses de vida útil
+    $meses_vida_util = $limite_horas / $promedio_mensual;
+    
+    // Convertir meses a días (aprox 30.4 días por mes)
+    $dias_vida_util = round($meses_vida_util * 30.4);
+    
+    // 4. Calcular la FECHA ESTIMADA
+    // Fecha Estimada = Fecha Último Manto + Días de Vida Útil
+    $fecha_estimada = clone $fecha_base;
+    $fecha_estimada->modify("+$dias_vida_util days");
+    $fecha_estimada_str = $fecha_estimada->format('Y-m-d');
+
+    // 5. Definir el ESTADO con "Margen de Error" (Semáforo)
+    $hoy = new DateTime();
+    $dias_restantes = $hoy->diff($fecha_estimada)->format('%r%a'); // Positivo si falta, negativo si pasó
+    $dias_restantes = intval($dias_restantes);
+
+    $estado = 'Ok';
+    // Margen de entrada prematura: Si falta menos de 1 mes (30 días), ya es "Próximo"
+    if ($dias_restantes < 30 && $dias_restantes >= 0) {
+        $estado = 'Próximo';
+    } elseif ($dias_restantes < 0) {
+        // Margen de entrada tardía: Ya se pasó la fecha
+        $estado = 'Vencido';
+    }
+
+    // 6. GUARDAR EN LA BASE DE DATOS Y AUDITAR
+    
+    // Actualizar el camión
+    $sql_update = "UPDATE tb_camiones SET 
+        promedio_horas_mensual = ?,
+        meses_estimados_vida = ?,
+        fecha_estimada_mantenimiento = ?,
+        estado_salud = ?
+        WHERE id = ?";
+    
+    $stmt_up = $conn->prepare($sql_update);
+    $stmt_up->bind_param("ddssi", $promedio_mensual, $meses_vida_util, $fecha_estimada_str, $estado, $camion_id);
+    $stmt_up->execute();
+
+    // 7. AUDITORÍA (Registrar el cálculo)
+    // Solo guardamos auditoría si el estado cambió a Próximo/Vencido o si es un cambio drástico, 
+    // para no llenar la tabla. Aquí guardamos siempre para que veas que funciona.
+    $sql_audit = "INSERT INTO tb_auditoria_calculos (id_camion, promedio_usado, nueva_fecha_estimada, motivo) VALUES (?, ?, ?, ?)";
+    $motivo = "Cálculo Mensual (Vida útil: " . round($meses_vida_util, 1) . " meses)";
+    $stmt_audit = $conn->prepare($sql_audit);
+    $stmt_audit->bind_param("idss", $camion_id, $promedio_mensual, $fecha_estimada_str, $motivo);
+    $stmt_audit->execute();
+
+
+
+
+
 }
+
+
+
+
+
+
 ?>
