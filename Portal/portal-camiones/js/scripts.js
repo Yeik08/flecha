@@ -403,16 +403,52 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(link);
         }
     }
-
-    // --- 9. LÓGICA DE UI ADICIONAL (KPI, BÚSQUEDA TABLA) ---
-    // (Esta sección está bien y no necesita cambios)
+// --- 9. LÓGICA DE UI ADICIONAL (KPI Y BÚSQUEDA EN TABLA) ---
+    
+    // Lógica del KPI (Desplegable)
     const kpi = document.getElementById("kpi-aprobaciones");
     const lista = document.getElementById("lista-aprobaciones");
-    if (kpi && lista) { kpi.addEventListener("click", () => { lista.classList.toggle("mostrar"); }); }
+    if (kpi && lista) { 
+        kpi.addEventListener("click", () => { lista.classList.toggle("mostrar"); }); 
+    }
+
+    // --- LÓGICA DE BUSCADOR (FILTRO EN TIEMPO REAL) ---
     const inputBuscar = document.getElementById("buscar-eco");
-    const tabla = document.querySelector(".tabla-contenido tbody");
-    if (inputBuscar && tabla) { /* Tu lógica de búsqueda en tabla */ }
-    
+    const tablaBody = document.querySelector(".tabla-contenido tbody");
+
+    if (inputBuscar && tablaBody) {
+        inputBuscar.addEventListener("keyup", function() {
+            // 1. Obtenemos el texto y lo convertimos a minúsculas (para que no importen mayúsculas)
+            const textoBusqueda = inputBuscar.value.toLowerCase();
+            const filas = tablaBody.getElementsByTagName("tr");
+
+            // 2. Recorremos todas las filas de la tabla
+            for (let i = 0; i < filas.length; i++) {
+                const fila = filas[i];
+                
+                // Si la fila es un mensaje de "Cargando..." o "No hay datos", no la filtramos
+                if (fila.cells.length < 2) continue;
+
+                // 3. Obtenemos todo el texto de la fila (ID + Placas + Estatus + Fecha...)
+                const textoFila = fila.textContent.toLowerCase();
+
+                // 4. Comparamos: ¿El texto de la fila incluye lo que escribió el usuario?
+                if (textoFila.includes(textoBusqueda)) {
+                    fila.style.display = ""; // Mostrar fila
+                } else {
+                    fila.style.display = "none"; // Ocultar fila
+                }
+            }
+        });
+    }
+
+
+
+
+
+
+
+
     // --- 10. LÓGICA DE ENVÍO DEL FORMULARIO DE ALTA MANUAL ---
     // (Esta sección está bien y no necesita cambios)
     const formAltaCamion = document.getElementById('form-alta-camion');
