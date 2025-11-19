@@ -531,13 +531,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-
 // --- 12. LÓGICA DE EDICIÓN DE CAMIÓN ---
     
     const modalEditar = document.getElementById('modal-editar');
     
-    // A. Abrir modal y cargar datos
-    // Usamos "event delegation" porque la tabla se crea dinámicamente
+    if (modalEditar) {
+        // 1. Lógica para CERRAR el modal (Botón X y Cancelar)
+        // Seleccionamos los botones DENTRO de este modal específico
+        const btnsCerrarEditar = modalEditar.querySelectorAll('.modal-cerrar, .btn-cerrar-modal');
+        
+        btnsCerrarEditar.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevenir comportamientos raros
+                modalEditar.classList.add('oculto');
+            });
+        });
+
+        // Cerrar al dar clic fuera (en el fondo oscuro)
+        modalEditar.addEventListener('click', e => {
+            if (e.target === modalEditar) modalEditar.classList.add('oculto');
+        });
+    }
+    
+    // 2. Abrir modal y cargar datos (Event Delegation en la tabla)
     const tablaCuerpo = document.querySelector(".tabla-contenido tbody");
     if (tablaCuerpo) {
         tablaCuerpo.addEventListener('click', async (e) => {
@@ -559,19 +575,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('edit_estatus').value = c.estatus;
                         document.getElementById('edit_kilometraje').value = c.kilometraje_total;
                         document.getElementById('edit_placas').value = c.placas;
-                        document.getElementById('edit_conductor').value = c.id_interno_conductor || ''; // Muestra CON-001
+                        document.getElementById('edit_conductor').value = c.id_interno_conductor || ''; 
+                        
+                        // Sugerencias de conductor (Reutilizamos la lógica si existe)
+                        // (Opcional: Podrías copiar la lógica de sugerencias aquí si la necesitas en el edit también)
                     } else {
                         alert("Error al cargar datos: " + data.message);
+                        modalEditar.classList.add('oculto');
                     }
                 } catch (error) {
                     console.error(error);
                     alert("Error de conexión al cargar camión.");
+                    modalEditar.classList.add('oculto');
                 }
             }
         });
     }
 
-    // B. Guardar cambios
+    // 3. Guardar cambios
     const formEditar = document.getElementById('form-editar-camion');
     if (formEditar) {
         formEditar.addEventListener('submit', async (e) => {
@@ -583,29 +604,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     body: formData
                 });
+                
+                // Verificar si la respuesta es válida antes de parsear
+                if (!response.ok) throw new Error("Error HTTP: " + response.status);
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     alert(data.message);
                     modalEditar.classList.add('oculto');
-                    cargarTablaCamiones(); // Recargar la tabla para ver cambios
+                    cargarTablaCamiones(); // Recargar la tabla para ver los cambios
                 } else {
                     alert("Error: " + data.message);
                 }
             } catch (error) {
-                alert("Error de conexión al guardar.");
+                console.error(error);
+                alert("Error de conexión al guardar. Revisa la consola para más detalles.");
             }
         });
     }
-    
-    // C. Cerrar modal editar
-    if (modalEditar) {
-        modalEditar.addEventListener('click', e => {
-            if (e.target === modalEditar) modalEditar.classList.add('oculto');
-        });
-    }
-
-
 
 
 
