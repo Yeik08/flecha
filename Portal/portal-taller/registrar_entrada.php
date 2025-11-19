@@ -1,4 +1,8 @@
 <?php
+/*
+* Portal/portal-taller/php/registrar_entrada.php
+* VERSIÓN CORREGIDA Y ALINEADA CON DB (v2)
+*/
 session_start();
 header('Content-Type: application/json');
 require_once '../../php/db_connect.php';
@@ -12,18 +16,21 @@ try {
     $conn->begin_transaction();
 
     // 1. Datos del Formulario
-    $id_camion = $_POST['id_camion_seleccionado'];
-    $km_llegada = $_POST['kilometraje_entrada'];
-    $combustible = $_POST['nivel_combustible'];
-    $tipo_mto = $_POST['tipo_servicio'];
-    $obs = $_POST['observaciones'];
+    // Nota: Usamos '??' para evitar errores si un campo viene vacío
+    $id_camion = $_POST['id_camion_seleccionado'] ?? null;
+    $km_llegada = $_POST['kilometraje_entrada'] ?? 0;
+    $combustible = $_POST['nivel_combustible'] ?? '';
+    $tipo_mto = $_POST['tipo_servicio'] ?? '';
+    $obs = $_POST['observaciones'] ?? '';
     
+    if (!$id_camion) throw new Exception("No se seleccionó ningún camión.");
+
     // Conductores
-    $id_cond_asignado = $_POST['id_conductor_asignado_hidden'] ?: null;
-    $id_cond_entrega = $_POST['id_conductor_entrega'] ?: null; // El que seleccionó en el autocompletado
+    $id_cond_asignado = !empty($_POST['id_conductor_asignado_hidden']) ? $_POST['id_conductor_asignado_hidden'] : null;
+    $id_cond_entrega = !empty($_POST['id_conductor_entrega']) ? $_POST['id_conductor_entrega'] : null;
     
     // Validación de Conductor (Alerta)
-    $alerta_cond = ($id_cond_asignado != $id_cond_entrega) ? 'Si' : 'No';
+    $alerta_cond = ($id_cond_asignado != $id_cond_entrega && $id_cond_entrega != null) ? 'Si' : 'No';
 
     // 2. Cálculo de Tiempos (Temprano/Tarde)
     $sql_fechas = "SELECT fecha_estimada_mantenimiento FROM tb_camiones WHERE id = ?";
@@ -39,7 +46,16 @@ try {
         $fecha_est = new DateTime($res_f['fecha_estimada_mantenimiento']);
         $hoy = new DateTime();
         $diferencia = $hoy->diff($fecha_est);
-        $dias_dif = (int)$diferencia->format('%r%a') * -1; // Invertimos: + es tarde, - es temprano
+        // Invertimos lógica: diff da positivo si fecha es futuro. 
+        // Si fecha estimada es futuro (falta), diff es "días que faltan". Llegó temprano (negativo para nosotros).
+        // Si fecha estimada es pasado, diff es "días que pasaron". Llegó tarde.
+        
+        // Simplificación: Si hoy > estimada = Tarde. Si hoy < estimada = Temprano.
+        if ($hoy > $fecha_est) {
+            $dias_dif = $diferencia->days; // Tarde
+        } else {
+            $dias_dif = -1 * $diferencia->days; // Temprano
+        }
 
         if ($dias_dif > 7) $clasificacion = 'Tarde';
         elseif ($dias_dif < -7) $clasificacion = 'Anticipado';
@@ -47,18 +63,37 @@ try {
     }
 
     // 3. Insertar Entrada
-    $folio = "ENT-" . date('Y') . "-" . time(); // Folio simple
+    // CORRECCIÓN: Usamos los nombres REALES de tu base de datos 'flecha_roja_db'
+    $folio = "ENT-" . date('Y') . "-" . time(); 
+    $id_taller = 1; // Default: Magdalena (o podrías recibirlo del form)
+
     $sql_insert = "INSERT INTO tb_entradas_taller 
-        (folio, id_camion, id_recepcionista, kilometraje_llegada, nivel_combustible, 
-         tipo_mantenimiento, id_conductor_asignado, id_conductor_entrega, alerta_conductor,
-         clasificacion_tiempo, dias_diferencia, observaciones)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        (folio_entrada, id_camion, id_recepcionista, id_taller, kilometraje_entrada, nivel_combustible, 
+         tipo_mantenimiento_solicitado, id_conductor_asignado, id_conductor_entrega, alerta_conductor,
+         entrada_vs_programada, dias_desviacion, observaciones_recepcion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql_insert);
-    $stmt->bind_param("siidssiiisis", $folio, $id_camion, $id_usuario, $km_llegada, $combustible, 
-                      $tipo_mto, $id_cond_asignado, $id_cond_entrega, $alerta_cond, 
-                      $clasificacion, $dias_dif, $obs);
-    $stmt->execute();
+    // Tipos: s (string), i (int), i, i, d (double), s, s, i, i, s, s, i, s
+    $stmt->bind_param("siiidssiissss", 
+        $folio, 
+        $id_camion, 
+        $id_usuario, 
+        $id_taller,
+        $km_llegada, 
+        $combustible, 
+        $tipo_mto, 
+        $id_cond_asignado, 
+        $id_cond_entrega, 
+        $alerta_cond, 
+        $clasificacion, 
+        $dias_dif, 
+        $obs
+    );
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Error al guardar entrada: " . $stmt->error);
+    }
     $id_entrada = $conn->insert_id;
 
     // 4. Actualizar Camión a "En Taller"
@@ -67,11 +102,22 @@ try {
     // 5. Guardar Foto (Si existe)
     if (isset($_FILES['foto-camion']) && $_FILES['foto-camion']['error'] == 0) {
         $ext = pathinfo($_FILES['foto-camion']['name'], PATHINFO_EXTENSION);
-        $nombre_archivo = "evidencia_" . $id_entrada . "_" . time() . "." . $ext;
-        $ruta_destino = "../../uploads/evidencias/" . $nombre_archivo; // Asegúrate de crear esta carpeta
+        $nombre_archivo = "evidencia_entrada_" . $id_entrada . "_" . time() . "." . $ext;
+        
+        // CORRECCIÓN: Ruta relativa desde 'portal-taller/php/' hacia 'uploads/'
+        $ruta_destino = "../../../uploads/evidencias/" . $nombre_archivo; 
+        
+        // Aseguramos que el directorio existe
+        if (!is_dir(dirname($ruta_destino))) {
+            mkdir(dirname($ruta_destino), 0777, true);
+        }
         
         if (move_uploaded_file($_FILES['foto-camion']['tmp_name'], $ruta_destino)) {
-            $conn->query("INSERT INTO tb_entradas_evidencias (id_entrada, ruta_archivo) VALUES ($id_entrada, '$nombre_archivo')");
+            // CORRECCIÓN: Nombre de tabla y columna correctos (tb_evidencias_entrada_taller)
+            $sql_foto = "INSERT INTO tb_evidencias_entrada_taller (id_entrada_taller, ruta_archivo, descripcion) VALUES (?, ?, 'Evidencia de Ingreso')";
+            $stmt_foto = $conn->prepare($sql_foto);
+            $stmt_foto->bind_param("is", $id_entrada, $nombre_archivo);
+            $stmt_foto->execute();
         }
     }
 

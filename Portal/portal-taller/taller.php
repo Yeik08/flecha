@@ -75,28 +75,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>ECO-112</td>
-                            <td>A123BCD</td>
-                            <td>15/09/2025</td>
-                            <td class="estatus-operativo">Operativo</td>
-                            <td class="acciones"><button class="btn-ver">Ver Historial</button></td>
-                        </tr>
-                        <tr class="stock-bajo"> <td>ECO-080</td>
-                            <td>B456EFG</td>
-                            <td>20/08/2025</td>
-                            <td class="estatus-taller">En Taller</td>
-                            <td class="acciones"><button class="btn-ver">Ver Historial</button></td>
-                        </tr>
-                        <tr>
-                            <td>ECO-201</td>
-                            <td>C789HIJ</td>
-                            <td>01/09/2025</td>
-                            <td class="estatus-operativo">Operativo</td>
-                            <td class="acciones"><button class="btn-ver">Ver Historial</button></td>
-                        </tr>
-                    </tbody>
+
                 </table>
             </div>
     </main>
