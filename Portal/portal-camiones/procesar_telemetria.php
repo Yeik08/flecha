@@ -246,7 +246,102 @@ function recalcularMantenimiento($conn, $camion_id) {
     $stmt_audit->execute();
 
 
+    // 1. Obtener datos del camión
+    $sql_config = "SELECT 
+        c.kilometraje_total,
+        c.fecha_ult_cambio_aceite, 
+        c.fecha_ult_cambio_centrifugo,
+        t.intervalo_horas_aceite 
+      FROM tb_camiones c
+      LEFT JOIN tb_tecnologias_carroceria t ON c.id_tecnologia = t.id
+      WHERE c.id = ?";
+      
+    $stmt = $conn->prepare($sql_config);
+    $stmt->bind_param("i", $camion_id);
+    $stmt->execute();
+    $config = $stmt->get_result()->fetch_assoc();
 
+    if (!$config) return;
+    
+    // Configuración base
+    $intervalo_aceite_hrs = $config['intervalo_horas_aceite'] ?? 1350;
+    $intervalo_centrifugo_hrs = $intervalo_aceite_hrs * 2; // Regla: Cada 2 mantenimientos (2700)
+
+    // 2. Calcular Promedio de Uso (Últimos 3 meses)
+    $sql_promedio = "SELECT AVG(horas_operacion_mes) as promedio 
+                     FROM (
+                        SELECT horas_operacion_mes 
+                        FROM tb_telemetria_historico 
+                        WHERE camion_id = ? 
+                        ORDER BY anio DESC, mes DESC 
+                        LIMIT 3
+                     ) as ultimos_meses";
+    $stmt_prom = $conn->prepare($sql_promedio);
+    $stmt_prom->bind_param("i", $camion_id);
+    $stmt_prom->execute();
+    $res_prom = $stmt_prom->get_result()->fetch_assoc();
+    $promedio_mensual = floatval($res_prom['promedio']);
+    if ($promedio_mensual < 1) $promedio_mensual = 1; // Evitar div/0
+
+    // --- CÁLCULO 1: ACEITE ---
+    $fecha_base_aceite = $config['fecha_ult_cambio_aceite'] ? new DateTime($config['fecha_ult_cambio_aceite']) : new DateTime();
+    $meses_vida_aceite = $intervalo_aceite_hrs / $promedio_mensual;
+    $dias_vida_aceite = round($meses_vida_aceite * 30.4);
+    
+    $f_est_aceite = clone $fecha_base_aceite;
+    $f_est_aceite->modify("+$dias_vida_aceite days");
+    
+    // Semáforo Aceite
+    $hoy = new DateTime();
+    $dias_rest_aceite = intval($hoy->diff($f_est_aceite)->format('%r%a'));
+    $estado_aceite = 'Ok';
+    if ($dias_rest_aceite < 0) $estado_aceite = 'Vencido';
+    elseif ($dias_rest_aceite < 30) $estado_aceite = 'Próximo';
+
+    // --- CÁLCULO 2: CENTRÍFUGO ---
+    $fecha_base_cent = $config['fecha_ult_cambio_centrifugo'] ? new DateTime($config['fecha_ult_cambio_centrifugo']) : new DateTime();
+    $meses_vida_cent = $intervalo_centrifugo_hrs / $promedio_mensual;
+    $dias_vida_cent = round($meses_vida_cent * 30.4);
+    
+    $f_est_cent = clone $fecha_base_cent;
+    $f_est_cent->modify("+$dias_vida_cent days");
+
+    // Semáforo Centrífugo
+    $dias_rest_cent = intval($hoy->diff($f_est_cent)->format('%r%a'));
+    $estado_centrifugo = 'Ok';
+    if ($dias_rest_cent < 0) $estado_centrifugo = 'Vencido';
+    elseif ($dias_rest_cent < 30) $estado_centrifugo = 'Próximo';
+
+    // --- CÁLCULO 3: REGLA DEL LUBRICANTE (1 Millón KM) ---
+    $km_actual = floatval($config['kilometraje_total']);
+    $lubricante_sugerido = ($km_actual >= 1000000) ? "SAE 15W30" : "SAE 10W30 MULTIGRADO";
+
+    // 4. ACTUALIZAR TODO EN LA BD
+    $sql_update = "UPDATE tb_camiones SET 
+        promedio_horas_mensual = ?,
+        meses_estimados_vida = ?,
+        fecha_estimada_mantenimiento = ?,
+        estado_salud = ?,
+        fecha_estimada_centrifugo = ?,
+        estado_centrifugo = ?,
+        lubricante_sugerido = ?
+        WHERE id = ?";
+    
+    $f_aceite_str = $f_est_aceite->format('Y-m-d');
+    $f_cent_str = $f_est_cent->format('Y-m-d');
+
+    $stmt_up = $conn->prepare($sql_update);
+    $stmt_up->bind_param("ddsssssi", 
+        $promedio_mensual, 
+        $meses_vida_aceite, 
+        $f_aceite_str, 
+        $estado_aceite,
+        $f_cent_str,
+        $estado_centrifugo,
+        $lubricante_sugerido,
+        $camion_id
+    );
+    $stmt_up->execute();
 
 
 }
