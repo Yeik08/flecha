@@ -626,5 +626,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+// --- 13. BÚSQUEDA INTELIGENTE EN EDICIÓN ---
+    const inputConductorEdit = document.getElementById("edit_conductor");
+    const listaSugerenciasEdit = document.getElementById("sugerencias-conductor-edit");
+
+    if (inputConductorEdit && listaSugerenciasEdit) {
+        
+        // Evento al escribir
+        inputConductorEdit.addEventListener("input", () => {
+            const valor = inputConductorEdit.value.trim().toUpperCase();
+            listaSugerenciasEdit.innerHTML = ""; 
+            
+            if (valor === "") {
+                listaSugerenciasEdit.style.display = "none";
+                return;
+            }
+
+            // Filtramos de la lista global 'conductoresData' que ya cargamos al inicio
+            const filtrados = conductoresData.filter(c =>
+                c.id.toUpperCase().includes(valor) || c.nombre.includes(valor)
+            );
+
+            if (filtrados.length > 0) {
+                listaSugerenciasEdit.style.display = "block";
+                filtrados.forEach(c => {
+                    const item = document.createElement("div");
+                    // Mostramos Nombre y ID para mayor claridad
+                    item.textContent = `${c.nombre} (${c.id})`; 
+                    
+                    item.addEventListener("click", () => {
+                        inputConductorEdit.value = c.id; // Al hacer clic, ponemos el ID (CON-XXX)
+                        listaSugerenciasEdit.style.display = "none";
+                    });
+                    listaSugerenciasEdit.appendChild(item);
+                });
+            } else {
+                listaSugerenciasEdit.style.display = "block";
+                const noRes = document.createElement("div");
+                noRes.textContent = "Sin coincidencias";
+                noRes.style.color = "#888";
+                noRes.style.padding = "8px";
+                listaSugerenciasEdit.appendChild(noRes);
+            }
+        });
+
+        // Cerrar lista al hacer clic fuera
+        document.addEventListener("click", (e) => {
+            if (!listaSugerenciasEdit.contains(e.target) && e.target !== inputConductorEdit) {
+                listaSugerenciasEdit.style.display = "none";
+            }
+        });
+    }
+
+
+
+
+
+
 
 }); // FIN DEL DOMContentLoaded

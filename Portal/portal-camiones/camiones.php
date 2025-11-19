@@ -467,7 +467,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 <div class="form-row">
                     <div class="form-lvip">
                         <label>Conductor Asignado (ID Interno)</label>
-                        <input type="text" id="edit_conductor" name="id_conductor" placeholder="Buscar conductor...">
+                        <input type="text" id="edit_conductor" name="id_conductor" placeholder="Buscar conductor..." autocomplete="off">
+                        
                         <div id="sugerencias-conductor-edit" class="sugerencias-lista"></div>
                     </div>
                     <div class="form-lvip">
