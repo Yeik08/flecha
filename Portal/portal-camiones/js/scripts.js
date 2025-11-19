@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA ---
+    // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA (CON ALERTA DUPLICADOS) ---
     const btnGuardarCsvTelemetria = document.getElementById('btn-guardar-csv-telemetria');
     const inputCsvRecorridos = document.getElementById('input-csv-recorridos');
 
@@ -93,12 +93,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData
                 });
                 const data = await response.json();
+
                 if (data.success) {
-                    alert("¡Éxito! " + data.message);
+                    // --- BLOQUE DE ALERTA INTELIGENTE ---
+                    let mensajeFinal = "¡Éxito! " + data.message;
+
+                    // Si el PHP reportó duplicados, los mostramos
+                    if (data.lista_duplicados && data.lista_duplicados.length > 0) {
+                        mensajeFinal += "\n\n⚠️ ADVERTENCIA: Se detectaron datos repetidos (Mismo Mes/Año).";
+                        mensajeFinal += "\nSe actualizaron los registros de los siguientes camiones:\n";
+                        // Mostramos solo los primeros 5 para no saturar la alerta
+                        mensajeFinal += data.lista_duplicados.slice(0, 5).join("\n");
+                        
+                        if (data.lista_duplicados.length > 5) {
+                            mensajeFinal += "\n... y " + (data.lista_duplicados.length - 5) + " más.";
+                        }
+                    }
+                    
+                    alert(mensajeFinal);
                     modalTelemetria.classList.add('oculto');
                 } else {
                     alert("Error al procesar el archivo:\n" + data.message);
                 }
+
             } catch (error) {
                 console.error('Error en el fetch de telemetría:', error);
                 alert('Error de conexión. No se pudo contactar al servidor.');
@@ -109,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
 
     // --- 3. LÓGICA DE PESTAÑAS (MANUAL / ARCHIVO) ---
     const tabLinks = document.querySelectorAll('.carga-link');

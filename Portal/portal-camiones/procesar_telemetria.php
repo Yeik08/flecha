@@ -1,4 +1,9 @@
 <?php
+/*
+* Portal/portal-camiones/procesar_telemetria.php
+* VERSIÓN CON ALERTA DE DUPLICADOS
+*/
+
 session_start();
 header('Content-Type: application/json');
 
@@ -17,14 +22,10 @@ if ($conn === false) {
     exit;
 }
 
-// --- 2. Validar la Recepción del Archivo ---
-// La llave 'archivo_recorridos' debe coincidir con el 'name' en FormData de JS
+// --- 2. Validar Archivo ---
 if (!isset($_FILES['archivo_recorridos']) || $_FILES['archivo_recorridos']['error'] != UPLOAD_ERR_OK) {
     http_response_code(400);
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Error: No se recibió el archivo o hubo un error en la subida. Asegúrate de que el input se llame "archivo_recorridos".'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Error: No se recibió el archivo.']);
     exit;
 }
 
@@ -35,31 +36,28 @@ $conn->begin_transaction();
 $fila = 0;
 $errores = [];
 $exitosos = 0;
+$duplicados = []; // Lista para guardar los camiones repetidos
 
 try {
     $file = fopen($csv_file, 'r');
-    if ($file === FALSE) {
-        throw new Exception("No se pudo abrir el archivo CSV.");
-    }
+    if ($file === FALSE) throw new Exception("No se pudo abrir el archivo CSV.");
 
-    fgetcsv($file); // Omitir la fila de encabezados
+    fgetcsv($file); // Omitir encabezados
     $fila = 1;
 
     while (($columna = fgetcsv($file, 1000, ",")) !== FALSE) {
         $fila++;
         
-        // Asignar datos de la plantilla de telemetría
         $unidad = $columna[0] ?? null;
         $anio = $columna[1] ?? null;
         $mes = $columna[2] ?? null;
-        $km_mes = $columna[3] ?? null;
-        $t_conduciendo = $columna[4] ?? null;
-        $t_detenido = $columna[5] ?? null;
-        $t_ralenti = $columna[6] ?? null;
+        $km_mes = $columna[3] ?? 0;
+        $t_conduciendo = $columna[4] ?? 0;
+        $t_detenido = $columna[5] ?? 0;
+        $t_ralenti = $columna[6] ?? 0;
 
         if (empty($unidad) || empty($anio) || empty($mes)) {
-            $errores[] = "Fila $fila: Faltan datos clave (Unidad, Año o Mes).";
-            continue;
+            continue; // Saltar filas vacías
         }
 
         // 4. Buscar el ID del camión
@@ -71,7 +69,7 @@ try {
         if ($result_camion->num_rows > 0) {
             $camion_id = $result_camion->fetch_assoc()['id'];
 
-            // 5. Insertar o Actualizar la telemetría
+            // 5. Insertar o Actualizar
             $sql_insert = "INSERT INTO tb_telemetria_historico 
                 (camion_id, anio, mes, kilometraje_mes, tiempo_conduciendo_horas, tiempo_detenido_horas, tiempo_ralenti_horas) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -85,21 +83,35 @@ try {
             $stmt_insert->bind_param("iiidddd", $camion_id, $anio, $mes, $km_mes, $t_conduciendo, $t_detenido, $t_ralenti);
             $stmt_insert->execute();
 
-            // 6. Recalcular Mantenimiento (Tu función de la respuesta anterior)
+            // --- DETECCIÓN DE DUPLICADOS ---
+            // Si affected_rows es 2, significa que actualizó un registro existente
+            if ($stmt_insert->affected_rows == 2) {
+                $duplicados[] = "$unidad (Mes $mes/$anio)";
+            }
+            
+            // 6. Recalcular Mantenimiento
             recalcularMantenimiento($conn, $camion_id);
             $exitosos++;
             
         } else {
-            $errores[] = "Fila $fila: No se encontró el camión con N° Económico '$unidad'.";
+            $errores[] = "Fila $fila: Camión '$unidad' no encontrado.";
         }
     }
     fclose($file);
 
     if (empty($errores)) {
         $conn->commit();
-        echo json_encode(['success' => true, 'message' => "Proceso completado. $exitosos registros actualizados con éxito."]);
+        
+        // Preparamos el mensaje de respuesta
+        $response = [
+            'success' => true, 
+            'message' => "Proceso completado. $exitosos registros procesados.",
+            'lista_duplicados' => $duplicados // Enviamos la lista al JS
+        ];
+        echo json_encode($response);
+
     } else {
-        throw new Exception("Proceso completado con errores: " . implode(" | ", $errores));
+        throw new Exception("Errores: " . implode(" | ", $errores));
     }
 
 } catch (Exception $e) {
@@ -108,38 +120,28 @@ try {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
-/*
-* Esta es la función que "agenda" el mantenimiento
-*/
+// --- Función auxiliar para recalcular ---
 function recalcularMantenimiento($conn, $camion_id) {
-    
-    // 1. Obtener los intervalos para este camión
-    $sql_intervalos = "SELECT 
-        c.fecha_ult_cambio_aceite, 
-        t.intervalo_km_aceite, 
-        t.intervalo_horas_aceite 
-      FROM tb_camiones c
-      JOIN tb_tecnologias_carroceria t ON c.id_tecnologia = t.id
-      WHERE c.id = ?";
-    
+    $sql_intervalos = "SELECT c.fecha_ult_cambio_aceite, t.intervalo_km_aceite, t.intervalo_horas_aceite 
+                       FROM tb_camiones c
+                       LEFT JOIN tb_tecnologias_carroceria t ON c.id_tecnologia = t.id
+                       WHERE c.id = ?";
     $stmt_int = $conn->prepare($sql_intervalos);
     $stmt_int->bind_param("i", $camion_id);
     $stmt_int->execute();
     $result_int = $stmt_int->get_result()->fetch_assoc();
 
+    if (!$result_int || empty($result_int['fecha_ult_cambio_aceite'])) return;
+    
     $fecha_ultimo_mto = $result_int['fecha_ult_cambio_aceite'];
-    $intervalo_km = $result_int['intervalo_km_aceite'];
-    $intervalo_horas = $result_int['intervalo_horas_aceite'];
+    $intervalo_km = $result_int['intervalo_km_aceite'] ?? 9999999;
+    $intervalo_horas = $result_int['intervalo_horas_aceite'] ?? 9999999;
+    
+    if ($intervalo_km == 0 || $intervalo_horas == 0) return;
 
-    // 2. Sumar todo el uso DESPUÉS del último mantenimiento
-    $sql_acumulado = "SELECT 
-        SUM(kilometraje_mes) AS km_acumulados, 
-        SUM(horas_operacion_mes) AS horas_acumuladas 
-      FROM tb_telemetria_historico 
-      WHERE camion_id = ? 
-      AND MAKEDATE(anio, 1) + INTERVAL (mes - 1) MONTH > ?";
-      // (MAKEDATE crea una fecha como '2025-10-01' para comparar)
-
+    $sql_acumulado = "SELECT SUM(kilometraje_mes) AS km_acumulados, SUM(horas_operacion_mes) AS horas_acumuladas 
+                      FROM tb_telemetria_historico 
+                      WHERE camion_id = ? AND MAKEDATE(anio, 1) + INTERVAL (mes - 1) MONTH > ?";
     $stmt_acum = $conn->prepare($sql_acumulado);
     $stmt_acum->bind_param("is", $camion_id, $fecha_ultimo_mto);
     $stmt_acum->execute();
@@ -148,12 +150,9 @@ function recalcularMantenimiento($conn, $camion_id) {
     $km_usados = $acumulado['km_acumulados'] ?? 0;
     $horas_usadas = $acumulado['horas_acumuladas'] ?? 0;
 
-    // 3. Tomar la decisión
     if ($km_usados >= $intervalo_km || $horas_usadas >= $intervalo_horas) {
-        // ¡Se necesita mantenimiento!
         $conn->query("UPDATE tb_camiones SET mantenimiento_requerido = 'Si' WHERE id = $camion_id");
     } else {
-        // Aún no
         $conn->query("UPDATE tb_camiones SET mantenimiento_requerido = 'No' WHERE id = $camion_id");
     }
 }
