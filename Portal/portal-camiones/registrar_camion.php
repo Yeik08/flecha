@@ -170,7 +170,7 @@ try {
     }
 
     // --- 5. Registrar Filtros en el Inventario ---
-    $ubicacion_taller = 1; // ID 1 = 'Taller Magdalena' (Asumido)
+    $ubicacion_taller = 5; // ID 5 = 'camion' (Asumido)
 
     // --- 5a. Filtro de Aceite ---
     if (!empty($serie_filtro_aceite)) {

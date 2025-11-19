@@ -171,7 +171,7 @@ try {
             $nuevo_camion_id = $conn->insert_id;
 
             // Insertar Filtros (Inventario)
-            $ubi = 1; 
+            $ubi = 5; 
             if (!empty($serie_filtro_aceite)) {
                 $stmt_f = $conn->prepare("SELECT id FROM tb_cat_filtros WHERE marca = ? AND tipo_filtro = 'Aceite' LIMIT 1");
                 $stmt_f->bind_param("s", $marca_filtro_aceite);
