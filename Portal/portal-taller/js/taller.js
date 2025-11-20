@@ -1,7 +1,6 @@
 /*
  * Portal/portal-taller/js/taller.js
- * Lógica completa para el Módulo de Recepción de Taller.
- * V11: Incluye validación de conductor (Alerta Amarilla).
+ * Lógica completa con VALIDACIÓN REAL de Conductor.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputIdConductorEntrega = document.getElementById('id_conductor_entrega');
     
     // Alertas
-    const alertaConductor = document.getElementById('alerta-conductor'); // <--- TU ALERTA
+    const alertaConductor = document.getElementById('alerta-conductor'); // TU ALERTA
     const alertaTiempo = document.getElementById('alerta-tiempo');
     const inputObs = document.getElementById('obs-recepcion');
     
@@ -79,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(listaCamion) listaCamion.style.display = 'none';
         if(listaChofer) listaChofer.style.display = 'none';
         if(alertaTiempo) alertaTiempo.style.display = 'none';
-        if(alertaConductor) alertaConductor.style.display = 'none'; // Ocultamos alerta al cerrar
+        if(alertaConductor) alertaConductor.style.display = 'none';
         
         if(modalAviso) modalAviso.style.display = 'none';
     }
@@ -124,28 +123,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                 document.getElementById('id_camion_seleccionado').value = c.id;
                             if(infoPlacas) infoPlacas.value = c.placas;
                             
-                            // --- LÓGICA DE CONDUCTOR ASIGNADO ---
+                            // --- LÓGICA CRÍTICA PARA VALIDACIÓN DE CONDUCTOR ---
                             if(c.nombre_chofer) {
                                 if(infoConductor) infoConductor.value = c.nombre_chofer;
                                 if(hiddenIdConductor) {
                                     hiddenIdConductor.value = c.id_chofer_asignado;
-                                    // GUARDAMOS EL ID INTERNO (ej: CON-011) PARA COMPARAR DESPUÉS
+                                    // GUARDAMOS EL ID INTERNO (ej: CON-011) EN UN DATASET PARA COMPARAR
                                     hiddenIdConductor.dataset.interno = c.id_interno_chofer; 
                                 }
                             } else {
                                 if(infoConductor) infoConductor.value = "Sin Asignar";
                                 if(hiddenIdConductor) {
                                     hiddenIdConductor.value = "";
-                                    hiddenIdConductor.dataset.interno = "";
+                                    hiddenIdConductor.dataset.interno = ""; // Limpiamos
                                 }
                             }
+                            // ---------------------------------------------------
 
                             // Validaciones
                             fechaEstimadaMantenimiento = c.fecha_estimada_mantenimiento; 
                             validarTiempo(); 
-                            validarConductor(); // Validamos por si acaso ya había un chofer seleccionado
+                            validarConductor(); // Validar por si acaso
 
-                            // Preselección servicio
                             const selectServicio = document.getElementById('tipo-servicio');
                             if(selectServicio && (c.estado_salud === 'Próximo' || c.estado_salud === 'Vencido')) {
                                 selectServicio.value = "Mantenimiento Preventivo (Aceite/Filtros)";
@@ -175,14 +174,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 4. AUTOCOMPLETADO: BUSCAR CONDUCTOR (ENTREGA) & VALIDACIÓN
     // ==========================================================================
 
-    // Función de Validación de Conductor
+    // Función que compara los conductores
     function validarConductor() {
         if (!alertaConductor || !inputIdConductorEntrega || !hiddenIdConductor) return;
 
-        const idAsignado = hiddenIdConductor.dataset.interno; // El que guardamos del camión (CON-XXX)
-        const idEntrega = inputIdConductorEntrega.value; // El que seleccionamos en entrega (CON-YYY)
+        const idAsignado = hiddenIdConductor.dataset.interno; // El del camión (ej: CON-011)
+        const idEntrega = inputIdConductorEntrega.value; // El seleccionado (ej: CON-012)
 
-        // Si ambos existen y son diferentes, mostramos alerta
+        // Solo mostramos alerta si ambos existen y son diferentes
         if (idAsignado && idEntrega && idAsignado !== idEntrega) {
             alertaConductor.style.display = 'block';
         } else {
@@ -221,14 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         item.addEventListener('click', () => {
                             inputConductorEntrega.value = c.nombre_completo;
                             
-                            // Guardamos el ID interno (CON-XXX) en el input hidden
-                            if(inputIdConductorEntrega) {
-                                inputIdConductorEntrega.value = c.id_usuario; 
-                            }
+                            // Guardamos el ID interno (ej: CON-012)
+                            if(inputIdConductorEntrega) inputIdConductorEntrega.value = c.id_usuario; 
                             
                             if(listaChofer) listaChofer.style.display = 'none';
                             
-                            // EJECUTAMOS LA VALIDACIÓN
+                            // Ejecutamos la validación
                             validarConductor();
                         });
                         
@@ -252,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     // ==========================================================================
     // 5. VALIDACIÓN DE TIEMPO

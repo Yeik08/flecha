@@ -1,61 +1,67 @@
 <?php
 /*
 * Portal/portal-taller/php/registrar_entrada.php
-* VERSIÓN SEGURA V3:
-* - Valida el kilometraje pero NO actualiza el total maestro en tb_camiones
-* para evitar conflicto de doble suma con la telemetría mensual.
+* VERSIÓN BLINDADA (V5):
+* - Desactiva salida de errores HTML para evitar 'SyntaxError' en JS.
+* - Maneja excepciones de base de datos limpiamente.
 */
 
-session_start();
-header('Content-Type: application/json');
-require_once '../../php/db_connect.php';
+// 1. CRÍTICO: Apagar errores visuales para no romper el JSON
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(0);
 
-// Seguridad
-if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 5 && $_SESSION['role_id'] != 1)) {
-    echo json_encode(['success' => false, 'message' => 'Acceso no autorizado.']); exit;
+session_start();
+header('Content-Type: application/json'); // Decimos al navegador que esto es JSON
+
+// 2. Función para respuesta JSON segura (mata el script después de enviar)
+function enviarRespuesta($success, $message) {
+    echo json_encode(['success' => $success, 'message' => $message]);
+    exit;
 }
 
-$id_usuario = $_SESSION['user_id'];
-$response = ['success' => false, 'message' => ''];
-
 try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Método inválido');
+    // --- Seguridad ---
+    if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 5 && $_SESSION['role_id'] != 1)) {
+        enviarRespuesta(false, 'Acceso no autorizado.');
+    }
 
+    require_once '../../php/db_connect.php'; 
+    if ($conn === false) {
+        enviarRespuesta(false, 'Error de conexión a la base de datos.');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        enviarRespuesta(false, 'Método inválido.');
+    }
+
+    $id_usuario = $_SESSION['user_id'];
     $conn->begin_transaction();
 
-    // 1. Datos
+    // --- Recibir Datos (Usando ?? para evitar "Undefined Index") ---
     $id_camion = $_POST['id_camion_seleccionado'] ?? null;
     $km_llegada = floatval($_POST['kilometraje_entrada'] ?? 0);
-    $combustible = $_POST['nivel_combustible'] ?? '';
-    $tipo_mto = $_POST['tipo_servicio'] ?? '';
+    $combustible = $_POST['nivel_combustible'] ?? 'No especificado'; // Valor por defecto
+    $tipo_mto = $_POST['tipo_servicio'] ?? 'General';
     $obs = $_POST['observaciones_recepcion'] ?? '';
-    $fecha_ingreso = $_POST['fecha_ingreso'] ?? date('Y-m-d H:i:s');
-    
-    if (!$id_camion) throw new Exception("No se seleccionó ningún camión.");
-    if ($km_llegada <= 0) throw new Exception("El kilometraje debe ser mayor a 0.");
+    // Si el usuario no puso fecha, usamos la actual del servidor
+    $fecha_ingreso = !empty($_POST['fecha_ingreso']) ? $_POST['fecha_ingreso'] : date('Y-m-d H:i:s');
 
-    // --- VALIDACIÓN DE KILOMETRAJE ---
-    // Consultamos el actual solo para validar que no sea menor (posible error de dedo o fraude)
-    $sql_check = "SELECT kilometraje_total, fecha_estimada_mantenimiento FROM tb_camiones WHERE id = ?";
-    $stmt_check = $conn->prepare($sql_check);
-    $stmt_check->bind_param("i", $id_camion);
-    $stmt_check->execute();
-    $res_check = $stmt_check->get_result()->fetch_assoc();
-    
-    $km_actual_sistema = floatval($res_check['kilometraje_total']);
-
-    if ($km_llegada < $km_actual_sistema) {
-        throw new Exception("Error: El kilometraje ingresado ($km_llegada) es MENOR al registrado en sistema ($km_actual_sistema). Verifique el odómetro.");
+    if (!$id_camion) {
+        throw new Exception("No se seleccionó ningún camión.");
     }
-    // ----------------------------------------
 
+    // --- Lógica de Negocio ---
     // Conductores
     $id_cond_asignado = !empty($_POST['id_conductor_asignado_hidden']) ? $_POST['id_conductor_asignado_hidden'] : null;
-    $id_cond_entrega = !empty($_POST['id_conductor_entrega']) ? $_POST['id_conductor_entrega'] : null; 
+    $id_cond_entrega = !empty($_POST['id_conductor_entrega']) ? $_POST['id_conductor_entrega'] : null;
     
+    // Validación Conductor (Texto vs ID)
     if ($id_cond_entrega && !is_numeric($id_cond_entrega)) {
-        $stmt_c = $conn->prepare("SELECT id_empleado FROM empleados WHERE id_interno = ? LIMIT 1");
-        $stmt_c->bind_param("s", $id_cond_entrega);
+        // Si viene el nombre, intentamos buscar el ID, si no, lo dejamos null
+        $stmt_c = $conn->prepare("SELECT id_empleado FROM empleados WHERE id_interno = ? OR nombre LIKE ? LIMIT 1");
+        $like_name = "%$id_cond_entrega%";
+        $stmt_c->bind_param("ss", $id_cond_entrega, $like_name);
         $stmt_c->execute();
         $res_c = $stmt_c->get_result();
         if($row_c = $res_c->fetch_assoc()) {
@@ -64,53 +70,61 @@ try {
              $id_cond_entrega = null; 
         }
     }
-
     $alerta_cond = ($id_cond_asignado && $id_cond_entrega && $id_cond_asignado != $id_cond_entrega) ? 'Si' : 'No';
 
-    // Lógica de Tiempo
+    // Tiempos
+    $sql_fechas = "SELECT fecha_estimada_mantenimiento FROM tb_camiones WHERE id = ?";
+    $stmt = $conn->prepare($sql_fechas);
+    $stmt->bind_param("i", $id_camion);
+    $stmt->execute();
+    $res_f = $stmt->get_result()->fetch_assoc();
+    
     $clasificacion = 'No Programado';
     $dias_dif = 0;
-    if ($res_check && !empty($res_check['fecha_estimada_mantenimiento'])) {
-        $fecha_est = new DateTime($res_check['fecha_estimada_mantenimiento']);
+
+    if ($res_f && !empty($res_f['fecha_estimada_mantenimiento'])) {
+        $fecha_est = new DateTime($res_f['fecha_estimada_mantenimiento']);
         $fecha_real = new DateTime($fecha_ingreso);
         $intervalo = $fecha_est->diff($fecha_real);
-        $dias = (int)$intervalo->format('%r%a');
-        $dias_dif = $dias;
+        $dias_dif = (int)$intervalo->format('%r%a');
 
-        if ($dias < -7) $clasificacion = 'Anticipado';
-        elseif ($dias > 7) $clasificacion = 'Tarde';
+        if ($dias_dif < -7) $clasificacion = 'Anticipado';
+        elseif ($dias_dif > 7) $clasificacion = 'Tarde';
         else $clasificacion = 'A Tiempo';
     }
 
-    // 3. Insertar Entrada (Aquí SÍ guardamos el KM de llegada para el historial del ticket)
+    // --- Insertar Entrada ---
     $folio = "ENT-" . date('ymd') . "-" . rand(1000, 9999);
     $id_taller = 1; 
 
-    $sql_insert = "INSERT INTO tb_entradas_taller 
-        (folio, id_camion, id_recepcionista, id_taller, kilometraje_entrada, nivel_combustible, 
-         tipo_mantenimiento_solicitado, id_conductor_asignado, id_conductor_entrega, alerta_conductor,
-         clasificacion_tiempo, dias_desviacion, observaciones_recepcion, fecha_ingreso)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // NOTA: Asegúrate que estas columnas existan en tu BD (ver Paso 2 abajo)
+    $sql_insert = "INSERT INTO tb_entradas_taller (
+        folio, id_camion, id_recepcionista, id_taller, kilometraje_entrada, nivel_combustible, 
+        tipo_mantenimiento_solicitado, id_conductor_asignado, id_conductor_entrega, alerta_conductor,
+        clasificacion_tiempo, dias_desviacion, observaciones_recepcion, fecha_ingreso
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql_insert);
+    if (!$stmt) {
+        throw new Exception("Error preparando consulta: " . $conn->error);
+    }
+
     $stmt->bind_param("siiidssiisssis", 
         $folio, $id_camion, $id_usuario, $id_taller, $km_llegada, $combustible, 
         $tipo_mto, $id_cond_asignado, $id_cond_entrega, $alerta_cond, 
         $clasificacion, $dias_dif, $obs, $fecha_ingreso
     );
     
-    if (!$stmt->execute()) throw new Exception("Error al guardar entrada: " . $stmt->error);
+    if (!$stmt->execute()) {
+        // Aquí capturamos el error real de MySQL (ej: "Unknown column 'nivel_combustible'")
+        throw new Exception("Error al guardar en BD: " . $stmt->error);
+    }
     $id_entrada = $conn->insert_id;
 
-    // 4. Actualizar Estatus del Camión
-    // CORRECCIÓN CRÍTICA: Ya NO actualizamos 'kilometraje_total' aquí.
-    // Solo cambiamos el estatus a 'En Taller'.
-    $sql_up = "UPDATE tb_camiones SET estatus = 'En Taller' WHERE id = ?";
-    $stmt_up = $conn->prepare($sql_up);
-    $stmt_up->bind_param("i", $id_camion);
-    $stmt_up->execute();
+    // Actualizar Estatus Camión (SIN TOCAR KILOMETRAJE TOTAL)
+    $conn->query("UPDATE tb_camiones SET estatus = 'En Taller' WHERE id = $id_camion");
 
-    // 5. Guardar Foto
+    // Guardar Foto
     if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['foto_entrada']['name'], PATHINFO_EXTENSION);
         $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
@@ -119,18 +133,18 @@ try {
         
         if (move_uploaded_file($_FILES['foto_entrada']['tmp_name'], $carpeta . $nombre_foto)) {
             $ruta_bd = "../uploads/evidencias_entradas/" . $nombre_foto;
+            // Usamos la tabla correcta
             $conn->query("INSERT INTO tb_evidencias_entrada_taller (id_entrada, ruta_archivo) VALUES ($id_entrada, '$ruta_bd')");
         }
     }
 
     $conn->commit();
-    $response['success'] = true;
-    $response['message'] = "Entrada registrada correctamente. Folio: " . $folio;
+    enviarRespuesta(true, "Entrada registrada. Folio: " . $folio);
 
 } catch (Exception $e) {
     $conn->rollback();
-    $response['message'] = $e->getMessage();
+    enviarRespuesta(false, "Error del Sistema: " . $e->getMessage());
 }
 
-echo json_encode($response);
+$conn->close();
 ?>
