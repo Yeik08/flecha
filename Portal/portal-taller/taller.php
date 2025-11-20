@@ -17,18 +17,23 @@ $nombre_usuario = $_SESSION['nombre_completo'];
     <title>Taller - Recepción</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .alerta-visual { padding: 10px; border-radius: 5px; margin-bottom: 10px; display: none; font-size: 0.9em; }
+        .alerta-amarilla { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .alerta-roja { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .campo-bloqueado { background-color: #e9ecef; cursor: not-allowed; }
+        .sugerencias-lista { position: absolute; background: white; border: 1px solid #ddd; width: 90%; z-index: 100; max-height: 150px; overflow-y: auto; }
+        .sugerencias-lista div { padding: 8px; cursor: pointer; }
+        .sugerencias-lista div:hover { background-color: #f1f1f1; }
+    </style>
 
 
         <!-- exif-js para metadatos de imágenes JPEG y PNG -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
-    <!-- heic2any para convertir imágenes HEIC a JPEG -->
-    <script src="https://cdn.jsdelivr.net/npm/heic2any"></script>
 </head>
 
 <body>
-	   
-	
     <!-- Contenedor principal -->
     <div class="contenedor-principal">
 		
@@ -56,120 +61,115 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 	</div>
 
 
-                <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
+           <!--	---------------------------------------------- BODY ----------------------------------------------	 -->
     <main class="modulo-contenido">
         
         <div class="tabla-titulo">
-            <h2>Estado de la Flota en Taller</h2>
+            <h2>Bitácora de Entradas</h2>
             <button class="btn-primario" id="btn-registrar-entrada">+ Registrar Entrada de Camión</button>
         </div>
-   
-            <div class="tabla-contenido">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Unidad (ID)</th>
-                            <th>Placas</th>
-                            <th>Último Mantenimiento</th>
-                            <th>Estatus</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
 
-                </table>
-            </div>
+        <div class="tabla-contenido">
+            <table>
+                <thead><tr><th>Folio</th><th>Unidad</th><th>Fecha</th><th>Estatus</th></tr></thead>                    
+                <tbody><tr><td colspan="4" style="text-align:center">Cargando...</td></tr></tbody>
+            </table>
+        </div>
+
     </main>
 
-    <div id="modal-registro" class="modal">
+
+
+    <div id="modal-recepcion" class="modal oculto">
         <div class="modal-contenido">
             <span class="cerrar-modal" id="cerrar-modal">&times;</span>
-            <h2>Registrar Entrada de Camión a Taller</h2>
-            <form id="form-registro">
-                <div class="campo-form">
-                        <label for="id_unidad">Buscar Unidad:</label>
-                        <input type="text" id="input-buscar-camion" placeholder="Escribe ECO o Placas..." autocomplete="off">
-                        <input type="hidden" id="id_camion_seleccionado" name="id_camion_seleccionado">
-                        <div id="sugerencias-camion" class="sugerencias-lista"></div>
+            <h2>Recepción de Unidad</h2>
+
+            <form id="form-recepcion">
+
+                <div class="campo-form" style="position:relative;">
+                    <label>Buscar Unidad:</label>
+                    <input type="text" id="input-buscar-camion" placeholder="Escribe ECO o Placas..." autocomplete="off">
+                    <div id="sugerencias-camion" class="sugerencias-lista"></div>
+                    <input type="hidden" id="id_camion_seleccionado" name="id_camion">
                 </div>
 
                 <div class="form-row">
                     <div class="campo-form">
                         <label>Placas:</label>
-                        <input type="text" id="info-placas" readonly style="background:#eee;">
+                        <input type="text" id="info-placas" readonly class="campo-bloqueado">
                     </div>
                     <div class="campo-form">
-                        <label>Próximo Mantenimiento:</label>
-                        <input type="text" id="info-proximo-mto" readonly style="background:#eee;">
+                        <label>Conductor Asignado:</label>
+                        <input type="text" id="info-conductor-asignado" readonly class="campo-bloqueado">
+                        <input type="hidden" id="id_conductor_asignado_hidden" name="id_conductor_asignado">
+                    </div>
+                </div>
+                
+                <div id="alerta-conductor" class="alerta-visual alerta-amarilla">
+                    ⚠️ <strong>Advertencia:</strong> El conductor que entrega es diferente al asignado.
+                </div>
+
+                <div class="form-row">
+                    <div class="campo-form">
+                        <label>Fecha/Hora Entrada:</label>
+                        <input type="datetime-local" id="fecha-entrada" name="fecha_ingreso" required>
+                    </div>
+                    <div class="campo-form">
+                        <label>Kilometraje:</label>
+                        <input type="number" name="kilometraje_entrada" step="0.1" required>
                     </div>
                 </div>
 
-                <div id="alerta-mto" class="alerta error oculto" style="margin-bottom: 15px;">
-                        ⚠️ Esta unidad requiere mantenimiento preventivo urgente.
-                </div>
-                                
                 <div class="campo-form">
-                        <label>Conductor Asignado:</label>
-                        <input type="text" id="info-conductor-asignado" readonly style="background:#eee;">
-                        <input type="hidden" id="id_conductor_asignado_hidden" name="id_conductor_asignado_hidden">
+                    <label>¿Quién Entrega? (Buscar Conductor):</label>
+                    <input type="text" id="input-conductor-entrega" placeholder="Buscar conductor..." autocomplete="off">
+                    <div id="sugerencias-chofer-entrega" class="sugerencias-lista"></div>
+                    <input type="hidden" id="id_conductor_entrega" name="id_conductor_entrega">
                 </div>
 
-
-
                 <div class="campo-form">
-                    <label for="fecha-hora">Fecha y Hora de Entrada:</label>
-                    <input type="datetime-local" id="fecha-hora" name="fecha-hora" required>
-                </div>
-                
-                <div class="campo-form">
-                    <label for="tipo-mantenimiento">Tipo de Mantenimiento:</label>
-                    <select id="tipo-mantenimiento" name="tipo-mantenimiento" required>
-                        <option value="">Selecciona Mantenimiento</option>
-                        <option value="cambio_filtro">Cambio de aceite y filtros</option>
-              <!--          <option value="revision_frenos">Revisión de Frenos</option>
-                        <option value="electrico">Sistema Eléctrico</option>-->
+                    <label>Tipo de Servicio:</label>
+                    <select id="tipo-servicio" name="tipo_mantenimiento" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Mantenimiento Preventivo (Aceite/Filtros)">Mantenimiento Preventivo</option>
+                        <option value="Correctivo">Correctivo (Falla)</option>
+                        <option value="Llantas">Llantas</option>
+                        <option value="Otro">Otro</option>
                     </select>
-                </div>
+                </div>    
+
+                <div id="alerta-tiempo" class="alerta-visual alerta-roja"></div>
+
+
                 <div class="campo-form">
-                   
-                <label for="id_unidad">ID mecánico a cargo:</label>
-                    <input list="mecánico" id="id_mecánico" name="id_mecánico" placeholder="Buscar mecánico..">
-                    <datalist id="mecánico">
-                    <option value="MEC 01 LUIS ROBLE">
-                    <option value="MEC 02 JUAN PEREZ">
-                    <option value="MEC 03 CARLOS SANCHEZ">
-                    <option value="MEC 04 ANTONIO LOPEZ">
-                    </datalist>
+                    <label>Observaciones de Recepción:</label>
+                    <textarea id="obs-recepcion" name="observaciones_recepcion" rows="2" placeholder="Daños visibles, nivel combustible, etc."></textarea>
                 </div>
 
                 <div class="campo-form">
-    <label for="id_conductor">ID CONDUCTOR DE LA UNIDAD:</label>
-                    <input list="conductor" id="id_conductor" name="id_conductor" placeholder="Buscar conductor..">
-                    <datalist id="conductor">
-                    <option value="DRV 01 LUIS ROBLE">
-                    <option value="DRV 02 JUAN PEREZ">
-                    <option value="DRV 03 CARLOS SANCHEZ">
-                    <option value="DRV 04 ANTONIO LOPEZ">
-                    </datalist>
+                    <label>Evidencia Fotográfica (Entrada):</label>
+                    <input type="file" id="foto-entrada" name="foto_entrada" accept="image/*" required>
                 </div>
 
-                <div class="campo-form">
-                    <label for="foto-camion">Foto de Evidencia (Entrada):</label>
-                    <input type="file" id="foto-camion" name="foto-camion" accept="image/*" required>
-                    <div id="mensaje-foto-camion"></div> <!-- Aquí se mostrarán los mensajes -->
-                </div>
                 <div class="acciones-form">
-                    <button type="submit" class="btn-primario">Generar Solicitud</button>
+                    <button type="submit" class="btn-primario">Registrar Entrada</button>
                 </div>
+
             </form>
         </div>
     </div>
-       <!-- Modal de advertencia por imagen de WhatsApp -->
+
+
+
+    
+       <!-- Modal de advertencia por imagen de WhatsApp 
         <div id="modal-aviso" class="modal">
             <div class="modal-contenido">
                 <span class="cerrar-modal" id="cerrar-aviso">&times;</span>
-                <h2>⚠️ Aviso Importante sobre Imágenes de WhatsApp ⚠️</h2>
+                <h2>⚠️Aviso Importante sobre Imágenes de WhatsApp⚠️</h2>
                 <p>
-                    Si la imagen fue descargada desde WhatsApp, es posible que no sea valida (Solo se admiten imágenes en formato <strong>JPG</strong> o <strong>PNG</strong>).
+                    Si la imagen fue descargada desde WhatsApp, es posible que no sea valida(Solo se admiten imágenes en formato <strong>JPG</strong> o <strong>PNG</strong>).
                 </p>
                 <p>
                     <strong>Para evitar esto, pide que te la envien de la siguiente manera desde WhatsApp:</strong>
@@ -188,10 +188,11 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <button id="cancelar-subida" class="btn-secundario">Cancelar</button>
                 </div>
             </div>
-        </div>
-    </div>
+        </div> -->
+    
 
 <script src="js/scripts.js"></script>
+<script src="js/taller.js"></script>
 </body>
 </html>
 

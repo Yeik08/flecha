@@ -1,6 +1,6 @@
 /*
  * Portal/portal-taller/js/taller.js
- * Lógica específica para la Recepción de Taller.
+ * Lógica completa para el Módulo de Recepción de Taller.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,10 +10,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================================================
     
     const modal = document.getElementById('modal-registro');
-    const btnAbrirModal = document.getElementById('btn-registrar-entrada');
-    const btnCerrarModal = document.getElementById('cerrar-modal');
+    const btnAbrir = document.getElementById('btn-registrar-entrada'); // Asegúrate que este ID exista en tu HTML
+    const btnCerrar = document.getElementById('cerrar-modal');
     const form = document.getElementById('form-registro');
     
+    // Inputs del formulario
+    const inputBuscarCamion = document.getElementById('input-buscar-camion');
+    const listaSugerenciasCamion = document.getElementById('sugerencias-camion');
+    const inputIdCamion = document.getElementById('id_camion_seleccionado');
+    
+    const infoPlacas = document.getElementById('info-placas');
+    const infoConductor = document.getElementById('info-conductor-asignado');
+    const hiddenIdConductor = document.getElementById('id_conductor_asignado_hidden');
+    
+    const inputConductorEntrega = document.getElementById('input-conductor-entrega');
+    const listaSugerenciasChofer = document.getElementById('sugerencias-chofer-entrega');
+    const inputIdConductorEntrega = document.getElementById('id_conductor_entrega');
+
     // Input de Fotos y Mensajes
     const inputCamion = document.getElementById("foto-camion");
     const mensajeCamion = document.getElementById("mensaje-foto-camion");
@@ -33,58 +46,137 @@ document.addEventListener('DOMContentLoaded', function() {
     // 2. LÓGICA DEL MODAL (ABRIR / CERRAR)
     // ==========================================================================
 
-    if (btnAbrirModal && modal) {
-        btnAbrirModal.addEventListener('click', (e) => {
-            e.preventDefault();
-            modal.style.display = 'block'; // Mostramos el modal
-            
-            // IMPORTANTE: NO abrimos modalAviso aquí. 
-            // Ese solo debe abrirse si la foto falla la validación EXIF.
-        });
-
-        btnCerrarModal.addEventListener('click', () => {
-            cerrarModal();
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target == modal) cerrarModal();
+    if (btnAbrir) {
+        btnAbrir.addEventListener('click', () => {
+            modal.style.display = 'block';
+            // Poner fecha/hora actual al abrir
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            if(document.getElementById('fecha-entrada')) {
+                document.getElementById('fecha-entrada').value = now.toISOString().slice(0,16);
+            }
         });
     }
+
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+
+    window.addEventListener('click', e => {
+        if (e.target == modal) cerrarModal();
+        if (e.target == modalAviso) cancelarSubida();
+    });
 
     function cerrarModal() {
         modal.style.display = 'none';
         form.reset();
-        mensajeCamion.innerHTML = "";
+        if(mensajeCamion) mensajeCamion.innerHTML = "";
         imagenDuplicadaCamion = false;
         if(modalAviso) modalAviso.style.display = 'none';
     }
 
 
     // ==========================================================================
-    // 3. VALIDACIÓN DE IMÁGENES (EXIF)
+    // 3. AUTOCOMPLETADO (CAMIÓN Y CONDUCTOR)
+    // ==========================================================================
+
+    // A. Buscar Camión
+    if (inputBuscarCamion) {
+        inputBuscarCamion.addEventListener('input', async function() {
+            const query = this.value.trim();
+            listaSugerenciasCamion.innerHTML = '';
+            
+            if (query.length < 2) {
+                listaSugerenciasCamion.style.display = 'none';
+                return;
+            }
+
+            try {
+                // Ajusta la ruta si es necesario ('php/buscar_camion_express.php')
+                const res = await fetch(`php/buscar_camion_express.php?q=${query}`);
+                const data = await res.json();
+                
+                if (data.length > 0) {
+                    listaSugerenciasCamion.style.display = 'block';
+                    data.forEach(camion => {
+                        const item = document.createElement('div');
+                        item.textContent = `${camion.numero_economico} - ${camion.placas}`;
+                        item.style.padding = "8px";
+                        item.style.cursor = "pointer";
+                        item.style.borderBottom = "1px solid #eee";
+                        
+                        item.addEventListener('click', () => {
+                            inputBuscarCamion.value = camion.numero_economico;
+                            if(inputIdCamion) inputIdCamion.value = camion.id;
+                            if(infoPlacas) infoPlacas.value = camion.placas;
+                            
+                            if (camion.nombre_chofer) {
+                                if(infoConductor) infoConductor.value = camion.nombre_chofer;
+                                if(hiddenIdConductor) hiddenIdConductor.value = camion.id_chofer_asignado;
+                            } else {
+                                if(infoConductor) infoConductor.value = "Sin asignar";
+                                if(hiddenIdConductor) hiddenIdConductor.value = "";
+                            }
+                            listaSugerenciasCamion.style.display = 'none';
+                        });
+                        listaSugerenciasCamion.appendChild(item);
+                    });
+                } else {
+                    listaSugerenciasCamion.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Error buscando camión:", error);
+            }
+        });
+    }
+
+    // B. Buscar Conductor de Entrega
+    if (inputConductorEntrega) {
+        inputConductorEntrega.addEventListener('input', async function() {
+            const query = this.value.trim();
+            listaSugerenciasChofer.innerHTML = '';
+            if (query.length < 2) { listaSugerenciasChofer.style.display = 'none'; return; }
+            
+            // Nota: Aquí asumimos que usas el mismo endpoint o uno similar.
+            // Si no tienes uno específico, puedes usar fetch_catalogos.php filtrando en JS (menos óptimo pero funcional)
+            // O crear 'php/buscar_chofer.php' similar a 'buscar_camion_express.php'
+        });
+    }
+
+    // Cierra listas al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        if (listaSugerenciasCamion && !listaSugerenciasCamion.contains(e.target) && e.target !== inputBuscarCamion) {
+            listaSugerenciasCamion.style.display = 'none';
+        }
+    });
+
+
+    // ==========================================================================
+    // 4. VALIDACIÓN DE IMÁGENES (EXIF)
     // ==========================================================================
 
     function mostrarMensaje(texto, tipo) {
+        if(!mensajeCamion) return;
         mensajeCamion.innerHTML = '';
         const div = document.createElement("div");
         div.textContent = texto;
-        div.className = `alerta ${tipo}`; // Asegúrate de tener CSS para .alerta.ok y .alerta.error
+        div.className = `alerta ${tipo}`;
         mensajeCamion.appendChild(div);
     }
 
     function analizarMetadatos(blob, archivoOriginal) {
         return new Promise((resolve, reject) => {
-            // Usamos la librería EXIF.js que ya importaste en el HTML
+            if (typeof EXIF === 'undefined') {
+                resolve("Librería EXIF no cargada. Saltando validación."); 
+                return;
+            }
             EXIF.getData(blob, function () {
                 const allMetaData = EXIF.getAllTags(this);
-                
                 // Si no hay metadatos (típico de WhatsApp), rechazamos
                 if (Object.keys(allMetaData).length === 0) {
                     reject("⚠️ La imagen parece venir de WhatsApp (sin metadatos).");
                     return;
                 }
-
-                // Validación de duplicados (Hash simple: Fecha + Modelo + Tamaño)
                 const fecha = allMetaData.DateTimeOriginal || allMetaData.DateTime || "sin-fecha";
                 const modelo = allMetaData.Model || "modelo-desconocido";
                 const hash = `${fecha}-${modelo}-${archivoOriginal.size}`;
@@ -100,19 +192,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function procesarArchivo(archivo) {
-        mensajeCamion.innerHTML = "Analizando imagen...";
+        if(mensajeCamion) mensajeCamion.innerHTML = "Analizando imagen...";
         imagenDuplicadaCamion = false;
 
         if (!archivo || !archivo.type.startsWith("image/")) {
             mostrarMensaje("El archivo no es una imagen válida.", "error");
             imagenDuplicadaCamion = true;
             return;
-        }
-
-        // Validación HEIC (si usas la librería heic2any)
-        if (archivo.name.toLowerCase().endsWith(".heic")) {
-            mostrarMensaje("Formato HEIC detectado. Convirtiendo...", "ok");
-            // Aquí iría la lógica de conversión si la necesitas
         }
 
         try {
@@ -122,35 +208,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     imagenDuplicadaCamion = false;
                 })
                 .catch(err => {
-                    // Si falla la validación, mostramos el mensaje y abrimos el modal de aviso
                     mostrarMensaje(err, "error");
-                    imagenDuplicadaCamion = true; // Marcamos como inválida inicialmente
+                    if(inputCamion) inputCamion.value = "";
+                    imagenDuplicadaCamion = true;
                     
+                    // Mostrar Modal de Aviso si existe
                     if (modalAviso) {
                         modalAviso.style.display = "block";
-                        
-                        // Lógica del Modal de Aviso
-                        cancelarBtn.onclick = () => {
-                            modalAviso.style.display = "none";
-                            inputCamion.value = ""; // Borramos el input
-                            mostrarMensaje("Subida cancelada.", "error");
-                        };
-                        cerrarAviso.onclick = cancelarBtn.onclick;
-                        
-                        continuarBtn.onclick = (e) => {
-                            e.preventDefault(); // Evita submit si el botón está dentro del form
-                            modalAviso.style.display = "none";
-                            imagenDuplicadaCamion = false; // El usuario aceptó el riesgo
-                            mostrarMensaje("⚠️ Imagen aceptada bajo responsabilidad del usuario.", "ok");
-                        };
+                    } else if(!confirm(err + "\n¿Deseas usarla de todas formas?")) {
+                        // Fallback si no hay modal
+                        inputCamion.value = "";
+                    } else {
+                         // Si acepta en el confirm
+                         imagenDuplicadaCamion = false;
                     }
                 });
         } catch (error) {
-            mostrarMensaje("Error: " + error.message, "error");
+            mostrarMensaje("Error procesando imagen: " + error.message, "error");
         }
     }
 
-    // Listener del Input File
     if (inputCamion) {
         inputCamion.addEventListener("change", function (event) {
             const archivo = event.target.files[0];
@@ -158,13 +235,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Lógica del Modal de Aviso
+    if (modalAviso) {
+        function cancelarSubida() {
+            modalAviso.style.display = "none";
+            if(inputCamion) inputCamion.value = "";
+            mostrarMensaje("Subida cancelada.", "error");
+            imagenDuplicadaCamion = true;
+        }
+
+        if(cerrarAviso) cerrarAviso.onclick = cancelarSubida;
+        if(cancelarBtn) cancelarBtn.onclick = cancelarSubida;
+        
+        if(continuarBtn) continuarBtn.onclick = (e) => {
+            e.preventDefault(); 
+            modalAviso.style.display = "none";
+            imagenDuplicadaCamion = false; 
+            mostrarMensaje("⚠️ Imagen aceptada bajo responsabilidad del usuario.", "ok");
+        };
+    }
+
 
     // ==========================================================================
-    // 4. ENVÍO DEL FORMULARIO
+    // 5. ENVÍO DEL FORMULARIO
     // ==========================================================================
 
     if (form) {
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
             
             if (imagenDuplicadaCamion) {
@@ -172,36 +269,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Aquí simulamos el envío (luego conectaremos al PHP real)
-            const ticketId = 'TK-' + Date.now();
-            alert(`Solicitud generada con éxito.\n\nNúmero de Ticket: ${ticketId}`);
-            cerrarModal();
+            const formData = new FormData(this);
+
+            try {
+                const res = await fetch('php/registrar_entrada.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión al registrar.");
+            }
         });
     }
 
-    // ==========================================================================
-    // 5. EXTRAS DE UI (KPIs)
-    // ==========================================================================
     
-    const kpiCards = document.querySelectorAll('.kpi-card');
-    kpiCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const lista = card.querySelector('.lista-kpi');
-            if (!lista) return;
 
-            if (card.classList.contains('activo')) {
-                card.classList.remove('activo');
-                lista.style.display = 'none';
-            } else {
-                kpiCards.forEach(c => {
-                    c.classList.remove('activo');
-                    const l = c.querySelector('.lista-kpi');
-                    if (l) l.style.display = 'none';
-                });
-                card.classList.add('activo');
-                lista.style.display = 'block';
-            }
-        });
-    });
-
-});
+}); // <--- FIN DEL ARCHIVO (Asegúrate que esta línea esté presente)
