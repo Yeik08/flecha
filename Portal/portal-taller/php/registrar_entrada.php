@@ -44,6 +44,7 @@ try {
     $id_camion = $_POST['id_camion_seleccionado'] ?? null;
     $km_llegada = floatval($_POST['kilometraje_entrada'] ?? 0);
     $combustible = $_POST['nivel_combustible'] ?? 'No especificado';
+    $id_taller = $_POST['id_taller'] ?? 1; 
     $tipo_mto = $_POST['tipo_mantenimiento'] ?? 'General';
     $obs = $_POST['observaciones_recepcion'] ?? '';
     $fecha_ingreso = !empty($_POST['fecha_ingreso']) ? $_POST['fecha_ingreso'] : date('Y-m-d H:i:s');
@@ -94,7 +95,7 @@ try {
 
     // 4. Insertar Entrada
     $folio = "ENT-" . date('ymd') . "-" . rand(1000, 9999);
-    $id_taller = 1; 
+
 
     $sql_insert = "INSERT INTO tb_entradas_taller (
         folio, id_camion, id_recepcionista, id_taller, kilometraje_entrada, nivel_combustible, 
