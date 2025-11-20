@@ -1,12 +1,19 @@
 <?php
 /*
 * config.php
-* Almacena las credenciales de la base de datos.
+* Almacena las credenciales de la base de datos (PRODUCCIÓN).
 */
 
-// --- Configuración de la Base de Datos Local (XAMPP) ---
-define('DB_HOST', 'localhost');      // Servidor (casi siempre localhost)
-define('DB_USER', 'root');           // El usuario por defecto de XAMPP
-define('DB_PASS', '');               // La contraseña por defecto de XAMPP (vacía)
-define('DB_NAME', 'flecha_roja_db'); // La base de datos que creamos
+// --- Configuración de la Base de Datos Hosting (cPanel/Grid) ---
+// Generalmente en hosting compartido el host sigue siendo 'localhost'
+define('DB_HOST', 'localhost');      
+
+// Tu nuevo usuario de base de datos
+define('DB_USER', 'cytekmx_Yeik');   
+
+// Tu nueva contraseña (asegúrate de que el signo $ esté correcto)
+define('DB_PASS', 'WTK$cuesta01');   
+
+// El nombre exacto de la base de datos nueva
+define('DB_NAME', 'cytekmx_flecha_roja_db'); 
 ?>

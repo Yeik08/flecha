@@ -171,7 +171,70 @@ try {
             $stmt_foto->execute();
         }
     }
+// 5. Guardar Foto con Auditoría Forense
+    if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
+        
+        $tmp_name = $_FILES['foto_entrada']['tmp_name'];
+        $nombre_original = $_FILES['foto_entrada']['name'];
+        $ext = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
+        
+        // Validar extensión
+        $permitidos = ['jpg', 'jpeg', 'png'];
+        if (in_array($ext, $permitidos)) {
+            
+            // A. Generar Huella Digital (Hash SHA-256)
+            // Esto es único para cada archivo. Si cambian un pixel, el hash cambia.
+            $hash_archivo = hash_file('sha256', $tmp_name);
 
+            // B. Extraer Metadatos EXIF (Fecha Real)
+            $fecha_captura = null;
+            $metadatos_json = null;
+            
+            // Solo JPG/JPEG tienen EXIF legible fácilmente por PHP nativo
+            if (in_array($ext, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
+                // Usamos @ para evitar warnings si la foto no tiene EXIF (ej. WhatsApp)
+                $exif = @exif_read_data($tmp_name);
+                
+                if ($exif) {
+                    // Guardamos todo el EXIF como JSON por si acaso
+                    $metadatos_json = json_encode($exif);
+
+                    // Buscamos la fecha original
+                    if (isset($exif['DateTimeOriginal'])) {
+                        $fecha_captura = $exif['DateTimeOriginal']; // Formato: YYYY:MM:DD HH:MM:SS
+                    } elseif (isset($exif['DateTimeDigitized'])) {
+                        $fecha_captura = $exif['DateTimeDigitized'];
+                    } elseif (isset($exif['DateTime'])) {
+                        $fecha_captura = $exif['DateTime'];
+                    }
+                }
+            }
+
+            // Si no encontramos fecha EXIF, usamos la fecha actual (como fallback, pero sabemos que no es la original)
+            // Opcional: Dejarlo en NULL para que el auditor sepa que no tenía metadatos.
+            // Aquí lo dejaremos NULL si no hay EXIF real.
+
+            // C. Mover y Guardar
+            $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
+            $carpeta = "../../uploads/evidencias_entradas/";
+            if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
+            
+            if (move_uploaded_file($tmp_name, $carpeta . $nombre_foto)) {
+                $ruta_bd = "../uploads/evidencias_entradas/" . $nombre_foto;
+                
+                // Insertamos con los nuevos datos forenses
+                $sql_foto = "INSERT INTO tb_evidencias_entrada_taller 
+                            (id_entrada, ruta_archivo, tipo_foto, descripcion, fecha_captura, hash_archivo, metadatos_json) 
+                            VALUES (?, ?, 'Entrada', 'Evidencia Recepción', ?, ?, ?)";
+                
+                $stmt_foto = $conn->prepare($sql_foto);
+                // sssss -> id(i), ruta(s), fecha(s), hash(s), json(s)
+                // Corregimos tipos: i s s s s
+                $stmt_foto->bind_param("issss", $id_entrada, $ruta_bd, $fecha_captura, $hash_archivo, $metadatos_json);
+                $stmt_foto->execute();
+            }
+        }
+    }
     $conn->commit();
     enviarRespuesta(true, "Entrada registrada. Folio: " . $folio);
 

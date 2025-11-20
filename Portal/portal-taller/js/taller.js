@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const listaChofer = document.getElementById('sugerencias-chofer-entrega');
     const inputIdConductorEntrega = document.getElementById('id_conductor_entrega');
     
+
+    const inputFechaEntrada = document.getElementById('fecha-entrada');
+
+
     // Alertas
     const alertaConductor = document.getElementById('alerta-conductor'); // TU ALERTA
     const alertaTiempo = document.getElementById('alerta-tiempo');
@@ -46,7 +50,134 @@ document.addEventListener('DOMContentLoaded', function() {
     const cerrarAviso = document.getElementById("cerrar-aviso");
     const continuarBtn = document.getElementById("continuar-subida");
     const cancelarBtn = document.getElementById("cancelar-subida");
+// ==========================================================================
+    // 2. LÓGICA DE VALIDACIÓN DE IMÁGENES (NUEVA)
+    // ==========================================================================
 
+    function mostrarMensaje(texto, tipo) {
+        if (!mensajeCamion) return;
+        mensajeCamion.innerHTML = '';
+        const div = document.createElement("div");
+        div.innerHTML = texto; // Usamos innerHTML para permitir negritas
+        div.className = `alerta ${tipo}`;
+        mensajeCamion.appendChild(div);
+    }
+
+    function analizarMetadatos(blob, archivoOriginal) {
+        return new Promise((resolve, reject) => {
+            
+            if (typeof EXIF === 'undefined') {
+                resolve("Librería EXIF no disponible. Imagen aceptada."); 
+                return;
+            }
+
+            EXIF.getData(blob, function () {
+                const allMetaData = EXIF.getAllTags(this);
+                
+                // 1. VALIDACIÓN DE INTEGRIDAD (WhatsApp)
+                if (Object.keys(allMetaData).length === 0 || (!allMetaData.DateTimeOriginal && !allMetaData.Model)) {
+                    reject("⚠️ <strong>Alerta de Origen:</strong> La imagen parece venir de WhatsApp (sin metadatos).<br>Se requiere una foto original.");
+                    return;
+                }
+                
+                // Obtener datos clave
+                const fechaFotoRaw = allMetaData.DateTimeOriginal || allMetaData.DateTime;
+                const modelo = allMetaData.Model || "modelo-desconocido";
+                const hash = `${fechaFotoRaw}-${modelo}-${archivoOriginal.size}`;
+
+                // 2. VALIDACIÓN DE DUPLICADOS (En esta sesión)
+                if (imagenesCamionSubidas.includes(hash)) {
+                    reject("⛔ <strong>Error de Duplicidad:</strong> Ya has intentado subir esta misma foto en esta sesión.");
+                    return;
+                }
+
+                // 3. VALIDACIÓN DE FECHA (Antigüedad)
+                if (fechaFotoRaw) {
+                    // Convertir fecha EXIF "YYYY:MM:DD HH:MM:SS" a objeto Date
+                    // Nota: EXIF usa ':' como separador, JS prefiere '-' o '/'
+                    const partes = fechaFotoRaw.split(" ");
+                    const fechaPartes = partes[0].split(":");
+                    
+                    // Crear fecha de la foto (Mes en JS es 0-11)
+                    const fechaFoto = new Date(fechaPartes[0], fechaPartes[1] - 1, fechaPartes[2]);
+                    
+                    // Obtener fecha del input de registro (YYYY-MM-DDTHH:MM)
+                    const fechaInputVal = inputFechaEntrada.value;
+                    const fechaRegistro = new Date(fechaInputVal); // Toma la fecha del input
+
+                    // Normalizar ambas fechas a "Solo Día" (sin horas) para comparar
+                    fechaFoto.setHours(0,0,0,0);
+                    fechaRegistro.setHours(0,0,0,0);
+
+                    // Calcular diferencia en días
+                    const diferenciaTiempo = Math.abs(fechaRegistro - fechaFoto);
+                    const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24)); 
+
+                    // Regla: Si la foto tiene más de 1 día de diferencia con el registro
+                    if (diferenciaDias > 1) {
+                        const fechaLegible = `${fechaPartes[2]}/${fechaPartes[1]}/${fechaPartes[0]}`;
+                        reject(`⚠️ <strong>Alerta de Fecha:</strong> La foto fue tomada el ${fechaLegible}.<br>No coincide con la fecha de registro actual.`);
+                        return;
+                    }
+                } else {
+                    // Si tiene metadatos pero NO tiene fecha (raro, pero pasa)
+                    reject("⚠️ La imagen tiene metadatos incompletos (sin fecha).");
+                    return;
+                }
+
+                // Si pasa todas las pruebas:
+                imagenesCamionSubidas.push(hash); // Guardamos huella para no repetirla
+                resolve("✅ Imagen válida, original y reciente.");
+            });
+        });
+    }
+
+    async function procesarArchivo(archivo) {
+        if(mensajeCamion) mensajeCamion.innerHTML = "Analizando imagen...";
+        imagenDuplicadaCamion = false;
+
+        if (!archivo || !archivo.type.startsWith("image/")) {
+            mostrarMensaje("El archivo no es una imagen válida.", "error");
+            imagenDuplicadaCamion = true;
+            return;
+        }
+
+        try {
+            await analizarMetadatos(archivo, archivo)
+                .then(msg => {
+                    mostrarMensaje(msg, "ok");
+                    imagenDuplicadaCamion = false;
+                })
+                .catch(err => {
+                    mostrarMensaje(err, "error");
+                    
+                    // Mostrar Modal de Aviso si existe error
+                    if (modalAviso) {
+                        modalAviso.style.display = "block";
+                        imagenDuplicadaCamion = true; 
+                        
+                        // Actualizar texto del modal si quieres ser más específico (Opcional)
+                        // document.querySelector('#modal-aviso h2').innerText = "Problema con la Evidencia";
+                    } else {
+                        if(!confirm(err.replace(/<[^>]*>?/gm, '') + "\n¿Deseas usarla de todas formas?")) {
+                            if(inputCamion) inputCamion.value = "";
+                            imagenDuplicadaCamion = true;
+                        } else {
+                            imagenDuplicadaCamion = false;
+                        }
+                    }
+                });
+        } catch (error) {
+            mostrarMensaje("Error procesando: " + error.message, "error");
+        }
+    }
+
+    if (inputCamion) {
+        inputCamion.addEventListener("change", function (event) {
+            const archivo = event.target.files[0];
+            if (archivo) procesarArchivo(archivo);
+        });
+    }
 
     // ==========================================================================
     // 2. LÓGICA DEL MODAL PRINCIPAL
@@ -81,6 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if(alertaConductor) alertaConductor.style.display = 'none';
         
         if(modalAviso) modalAviso.style.display = 'none';
+
+        imagenesCamionSubidas.length = 0; 
     }
 
     if (btnAbrir) btnAbrir.addEventListener('click', (e) => { e.preventDefault(); abrirModal(); });
