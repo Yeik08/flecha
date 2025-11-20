@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             if(c.nombre_chofer) {
                                 if(infoConductor) infoConductor.value = c.nombre_chofer;
                                 if(hiddenIdConductor) {
-                                    hiddenIdConductor.value = c.id_chofer_asignado;
+                                    hiddenIdConductor.value = c.id_chofer;
                                     // GUARDAMOS EL ID INTERNO (ej: CON-011) EN UN DATASET PARA COMPARAR
                                     hiddenIdConductor.dataset.interno = c.id_interno_chofer; 
                                 }

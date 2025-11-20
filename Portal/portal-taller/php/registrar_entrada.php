@@ -53,6 +53,25 @@ try {
         throw new Exception("No se seleccionó ningún camión.");
     }
 
+    // Validar KM (No menor al actual)
+        $sql_check = "SELECT kilometraje_total, fecha_estimada_mantenimiento FROM tb_camiones WHERE id = ?";
+        $stmt_check = $conn->prepare($sql_check);
+        $stmt_check->bind_param("i", $id_camion);
+        $stmt_check->execute();
+        $res_check = $stmt_check->get_result()->fetch_assoc();
+        
+        $km_actual_sistema = floatval($res_check['kilometraje_total']);
+        if ($km_llegada < $km_actual_sistema) {
+            throw new Exception("Error: El kilometraje ingresado ($km_llegada) es MENOR al actual ($km_actual_sistema).");
+        }
+
+
+
+
+
+
+
+
     // 3. Lógica de Negocio y Conductores
     $id_cond_asignado = !empty($_POST['id_conductor_asignado_hidden']) ? $_POST['id_conductor_asignado_hidden'] : null;
     $id_cond_entrega = !empty($_POST['id_conductor_entrega']) ? $_POST['id_conductor_entrega'] : null;
