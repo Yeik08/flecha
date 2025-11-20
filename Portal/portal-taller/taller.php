@@ -163,7 +163,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
 
     
-       <!-- Modal de advertencia por imagen de WhatsApp 
+       <!-- Modal de advertencia por imagen de WhatsApp -->
         <div id="modal-aviso" class="modal">
             <div class="modal-contenido">
                 <span class="cerrar-modal" id="cerrar-aviso">&times;</span>
@@ -188,10 +188,10 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <button id="cancelar-subida" class="btn-secundario">Cancelar</button>
                 </div>
             </div>
-        </div> -->
+        </div> 
     
 
-<script src="js/scripts.js"></script>
+        
 <script src="js/taller.js"></script>
 </body>
 </html>

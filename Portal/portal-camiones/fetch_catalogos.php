@@ -3,12 +3,16 @@
 header('Content-Type: application/json');
 session_start();
 
-// --- Bloque de seguridad ---
-if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
-    http_response_code(403); // No autorizado
-    echo json_encode(['error' => 'Acceso no autorizado. Inicie sesión de nuevo.']);
-    exit; 
+
+
+// Permitimos acceso si es Mesa de Mantenimiento (2) O Receptor (5)
+if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 2 && $_SESSION['role_id'] != 5)) {
+    http_response_code(403);// No autorizado
+    echo json_encode(['error' => 'Acceso no autorizado.']);
+    exit;
 }
+
+
 
 // 1. Incluir el archivo de conexión
 // Ruta corregida: Sube 2 niveles (desde portal-camiones/ y Portal/) para llegar a la raíz y entrar a php/
