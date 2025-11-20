@@ -9,7 +9,7 @@
 define('DB_HOST', 'localhost');      
 
 // Tu nuevo usuario de base de datos
-define('DB_USER', 'cytekmx_Yeik');   
+define('DB_USER', 'cytekmx_yeik');   
 
 // Tu nueva contraseña (asegúrate de que el signo $ esté correcto)
 define('DB_PASS', 'WTK$cuesta01');   
