@@ -1,32 +1,34 @@
 <?php
 /*
 * Portal/portal-taller/php/registrar_entrada.php
-* VERSIÓN BLINDADA (V5):
-* - Desactiva salida de errores HTML para evitar 'SyntaxError' en JS.
-* - Maneja excepciones de base de datos limpiamente.
+* VERSIÓN DEFINITIVA V6:
+* - Ruta de conexión corregida (../../../php/db_connect.php).
+* - Tipos de datos en bind_param corregidos (Observaciones es 's', no 'i').
 */
 
-// 1. CRÍTICO: Apagar errores visuales para no romper el JSON
+// Apagar errores visuales para proteger JSON
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(0);
 
 session_start();
-header('Content-Type: application/json'); // Decimos al navegador que esto es JSON
+header('Content-Type: application/json');
 
-// 2. Función para respuesta JSON segura (mata el script después de enviar)
 function enviarRespuesta($success, $message) {
     echo json_encode(['success' => $success, 'message' => $message]);
     exit;
 }
 
 try {
-    // --- Seguridad ---
+    // 1. Seguridad
     if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 5 && $_SESSION['role_id'] != 1)) {
         enviarRespuesta(false, 'Acceso no autorizado.');
     }
 
-    require_once '../../php/db_connect.php'; 
+    // --- CORRECCIÓN DE RUTA CRÍTICA ---
+    // Subimos 3 niveles: php/ -> portal-taller/ -> Portal/ -> Raíz
+    require_once '../../../php/db_connect.php'; 
+    
     if ($conn === false) {
         enviarRespuesta(false, 'Error de conexión a la base de datos.');
     }
@@ -38,27 +40,24 @@ try {
     $id_usuario = $_SESSION['user_id'];
     $conn->begin_transaction();
 
-    // --- Recibir Datos (Usando ?? para evitar "Undefined Index") ---
+    // 2. Recibir Datos
     $id_camion = $_POST['id_camion_seleccionado'] ?? null;
     $km_llegada = floatval($_POST['kilometraje_entrada'] ?? 0);
-    $combustible = $_POST['nivel_combustible'] ?? 'No especificado'; // Valor por defecto
-    $tipo_mto = $_POST['tipo_servicio'] ?? 'General';
+    $combustible = $_POST['nivel_combustible'] ?? 'No especificado';
+    $tipo_mto = $_POST['tipo_mantenimiento'] ?? 'General';
     $obs = $_POST['observaciones_recepcion'] ?? '';
-    // Si el usuario no puso fecha, usamos la actual del servidor
     $fecha_ingreso = !empty($_POST['fecha_ingreso']) ? $_POST['fecha_ingreso'] : date('Y-m-d H:i:s');
 
     if (!$id_camion) {
         throw new Exception("No se seleccionó ningún camión.");
     }
 
-    // --- Lógica de Negocio ---
-    // Conductores
+    // 3. Lógica de Negocio y Conductores
     $id_cond_asignado = !empty($_POST['id_conductor_asignado_hidden']) ? $_POST['id_conductor_asignado_hidden'] : null;
     $id_cond_entrega = !empty($_POST['id_conductor_entrega']) ? $_POST['id_conductor_entrega'] : null;
     
-    // Validación Conductor (Texto vs ID)
+    // Buscar ID si viene nombre
     if ($id_cond_entrega && !is_numeric($id_cond_entrega)) {
-        // Si viene el nombre, intentamos buscar el ID, si no, lo dejamos null
         $stmt_c = $conn->prepare("SELECT id_empleado FROM empleados WHERE id_interno = ? OR nombre LIKE ? LIMIT 1");
         $like_name = "%$id_cond_entrega%";
         $stmt_c->bind_param("ss", $id_cond_entrega, $like_name);
@@ -93,11 +92,10 @@ try {
         else $clasificacion = 'A Tiempo';
     }
 
-    // --- Insertar Entrada ---
+    // 4. Insertar Entrada
     $folio = "ENT-" . date('ymd') . "-" . rand(1000, 9999);
     $id_taller = 1; 
 
-    // NOTA: Asegúrate que estas columnas existan en tu BD (ver Paso 2 abajo)
     $sql_insert = "INSERT INTO tb_entradas_taller (
         folio, id_camion, id_recepcionista, id_taller, kilometraje_entrada, nivel_combustible, 
         tipo_mantenimiento_solicitado, id_conductor_asignado, id_conductor_entrega, alerta_conductor,
@@ -105,36 +103,52 @@ try {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql_insert);
-    if (!$stmt) {
-        throw new Exception("Error preparando consulta: " . $conn->error);
-    }
+    if (!$stmt) throw new Exception("Error preparando consulta: " . $conn->error);
 
-    $stmt->bind_param("siiidssiisssis", 
-        $folio, $id_camion, $id_usuario, $id_taller, $km_llegada, $combustible, 
-        $tipo_mto, $id_cond_asignado, $id_cond_entrega, $alerta_cond, 
-        $clasificacion, $dias_dif, $obs, $fecha_ingreso
+    // --- CORRECCIÓN DE TIPOS DE DATO ---
+    // Antes: "siiidssiisssis" (La penúltima 'i' causaba error en observaciones)
+    // Ahora: "siiidssiisssss" (La penúltima es 's' para texto)
+    $stmt->bind_param("siiidssiisssss", 
+        $folio, 
+        $id_camion, 
+        $id_usuario, 
+        $id_taller, 
+        $km_llegada, 
+        $combustible, 
+        $tipo_mto, 
+        $id_cond_asignado, 
+        $id_cond_entrega, 
+        $alerta_cond, 
+        $clasificacion, 
+        $dias_dif, 
+        $obs,             // Este ahora es 's'
+        $fecha_ingreso
     );
     
     if (!$stmt->execute()) {
-        // Aquí capturamos el error real de MySQL (ej: "Unknown column 'nivel_combustible'")
         throw new Exception("Error al guardar en BD: " . $stmt->error);
     }
     $id_entrada = $conn->insert_id;
 
-    // Actualizar Estatus Camión (SIN TOCAR KILOMETRAJE TOTAL)
-    $conn->query("UPDATE tb_camiones SET estatus = 'En Taller' WHERE id = $id_camion");
+    // 5. Actualizar Estatus Camión
+    $stmt_up = $conn->prepare("UPDATE tb_camiones SET estatus = 'En Taller' WHERE id = ?");
+    $stmt_up->bind_param("i", $id_camion);
+    $stmt_up->execute();
 
-    // Guardar Foto
+    // 6. Guardar Foto
     if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['foto_entrada']['name'], PATHINFO_EXTENSION);
         $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
-        $carpeta = "../../uploads/evidencias_entradas/";
+        
+        // Subimos 3 niveles para llegar a uploads/
+        $carpeta = "../../../uploads/evidencias_entradas/";
         if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
         
         if (move_uploaded_file($_FILES['foto_entrada']['tmp_name'], $carpeta . $nombre_foto)) {
             $ruta_bd = "../uploads/evidencias_entradas/" . $nombre_foto;
-            // Usamos la tabla correcta
-            $conn->query("INSERT INTO tb_evidencias_entrada_taller (id_entrada, ruta_archivo) VALUES ($id_entrada, '$ruta_bd')");
+            $stmt_foto = $conn->prepare("INSERT INTO tb_evidencias_entrada_taller (id_entrada, ruta_archivo) VALUES (?, ?)");
+            $stmt_foto->bind_param("is", $id_entrada, $ruta_bd);
+            $stmt_foto->execute();
         }
     }
 
@@ -145,6 +159,5 @@ try {
     $conn->rollback();
     enviarRespuesta(false, "Error del Sistema: " . $e->getMessage());
 }
-
 $conn->close();
 ?>

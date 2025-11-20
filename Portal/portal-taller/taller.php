@@ -91,7 +91,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <label>Buscar Unidad:</label>
                     <input type="text" id="input-buscar-camion" placeholder="Escribe ECO o Placas..." autocomplete="off">
                     <div id="sugerencias-camion" class="sugerencias-lista"></div>
-                    <input type="hidden" id="id_camion_seleccionado" name="id_camion">
+                    <input type="hidden" id="id_camion_seleccionado" name="id_camion_seleccionado">
                 </div>
 
                 <div class="form-row">
@@ -102,7 +102,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <div class="campo-form">
                         <label>Conductor Asignado:</label>
                         <input type="text" id="info-conductor-asignado" readonly class="campo-bloqueado">
-                        <input type="hidden" id="id_conductor_asignado_hidden" name="id_conductor_asignado">
+                        <input type="hidden" id="id_conductor_asignado_hidden" name="id_conductor_asignado_hidden">
                     </div>
                 </div>
                 
@@ -120,6 +120,31 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         <input type="number" name="kilometraje_entrada" step="0.1" required>
                     </div>
                 </div>
+
+
+                <div class="form-row">
+                    <div class="campo-form">
+                        <label>Taller de Recepción:</label>
+                        <select name="id_taller" required>
+                            <option value="1">Magdalena</option>
+                            <option value="2">Poniente</option>
+                        </select>
+                    </div>
+                    <div class="campo-form">
+                        <label>Nivel de Combustible:</label>
+                        <select name="nivel_combustible" required>
+                            <option value="">Selecciona nivel...</option>
+                            <option value="Reserva">Reserva</option>
+                            <option value="1/4">1/4</option>
+                            <option value="1/2">1/2</option>
+                            <option value="3/4">3/4</option>
+                            <option value="Lleno">Lleno</option>
+                        </select>
+                    </div>
+                </div>
+
+
+
 
                 <div class="campo-form">
                     <label>¿Quién Entrega? (Buscar Conductor):</label>
