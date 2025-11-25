@@ -483,7 +483,7 @@ function analizarMetadatos(blob, archivoOriginal) {
         });
     }
 
-    async function procesarArchivo(archivo) {
+async function procesarArchivo(archivo) {
         if(mensajeCamion) mensajeCamion.innerHTML = "Analizando imagen...";
         imagenDuplicadaCamion = false;
 
@@ -496,16 +496,38 @@ function analizarMetadatos(blob, archivoOriginal) {
         try {
             await analizarMetadatos(archivo, archivo)
                 .then(msg => {
+                    // Si todo sale bien (Promesa resuelta)
                     mostrarMensaje(msg, "ok");
                     imagenDuplicadaCamion = false;
                 })
                 .catch(err => {
+                    // Si hay un error (Promesa rechazada)
                     mostrarMensaje(err, "error");
+                    
+                    // 🛑 BLOQUEO ESTRICTO DE SEGURIDAD 🛑
+                    // Si el error es por fecha o duplicado, NO permitimos continuar.
+                    if (err.includes("Evidencia Antigua") || err.includes("Fecha Incorrecta") || err.includes("Duplicidad")) {
+                        
+                        // 1. Borramos el input para que no se pueda enviar
+                        if(inputCamion) inputCamion.value = ""; 
+                        
+                        // 2. Activamos la bandera de bloqueo
+                        imagenDuplicadaCamion = true;
+                        
+                        // 3. Alerta visual fuerte (limpiamos el HTML del mensaje)
+                        alert("⛔ BLOQUEO DE SEGURIDAD:\n" + err.replace(/<[^>]*>?/gm, ''));
+                        
+                        return; // ¡Salimos! No mostramos el modal de "Continuar"
+                    }
+
+                    // --- Solo mostramos la opción de "Continuar" para errores leves (ej. WhatsApp sin metadatos) ---
                     if (modalAviso) {
                         modalAviso.style.display = "block";
+                        // Por defecto bloqueamos hasta que el usuario confirme en el modal
                         imagenDuplicadaCamion = true; 
                     } else {
-                        if(!confirm(err + "\n¿Deseas usarla de todas formas?")) {
+                        // Fallback si no existe el modal (confirmación nativa)
+                        if(!confirm(err.replace(/<[^>]*>?/gm, '') + "\n¿Es una imagen válida de WhatsApp?")) {
                             if(inputCamion) inputCamion.value = "";
                             imagenDuplicadaCamion = true;
                         } else {
@@ -514,15 +536,9 @@ function analizarMetadatos(blob, archivoOriginal) {
                     }
                 });
         } catch (error) {
-            mostrarMensaje("Error procesando: " + error.message, "error");
+            mostrarMensaje("Error crítico procesando: " + error.message, "error");
+            imagenDuplicadaCamion = true;
         }
-    }
-
-    if (inputCamion) {
-        inputCamion.addEventListener("change", function (event) {
-            const archivo = event.target.files[0];
-            if (archivo) procesarArchivo(archivo);
-        });
     }
 
     // Eventos del Modal de Aviso
