@@ -108,23 +108,42 @@ function analizarMetadatos(blob, archivoOriginal) {
 
                 // 3. VALIDACIÓN DE FECHA (Tu lógica existente...)
                 if (fechaFotoRaw) {
-                    const partes = fechaFotoRaw.split(" ");
+                    // A. Parsear fecha de la foto (EXIF viene como "2025:11:25 14:30:00")
+                    const partes = fechaFotoRaw.split(" "); // Separar fecha y hora
                     const fechaPartes = partes[0].split(":");
-                    const fechaFoto = new Date(fechaPartes[0], fechaPartes[1] - 1, fechaPartes[2]);
+                    const horaPartes = partes[1].split(":");
                     
-                    const fechaInputVal = document.getElementById('fecha-entrada').value; // Asegúrate de leer el input correcto
-                    const fechaRegistro = new Date(fechaInputVal);
+                    // Mes en JS es base 0 (Enero = 0)
+                    const fechaFoto = new Date(
+                        fechaPartes[0], fechaPartes[1] - 1, fechaPartes[2], 
+                        horaPartes[0], horaPartes[1], horaPartes[2]
+                    );
+                    
+                    // B. Obtener fecha "Ahora" (Momento de la subida)
+                    // Usamos "new Date()" del sistema para comparar contra el momento real de carga
+                    const ahora = new Date();
 
-                    fechaFoto.setHours(0,0,0,0);
-                    fechaRegistro.setHours(0,0,0,0);
+                    // C. Calcular diferencia en HORAS
+                    // Restamos milisegundos y convertimos: 1000ms * 60s * 60m = 1 hora
+                    const diferenciaMilisegundos = Math.abs(ahora - fechaFoto);
+                    const horasDiferencia = diferenciaMilisegundos / (1000 * 60 * 60);
 
-                    const diferenciaTiempo = Math.abs(fechaRegistro - fechaFoto);
-                    const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24)); 
+                    // D. CONFIGURACIÓN DEL LÍMITE
+                    const LIMITE_HORAS = 4; // <--- AQUÍ CAMBIAS TU TOLERANCIA (1, 4, 12, etc.)
 
-                    if (diferenciaDias > 1) {
-                        const fechaLegible = `${fechaPartes[2]}/${fechaPartes[1]}/${fechaPartes[0]}`;
-                        reject(`⚠️ <strong>Alerta de Fecha:</strong> La foto fue tomada el ${fechaLegible}.<br>No coincide con la fecha de registro actual.`);
+                    if (horasDiferencia > LIMITE_HORAS) {
+                        // Formato bonito para el mensaje
+                        const fechaLegible = fechaFoto.toLocaleString();
+                        
+                        reject(`⚠️ <strong>Evidencia Antigua:</strong> La foto fue tomada hace ${horasDiferencia.toFixed(1)} horas (${fechaLegible}).<br>
+                                El límite permitido es de ${LIMITE_HORAS} horas respecto al momento de carga.`);
                         return;
+                    }
+                    
+                    // Opcional: Validar que la foto no sea del "futuro" (por error de configuración de cámara)
+                    if (fechaFoto > ahora) {
+                         reject(`⚠️ <strong>Error de Fecha:</strong> La fecha de la foto está en el futuro. Revisa la configuración de tu cámara.`);
+                         return;
                     }
                 }
 

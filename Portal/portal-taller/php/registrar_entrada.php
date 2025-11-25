@@ -155,22 +155,7 @@ try {
     $stmt_up->bind_param("i", $id_camion);
     $stmt_up->execute();
 
-    // 6. Guardar Foto
-    if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['foto_entrada']['name'], PATHINFO_EXTENSION);
-        $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
-        
-        // Subimos 3 niveles para llegar a uploads/
-        $carpeta = "../../../uploads/evidencias_entradas/";
-        if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
-        
-        if (move_uploaded_file($_FILES['foto_entrada']['tmp_name'], $carpeta . $nombre_foto)) {
-            $ruta_bd = "../uploads/evidencias_entradas/" . $nombre_foto;
-            $stmt_foto = $conn->prepare("INSERT INTO tb_evidencias_entrada_taller (id_entrada, ruta_archivo) VALUES (?, ?)");
-            $stmt_foto->bind_param("is", $id_entrada, $ruta_bd);
-            $stmt_foto->execute();
-        }
-    }
+
     // --- 6. Guardar Foto CON AUDITORÍA FORENSE (ÚNICO BLOQUE) ---
 if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
         
@@ -183,6 +168,27 @@ if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOA
             
             // A. Generar Huella Digital
             $hash_archivo = hash_file('sha256', $tmp_name);
+
+            $sql_duplicado = "SELECT t.folio, t.fecha_ingreso 
+                              FROM tb_evidencias_entrada_taller e
+                              JOIN tb_entradas_taller t ON e.id_entrada = t.id
+                              WHERE e.hash_archivo = ? LIMIT 1";
+            
+            $stmt_dup = $conn->prepare($sql_duplicado);
+            $stmt_dup->bind_param("s", $hash_archivo);
+            $stmt_dup->execute();
+            $res_dup = $stmt_dup->get_result();
+
+            if ($res_dup->num_rows > 0) {
+                // ¡AJÁ! Te atrapé. Ya existe.
+                $info_dup = $res_dup->fetch_assoc();
+                throw new Exception("⛔ FOTO RECHAZADA: Esta imagen ya fue utilizada anteriormente en el Folio " . $info_dup['folio'] . " del " . date('d/m/Y', strtotime($info_dup['fecha_ingreso'])));
+            }
+            $stmt_dup->close();            
+
+
+
+
 
             // B. Obtener Metadatos (PRIORIDAD: LO QUE ENVÍA EL FRONTEND)
             $fecha_captura = !empty($_POST['meta_fecha_captura']) ? $_POST['meta_fecha_captura'] : null;
