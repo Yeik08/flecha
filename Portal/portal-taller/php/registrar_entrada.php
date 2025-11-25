@@ -172,31 +172,32 @@ try {
         }
     }
     // --- 6. Guardar Foto CON AUDITORÍA FORENSE (ÚNICO BLOQUE) ---
-    if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
+if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOAD_ERR_OK) {
         
         $tmp_name = $_FILES['foto_entrada']['tmp_name'];
         $nombre_original = $_FILES['foto_entrada']['name'];
         $ext = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
         
-        // Validar extensión
         $permitidos = ['jpg', 'jpeg', 'png'];
         if (in_array($ext, $permitidos)) {
             
-            // A. Generar Huella Digital (Hash SHA-256)
+            // A. Generar Huella Digital
             $hash_archivo = hash_file('sha256', $tmp_name);
 
-            // B. Extraer Metadatos EXIF (Fecha Real)
-            $fecha_captura = null;
-            $metadatos_json = null;
-            
-            if (in_array($ext, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
-                // @ silencia warnings si la imagen no tiene EXIF
-                $exif = @exif_read_data($tmp_name);
-                
-                if ($exif) {
-                    $metadatos_json = json_encode($exif); // Guardamos todo el JSON
+            // B. Obtener Metadatos (PRIORIDAD: LO QUE ENVÍA EL FRONTEND)
+            $fecha_captura = !empty($_POST['meta_fecha_captura']) ? $_POST['meta_fecha_captura'] : null;
+            $metadatos_json = !empty($_POST['meta_datos_json']) ? $_POST['meta_datos_json'] : null;
 
-                    // Buscamos la fecha original
+            // C. Respaldo: Si el frontend falló, intentamos leerlo con PHP (Solo JPG/JPEG)
+            if (empty($fecha_captura) && in_array($ext, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
+                $exif = @exif_read_data($tmp_name);
+                if ($exif) {
+                    // Guardamos JSON si no venía del front
+                    if (empty($metadatos_json)) {
+                        $metadatos_json = json_encode($exif);
+                    }
+                    
+                    // Buscamos fecha
                     if (isset($exif['DateTimeOriginal'])) {
                         $fecha_captura = $exif['DateTimeOriginal']; 
                     } elseif (isset($exif['DateTimeDigitized'])) {
@@ -207,21 +208,23 @@ try {
                 }
             }
 
-            // C. Mover y Guardar
+            // D. Mover y Guardar
             $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
-            $carpeta = "../../uploads/evidencias_entradas/";
-            if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
+            $carpeta = "../../../uploads/evidencias_entradas/";
+            
+            // Asegurar permisos correctos al crear carpeta
+            if (!is_dir($carpeta)) {
+                mkdir($carpeta, 0777, true);
+            }
             
             if (move_uploaded_file($tmp_name, $carpeta . $nombre_foto)) {
                 $ruta_bd = "../uploads/evidencias_entradas/" . $nombre_foto;
                 
-                // Insertamos con los datos forenses completos
                 $sql_foto = "INSERT INTO tb_evidencias_entrada_taller 
                             (id_entrada, ruta_archivo, tipo_foto, descripcion, fecha_captura, hash_archivo, metadatos_json) 
-                            VALUES (?, ?, 'Entrada', 'Evidencia Recepción', ?, ?, ?)";
+                            VALUES (?, ?, 'General', 'Evidencia Recepción', ?, ?, ?)";
                 
                 $stmt_foto = $conn->prepare($sql_foto);
-                // Tipos: i s s s s (int, string, string, string, string)
                 $stmt_foto->bind_param("issss", $id_entrada, $ruta_bd, $fecha_captura, $hash_archivo, $metadatos_json);
                 $stmt_foto->execute();
             }

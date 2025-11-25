@@ -176,7 +176,10 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <label>Evidencia Fotográfica (Entrada):</label>
                     <input type="file" id="foto-entrada" name="foto_entrada" accept="image/*" required>
                 </div>
-
+                
+                <input type="hidden" id="meta_fecha_captura" name="meta_fecha_captura">
+                <input type="hidden" id="meta_datos_json" name="meta_datos_json">
+                
                 <div class="acciones-form">
                     <button type="submit" class="btn-primario">Registrar Entrada</button>
                 </div>

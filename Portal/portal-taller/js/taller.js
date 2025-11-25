@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mensajeCamion.appendChild(div);
     }
 
-    function analizarMetadatos(blob, archivoOriginal) {
+function analizarMetadatos(blob, archivoOriginal) {
         return new Promise((resolve, reject) => {
             
             if (typeof EXIF === 'undefined') {
@@ -74,59 +74,61 @@ document.addEventListener('DOMContentLoaded', function() {
             EXIF.getData(blob, function () {
                 const allMetaData = EXIF.getAllTags(this);
                 
-                // 1. VALIDACIÓN DE INTEGRIDAD (WhatsApp)
+                // 1. VALIDACIÓN DE INTEGRIDAD
                 if (Object.keys(allMetaData).length === 0 || (!allMetaData.DateTimeOriginal && !allMetaData.Model)) {
+                    // Limpiamos los inputs ocultos si falla
+                    document.getElementById('meta_fecha_captura').value = "";
+                    document.getElementById('meta_datos_json').value = "";
                     reject("⚠️ <strong>Alerta de Origen:</strong> La imagen parece venir de WhatsApp (sin metadatos).<br>Se requiere una foto original.");
                     return;
                 }
                 
-                // Obtener datos clave
                 const fechaFotoRaw = allMetaData.DateTimeOriginal || allMetaData.DateTime;
                 const modelo = allMetaData.Model || "modelo-desconocido";
                 const hash = `${fechaFotoRaw}-${modelo}-${archivoOriginal.size}`;
 
-                // 2. VALIDACIÓN DE DUPLICADOS (En esta sesión)
+                // --- INYECCIÓN DE DATOS PARA EL BACKEND ---
+                // Guardamos todo el JSON de metadatos
+                document.getElementById('meta_datos_json').value = JSON.stringify(allMetaData);
+
+                // Formateamos la fecha para MySQL (YYYY-MM-DD HH:MM:SS)
+                // El formato EXIF suele ser "YYYY:MM:DD HH:MM:SS", solo cambiamos los primeros ':' por '-'
+                if (fechaFotoRaw) {
+                    // Truco simple de string: Reemplaza los primeros 2 ':' por '-'
+                    let fechaMySQL = fechaFotoRaw.substring(0, 10).replace(/:/g, '-') + fechaFotoRaw.substring(10);
+                    document.getElementById('meta_fecha_captura').value = fechaMySQL;
+                }
+                // ------------------------------------------
+
+                // 2. VALIDACIÓN DE DUPLICADOS
                 if (imagenesCamionSubidas.includes(hash)) {
                     reject("⛔ <strong>Error de Duplicidad:</strong> Ya has intentado subir esta misma foto en esta sesión.");
                     return;
                 }
 
-                // 3. VALIDACIÓN DE FECHA (Antigüedad)
+                // 3. VALIDACIÓN DE FECHA (Tu lógica existente...)
                 if (fechaFotoRaw) {
-                    // Convertir fecha EXIF "YYYY:MM:DD HH:MM:SS" a objeto Date
-                    // Nota: EXIF usa ':' como separador, JS prefiere '-' o '/'
                     const partes = fechaFotoRaw.split(" ");
                     const fechaPartes = partes[0].split(":");
-                    
-                    // Crear fecha de la foto (Mes en JS es 0-11)
                     const fechaFoto = new Date(fechaPartes[0], fechaPartes[1] - 1, fechaPartes[2]);
                     
-                    // Obtener fecha del input de registro (YYYY-MM-DDTHH:MM)
-                    const fechaInputVal = inputFechaEntrada.value;
-                    const fechaRegistro = new Date(fechaInputVal); // Toma la fecha del input
+                    const fechaInputVal = document.getElementById('fecha-entrada').value; // Asegúrate de leer el input correcto
+                    const fechaRegistro = new Date(fechaInputVal);
 
-                    // Normalizar ambas fechas a "Solo Día" (sin horas) para comparar
                     fechaFoto.setHours(0,0,0,0);
                     fechaRegistro.setHours(0,0,0,0);
 
-                    // Calcular diferencia en días
                     const diferenciaTiempo = Math.abs(fechaRegistro - fechaFoto);
                     const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24)); 
 
-                    // Regla: Si la foto tiene más de 1 día de diferencia con el registro
                     if (diferenciaDias > 1) {
                         const fechaLegible = `${fechaPartes[2]}/${fechaPartes[1]}/${fechaPartes[0]}`;
                         reject(`⚠️ <strong>Alerta de Fecha:</strong> La foto fue tomada el ${fechaLegible}.<br>No coincide con la fecha de registro actual.`);
                         return;
                     }
-                } else {
-                    // Si tiene metadatos pero NO tiene fecha (raro, pero pasa)
-                    reject("⚠️ La imagen tiene metadatos incompletos (sin fecha).");
-                    return;
                 }
 
-                // Si pasa todas las pruebas:
-                imagenesCamionSubidas.push(hash); // Guardamos huella para no repetirla
+                imagenesCamionSubidas.push(hash);
                 resolve("✅ Imagen válida, original y reciente.");
             });
         });
