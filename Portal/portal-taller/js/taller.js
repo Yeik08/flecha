@@ -120,7 +120,7 @@ function analizarMetadatos(blob, archivoOriginal) {
                         horaPartes[0], horaPartes[1], horaPartes[2]
                     );
                     
-                    // B. Obtener "Ahora" (Reloj del sistema, no del input)
+                    // B. Obtener "Ahora" (Reloj del sistema)
                     const ahora = new Date();
 
                     // C. Calcular diferencia en HORAS
@@ -128,7 +128,7 @@ function analizarMetadatos(blob, archivoOriginal) {
                     const diferenciaMilisegundos = Math.abs(ahora - fechaFoto);
                     const horasDiferencia = diferenciaMilisegundos / (1000 * 60 * 60); 
 
-                    // D. CONFIGURACIÓN: Límite de tolerancia (Ej: 4 horas)
+                    // D. CONFIGURACIÓN: Límite de tolerancia (4 horas)
                     const LIMITE_HORAS = 4; 
 
                     // E. Validar
@@ -139,7 +139,6 @@ function analizarMetadatos(blob, archivoOriginal) {
                     }
                     
                     // Validación extra: Que no sea del futuro (cámara mal configurada)
-                    // Tolerancia de 10 minutos (600000 ms) por si el reloj del celular está un poco adelantado
                     if (fechaFoto > (new Date(ahora.getTime() + 600000))) { 
                          reject(`⚠️ <strong>Fecha Incorrecta:</strong> La foto tiene fecha del futuro. Revisa la hora de tu cámara.`);
                          return;
