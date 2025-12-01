@@ -106,45 +106,48 @@ function analizarMetadatos(blob, archivoOriginal) {
                     return;
                 }
 
-                // 3. VALIDACIÓN DE FECHA (Tu lógica existente...)
 // 3. VALIDACIÓN DE TIEMPO REAL (HORAS)
                 if (fechaFotoRaw) {
-                    // A. Obtener fecha y hora exacta de la foto
+                    // A. Parsear fecha EXIF (formato "2025:11:25 14:30:00")
+                    // Split por espacio para separar fecha y hora
                     const partes = fechaFotoRaw.split(" "); 
-                    const fechaPartes = partes[0].split(":");
-                    const horaPartes = partes[1].split(":");
-                    
-                    // Mes en JS es 0-11. Construimos la fecha con hora/min/seg
-                    const fechaFoto = new Date(
-                        fechaPartes[0], fechaPartes[1] - 1, fechaPartes[2], 
-                        horaPartes[0], horaPartes[1], horaPartes[2]
-                    );
-                    
-                    // B. Obtener "Ahora" (Reloj del sistema)
-                    const ahora = new Date();
+                    if (partes.length >= 2) {
+                        const fechaPartes = partes[0].split(":"); // [2025, 11, 25]
+                        const horaPartes = partes[1].split(":");  // [14, 30, 00]
+                        
+                        // Crear objeto Date (Mes en JS es 0-11, por eso restamos 1 al mes)
+                        const fechaFoto = new Date(
+                            fechaPartes[0], 
+                            fechaPartes[1] - 1, 
+                            fechaPartes[2], 
+                            horaPartes[0], 
+                            horaPartes[1], 
+                            horaPartes[2]
+                        );
+                        
+                        // B. Validar contra hora actual
+                        const ahora = new Date();
+                        const diferenciaMilisegundos = ahora - fechaFoto;
+                        const horasDiferencia = diferenciaMilisegundos / (1000 * 60 * 60); 
+                        const LIMITE_HORAS = 4; 
 
-                    // C. Calcular diferencia en HORAS
-                    // Restamos milisegundos y convertimos a horas
-                    const diferenciaMilisegundos = Math.abs(ahora - fechaFoto);
-                    const horasDiferencia = diferenciaMilisegundos / (1000 * 60 * 60); 
+                        // C. Reglas
+                        if (diferenciaMilisegundos < -600000) { // 10 min tolerancia futuro
+                             reject(`⚠️ <strong>Fecha Incorrecta:</strong> La foto tiene fecha del futuro. Revisa tu cámara.`);
+                             return;
+                        }
 
-                    // D. CONFIGURACIÓN: Límite de tolerancia (4 horas)
-                    const LIMITE_HORAS = 4; 
-
-                    // E. Validar
-                    if (horasDiferencia > LIMITE_HORAS) {
-                        const fechaLegible = fechaFoto.toLocaleString();
-                        reject(`⚠️ <strong>Evidencia Antigua:</strong> La foto es de hace ${horasDiferencia.toFixed(1)} horas (${fechaLegible}).<br>Solo se permiten fotos de las últimas ${LIMITE_HORAS} horas.`);
-                        return;
+                        if (horasDiferencia > LIMITE_HORAS) {
+                            const fechaLegible = fechaFoto.toLocaleString();
+                            reject(`⚠️ <strong>Evidencia Antigua:</strong> La foto es de hace ${horasDiferencia.toFixed(1)} horas (${fechaLegible}).<br>Límite permitido: ${LIMITE_HORAS} horas.`);
+                            return;
+                        }
                     }
-                    
-                    // Validación extra: Que no sea del futuro (cámara mal configurada)
-                    if (fechaFoto > (new Date(ahora.getTime() + 600000))) { 
-                         reject(`⚠️ <strong>Fecha Incorrecta:</strong> La foto tiene fecha del futuro. Revisa la hora de tu cámara.`);
-                         return;
-                    }
+                } else {
+                     // Si no hay fecha raw pero pasamos la validación de integridad arriba
+                     reject("⚠️ <strong>Sin Fecha:</strong> No se pudo leer la fecha de la foto.");
+                     return;
                 }
-
                 imagenesCamionSubidas.push(hash);
                 resolve("✅ Imagen válida, original y reciente.");
             });

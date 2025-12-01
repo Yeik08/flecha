@@ -213,7 +213,46 @@ if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOA
                     }
                 }
             }
+ // --- AUDITORÍA DE TIEMPO (NUEVO BLOQUE) ---
+            if (!empty($fecha_captura)) {
+                // Establecer zona horaria (Vital para México)
+                date_default_timezone_set('America/Mexico_City'); 
+                
+                // Limpiar formato EXIF: cambiar los primeros ':' por '-' (Ej: 2025:11:25 -> 2025-11-25)
+                // El formato EXIF estándar es "YYYY:MM:DD HH:MM:SS"
+                $fecha_limpia = preg_replace('/^(\d{4}):(\d{2}):(\d{2})/', '$1-$2-$3', $fecha_captura);
+                
+                try {
+                    $fecha_foto_dt = new DateTime($fecha_limpia);
+                    $ahora = new DateTime();
+                    
+                    // Calcular diferencia en horas
+                    $diferencia_segundos = $ahora->getTimestamp() - $fecha_foto_dt->getTimestamp();
+                    $horas_pasadas = $diferencia_segundos / 3600;
 
+                    // Validaciones
+                    // 1. Futuro (Tolerancia 10 mins por relojes desajustados)
+                    if ($diferencia_segundos < -600) {
+                        throw new Exception("⛔ FOTO RECHAZADA: La fecha de la foto es futura. Revisa la hora de tu cámara.");
+                    }
+
+                    // 2. Antigüedad (4 Horas)
+                    if ($horas_pasadas > 4) {
+                        throw new Exception("⛔ FOTO RECHAZADA: Evidencia antigua (" . round($horas_pasadas, 1) . " horas). Solo se permiten fotos tomadas hace menos de 4 horas.");
+                    }
+
+                } catch (Exception $e) {
+                    // Si es nuestra excepción, la relanzamos. Si es error de fecha, lo ignoramos o manejamos.
+                    if (strpos($e->getMessage(), 'FOTO RECHAZADA') !== false) {
+                        throw $e;
+                    }
+                    // Si la fecha no era válida, podríamos decidir rechazar o dejar pasar.
+                    // Por seguridad, si no podemos validar la fecha, asumimos riesgo o pedimos reintentar.
+                }
+            } else {
+                // OPCIONAL: ¿Rechazar si no tiene fecha en absoluto?
+                throw new Exception("⛔ FOTO RECHAZADA: La imagen no contiene fecha de captura original (Metadata perdida). Usa una foto original.");
+            }
             // D. Mover y Guardar
             $nombre_foto = "EVIDENCIA_" . $folio . "_" . time() . "." . $ext;
             $carpeta = "../../../uploads/evidencias_entradas/";
