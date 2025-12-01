@@ -106,7 +106,7 @@ function analizarMetadatos(blob, archivoOriginal) {
                     return;
                 }
 
-// 3. VALIDACIÓN DE TIEMPO REAL (HORAS)
+                // 3. VALIDACIÓN DE TIEMPO REAL (HORAS)
                 if (fechaFotoRaw) {
                     // A. Parsear fecha EXIF (formato "2025:11:25 14:30:00")
                     // Split por espacio para separar fecha y hora
