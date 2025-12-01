@@ -490,8 +490,12 @@ async function procesarArchivo(archivo) {
         if(mensajeCamion) mensajeCamion.innerHTML = "Analizando imagen...";
         imagenDuplicadaCamion = false;
 
-        if (!archivo || !archivo.type.startsWith("image/")) {
-            mostrarMensaje("El archivo no es una imagen válida.", "error");
+
+        const tiposPermitidos = ['image/jpeg', 'image/png', 'image/jpg'];
+
+        if (!archivo || !tiposPermitidos.includes(archivo.type)) {
+            mostrarMensaje("⛔ Formato no válido. Solo se aceptan JPG o PNG. (No HEIC)", "error");
+            if(inputCamion) inputCamion.value = ""; // Limpiar input
             imagenDuplicadaCamion = true;
             return;
         }

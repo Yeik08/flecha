@@ -213,7 +213,7 @@ if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOA
                     }
                 }
             }
- // --- AUDITORÍA DE TIEMPO (NUEVO BLOQUE) ---
+              // --- AUDITORÍA DE TIEMPO (NUEVO BLOQUE) ---
             if (!empty($fecha_captura)) {
                 // Establecer zona horaria (Vital para México)
                 date_default_timezone_set('America/Mexico_City'); 
@@ -273,6 +273,8 @@ if (isset($_FILES['foto_entrada']) && $_FILES['foto_entrada']['error'] === UPLOA
                 $stmt_foto->bind_param("issss", $id_entrada, $ruta_bd, $fecha_captura, $hash_archivo, $metadatos_json);
                 $stmt_foto->execute();
             }
+        } else {
+            throw new Exception("⛔ FORMATO NO VÁLIDO: El archivo '$nombre_original' no es permitido. Solo se aceptan JPG, JPEG o PNG.");
         }
     }
     $conn->commit();
