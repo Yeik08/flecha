@@ -279,6 +279,20 @@ function analizarMetadatos(blob, archivoOriginal) {
                             if(infoPlacas) infoPlacas.value = c.placas;
                             
                             // --- LÓGICA CRÍTICA PARA VALIDACIÓN DE CONDUCTOR ---
+                            
+        if (c.estatus === 'En Taller') { // Antes decía camion.estatus
+            alert(`⛔ ALTO AHÍ:\nLa unidad ${c.numero_economico} ya figura con estatus 'En Taller'.\n\nNo puedes registrar una entrada doble.`);
+            
+            inputBuscarCamion.value = '';
+            // Asegúrate de que esta variable 'listaCamion' esté definida arriba (en tu código vi que a veces usas listaSugerenciasCamion)
+            // Si usaste mi código anterior, verifica si la variable se llama 'listaCamion' o 'listaSugerenciasCamion'
+            if(listaCamion) listaCamion.style.display = 'none'; 
+            return; 
+        }
+        inputBuscarCamion.value = c.numero_economico; // Antes decía camion.numero_economico
+
+
+                            
                             if(c.nombre_chofer) {
                                 if(infoConductor) infoConductor.value = c.nombre_chofer;
                                 if(hiddenIdConductor) {
@@ -493,9 +507,8 @@ async function procesarArchivo(archivo) {
 
         const tiposPermitidos = ['image/jpeg', 'image/png', 'image/jpg'];
 
-        if (!archivo || !tiposPermitidos.includes(archivo.type)) {
-            mostrarMensaje("⛔ Formato no válido. Solo se aceptan JPG o PNG. (No HEIC)", "error");
-            if(inputCamion) inputCamion.value = ""; // Limpiar input
+        if (!archivo || !archivo.type.startsWith("image/")) {
+            mostrarMensaje("El archivo no es una imagen válida.", "error");
             imagenDuplicadaCamion = true;
             return;
         }

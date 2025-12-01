@@ -12,6 +12,7 @@ $sql = "SELECT
             c.id, 
             c.numero_economico, 
             c.placas, 
+            c.estatus,
             c.fecha_estimada_mantenimiento,
             c.estado_salud,
             e.id_empleado as id_chofer,
