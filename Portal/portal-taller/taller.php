@@ -68,11 +68,21 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <h2>Bitácora de Entradas</h2>
             <button class="btn-primario" id="btn-registrar-entrada">+ Registrar Entrada de Camión</button>
         </div>
-
+        
         <div class="tabla-contenido">
             <table>
-                <thead><tr><th>Folio</th><th>Unidad</th><th>Fecha</th><th>Estatus</th></tr></thead>                    
-                <tbody><tr><td colspan="4" style="text-align:center">Cargando...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Unidad</th>
+                        <th>Tipo Servicio</th> <th>Fecha Ingreso</th>
+                        <th>Alertas</th>       <th>Estatus</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>                    
+                <tbody id="tabla-entradas-body">
+                    <tr><td colspan="7" style="text-align:center">Cargando...</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -142,9 +152,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </select>
                     </div>
                 </div>
-
-
-
 
                 <div class="campo-form">
                     <label>¿Quién Entrega? (Buscar Conductor):</label>

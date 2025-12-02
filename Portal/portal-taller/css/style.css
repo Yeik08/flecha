@@ -235,7 +235,7 @@ tbody tr:hover {
 }
 
 .btn-ver {
-    background-color: #17a2b8; /* Azul info */
+    background-color: var(--verde); /* Azul info */
     color: white;
     border: none;
     padding: 8px 12px;
@@ -243,7 +243,7 @@ tbody tr:hover {
     cursor: pointer;
 }
 .btn-ver:hover{
-    background-color: #117a8b;
+    background-color: var(--verde);
 }
 
 

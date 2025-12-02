@@ -637,4 +637,80 @@ async function procesarArchivo(archivo) {
         });
     }
 
+    // ==========================================================================
+    // 8. CARGAR TABLA DE ENTRADAS (BITÁCORA)
+    // ==========================================================================
+
+    async function cargarTablaEntradas() {
+        const tbody = document.getElementById('tabla-entradas-body');
+        if (!tbody) return;
+
+        try {
+            const res = await fetch('php/listar_entradas.php');
+            const data = await res.json();
+
+            if (!data.success) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Error: ${data.message}</td></tr>`;
+                return;
+            }
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay entradas registradas aún.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = ''; // Limpiar "Cargando..."
+
+            data.data.forEach(entrada => {
+                const tr = document.createElement('tr');
+
+                // 1. Lógica de Alertas Visuales (Semáforo)
+                let alertasHTML = '';
+                if (entrada.alerta_conductor === 'Si') {
+                    alertasHTML += `<span title="Conductor no coincide" style="font-size:1.2em; cursor:help;">👨‍💼⚠️</span> `;
+                }
+                if (entrada.clasificacion_tiempo === 'Anticipado') {
+                    alertasHTML += `<span title="Entrada Anticipada" style="color:#f39c12; font-weight:bold;">⏱️ Anticipado</span>`;
+                } else if (entrada.clasificacion_tiempo === 'Tarde') {
+                    alertasHTML += `<span title="Entrada Tardía" style="color:#e74c3c; font-weight:bold;">⏱️ Tarde</span>`;
+                } else {
+                    alertasHTML += `<span style="color:#2ecc71;">OK</span>`;
+                }
+
+                // 2. Colores de Estatus
+                let estatusColor = 'gray';
+                if(entrada.estatus_entrada === 'Recibido') estatusColor = '#316960'; // verde
+                if(entrada.estatus_entrada === 'En Proceso') estatusColor = '#f39c12'; // Naranja
+                if(entrada.estatus_entrada === 'Listo') estatusColor = '#ff0000'; // rojo
+
+                tr.innerHTML = `
+                    <td><strong>${entrada.folio}</strong></td>
+                    <td>
+                        ${entrada.numero_economico}<br>
+                        <small style="color:#777;">${entrada.placas}</small>
+                    </td>
+                    <td>${entrada.tipo}</td>
+                    <td>${entrada.fecha_formato}</td>
+                    <td style="text-align:center;">${alertasHTML}</td>
+                    <td>
+                        <span style="background-color:${estatusColor}; color:white; padding:4px 8px; border-radius:12px; font-size:0.85em;">
+                            ${entrada.estatus_entrada}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-ver" onclick="alert('Aquí abriríamos el detalle del Folio: ${entrada.folio}')">Ver</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Error de conexión</td></tr>`;
+        }
+    }
+
+    // Llamar a la función al iniciar
+    cargarTablaEntradas();
+
 });
