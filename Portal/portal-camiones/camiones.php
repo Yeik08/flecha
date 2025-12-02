@@ -50,12 +50,12 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 					</ul>-->
 			
 					<ul class="menu">
-						<li><a href="../portal-inventario/alta-inventario.html">Inventario</a></li>
+						<li><a href="../portal-inventario/alta-inventario.php">Inventario</a></li>
 					</ul>
 
 
 					<ul class="menu">
-						<li><a href="../portal-personal/personal.html">Personal</a></li>
+						<li><a href="../portal-personal/personal.html">alta de catalogos</a></li>
 					</ul>
 
 <!--					<ul class="menu">
