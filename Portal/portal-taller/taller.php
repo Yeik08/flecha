@@ -148,9 +148,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                 <div class="campo-form">
                     <label>¿Quién Entrega? (Buscar Conductor):</label>
-                    <input type="text" id="input-conductor-entrega" placeholder="Buscar conductor..." autocomplete="off">
+                    <input type="text" id="input-conductor-entrega" placeholder="Buscar conductor..." autocomplete="off" required>
                     <div id="sugerencias-chofer-entrega" class="sugerencias-lista"></div>
-                    <input type="hidden" id="id_conductor_entrega" name="id_conductor_entrega">
+                    <input type="hidden" id="id_conductor_entrega" name="id_conductor_entrega" required>
                 </div>
 
                 <div class="campo-form">
@@ -169,7 +169,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                 <div class="campo-form">
                     <label>Observaciones de Recepción:</label>
-                    <textarea id="obs-recepcion" name="observaciones_recepcion" rows="2" placeholder="Daños visibles, nivel combustible, etc."></textarea>
+                    <textarea id="obs-recepcion" name="observaciones_recepcion" rows="2" placeholder="Daños visibles, nivel combustible, etc." required></textarea>
                 </div>
 
                 <div class="campo-form">

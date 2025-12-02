@@ -280,18 +280,29 @@ function analizarMetadatos(blob, archivoOriginal) {
                             
                             // --- LÓGICA CRÍTICA PARA VALIDACIÓN DE CONDUCTOR ---
                             
-        if (c.estatus === 'En Taller') { // Antes decía camion.estatus
-            alert(`⛔ ALTO AHÍ:\nLa unidad ${c.numero_economico} ya figura con estatus 'En Taller'.\n\nNo puedes registrar una entrada doble.`);
-            
-            inputBuscarCamion.value = '';
-            // Asegúrate de que esta variable 'listaCamion' esté definida arriba (en tu código vi que a veces usas listaSugerenciasCamion)
-            // Si usaste mi código anterior, verifica si la variable se llama 'listaCamion' o 'listaSugerenciasCamion'
-            if(listaCamion) listaCamion.style.display = 'none'; 
-            return; 
-        }
-        inputBuscarCamion.value = c.numero_economico; // Antes decía camion.numero_economico
+                            if (c.estatus === 'En Taller') { // Antes decía camion.estatus
+                                alert(`⛔ ALTO AHÍ:\nLa unidad ${c.numero_economico} ya figura con estatus 'En Taller'.\n\nNo puedes registrar una entrada doble.`);
+                                
+                                inputBuscarCamion.value = '';
 
 
+                                if(infoPlacas) infoPlacas.value = ""; // Limpia placas visuales
+                                if(infoConductor) infoConductor.value = ""; // Limpia conductor visual
+                                                                
+// Limpia los IDs ocultos (Esto impide que el formulario funcione)
+                                if(inputIdCamion) inputIdCamion.value = ""; 
+                                if(hiddenIdConductor) hiddenIdConductor.value = "";
+                                
+                                listaCamion.style.display = 'none';
+                                return; // DETIENE LA EJECUCIÓN AQUÍ
+                            }
+                            inputBuscarCamion.value = c.numero_economico; // Antes decía camion.numero_economico
+
+                            if(document.getElementById('id_camion_seleccionado')) 
+                                document.getElementById('id_camion_seleccionado').value = c.id;
+                            
+                            if(infoPlacas) infoPlacas.value = c.placas;
+                            
                             
                             if(c.nombre_chofer) {
                                 if(infoConductor) infoConductor.value = c.nombre_chofer;
@@ -593,7 +604,12 @@ async function procesarArchivo(archivo) {
     if (form) {
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
-            
+                // --- [NUEVO CANDADO] Verificar que se seleccionó un camión válido ---
+            const idCamionValido = document.getElementById('id_camion_seleccionado').value;
+            if (!idCamionValido) {
+                alert("⚠️ Error: Debes seleccionar un camión válido de la lista antes de guardar.");
+                return; // Detiene el envío
+            }        
             if (imagenDuplicadaCamion) {
                 alert("🚫 La imagen no es válida o fue rechazada.");
                 return;
