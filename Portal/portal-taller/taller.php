@@ -225,8 +225,75 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
         </div> 
     
+<div id="modal-detalle" class="modal oculto">
+        <div class="modal-contenido" style="max-width: 800px; min-height: 800px;">
+            <span class="cerrar-modal" id="cerrar-modal-detalle">&times;</span>
+            
+            <div class="modal-header">
+                <h2>Detalle de Entrada <span id="ver-folio" style="color:#316960;"></span></h2>
+            </div>
 
-        
+            <div class="tabs-modal">
+                <button class="tab-btn active" onclick="cambiarTab(event, 'tab-info')">📋 Información</button>
+                <button class="tab-btn" onclick="cambiarTab(event, 'tab-foto')">📸 Evidencia</button>
+            </div>
+
+            <div id="tab-info" class="tab-panel active">
+                <div class="form-row">
+                    <div class="columna-detalle">
+                        <h3 style="border-bottom: 2px solid #ddd; padding-bottom: 5px; color:#555;">🚌 Unidad</h3>
+                        <p><strong>Económico:</strong> <span id="ver-eco" style="font-size:1.2em;"></span></p>
+                        <p><strong>Placas:</strong> <span id="ver-placas"></span></p>
+                        <p><strong>Marca/Año:</strong> <span id="ver-marca"></span></p>
+                        <p><strong>Combustible:</strong> <span id="ver-gas"></span></p>
+                        <p><strong>Kilometraje:</strong> <span id="ver-km" style="font-weight:bold;"></span></p>
+                    </div>
+
+                    <div class="columna-detalle">
+                        <h3 style="border-bottom: 2px solid #ddd; padding-bottom: 5px; color:#555;">📋 Servicio</h3>
+                        <p><strong>Fecha:</strong> <span id="ver-fecha"></span></p>
+                        <p><strong>Tipo:</strong> <span id="ver-tipo"></span></p>
+                        <p><strong>Conductor:</strong> <span id="ver-chofer"></span></p>
+                        <p><strong>Estatus:</strong> <span id="ver-estatus" class="estatus-tag"></span></p>
+                    </div>
+                </div>
+                
+                <br>
+                <p><strong>Observaciones Registradas:</strong></p>
+                <div style="background:#f9f9f9; padding:15px; border-left: 4px solid #316960; border-radius:4px;">
+                    <span id="ver-obs" style="font-style:italic;">Sin observaciones.</span>
+                </div>
+            </div>
+
+            <div id="tab-foto" class="tab-panel">
+                <div style="
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    background-color: #000; /* Fondo negro para mejor contraste */
+                    border-radius: 8px;
+                    padding: 10px;
+                    height: 400px; /* Altura fija grande */
+                ">
+                    <img id="ver-foto" src="" alt="Evidencia" style="
+                        max-width: 100%; 
+                        max-height: 100%; 
+                        object-fit: contain; /* La imagen nunca se recorta */
+                        box-shadow: 0 0 15px rgba(255,255,255,0.1);
+                    ">
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button type="button" class="btn-primario" onclick="window.open(document.getElementById('ver-foto').src, '_blank')">
+                        🔍 Abrir imagen en pestaña nueva
+                    </button>
+                </div>
+            </div>
+            
+            <div class="acciones-form" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                <button type="button" class="btn-secundario" id="btn-cerrar-detalle">Cerrar</button>
+            </div>
+        </div>
+    </div>        
 <script src="js/taller.js"></script>
 </body>
 </html>

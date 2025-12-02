@@ -698,7 +698,7 @@ async function procesarArchivo(archivo) {
                         </span>
                     </td>
                     <td>
-                        <button class="btn-ver" onclick="alert('Aquí abriríamos el detalle del Folio: ${entrada.folio}')">Ver</button>
+                        <button class="btn-ver" onclick="verDetalle(${entrada.id})">Ver</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -713,4 +713,113 @@ async function procesarArchivo(archivo) {
     // Llamar a la función al iniciar
     cargarTablaEntradas();
 
-});
+
+
+
+    // ==========================================================================
+    // 9. LÓGICA DEL MODAL DE DETALLE (VER)
+    // ==========================================================================
+    
+    const modalDetalle = document.getElementById('modal-detalle');
+    const btnCerrarDetalle = document.getElementById('btn-cerrar-detalle');
+    const equisCerrarDetalle = document.getElementById('cerrar-modal-detalle');
+
+    // Hacemos la función global para que el onclick del HTML la encuentre
+    window.verDetalle = async function(id) {
+        if(!modalDetalle) return;
+
+        try {
+            // Mostrar "Cargando..." o limpiar mientras carga
+            document.getElementById('ver-folio').textContent = "Cargando...";
+            
+            const res = await fetch(`php/obtener_detalle_entrada.php?id=${id}`);
+            const data = await res.json();
+
+            if (data.success) {
+                const d = data.data;
+                
+                // Llenar Textos
+                document.getElementById('ver-folio').textContent = d.folio;
+                document.getElementById('ver-eco').textContent = d.numero_economico;
+                document.getElementById('ver-placas').textContent = d.placas;
+                document.getElementById('ver-marca').textContent = `${d.marca} (${d.anio})`;
+                document.getElementById('ver-gas').textContent = d.nivel_combustible;
+                document.getElementById('ver-km').textContent = d.kilometraje_entrada + " km";
+                
+                document.getElementById('ver-fecha').textContent = d.fecha_ingreso_f;
+                document.getElementById('ver-tipo').textContent = d.tipo_mantenimiento_solicitado;
+                
+                // Lógica de Chofer (Quién entregó)
+                const chofer = d.nombre_entrega ? d.nombre_entrega : (d.nombre_asignado + " (Asignado)");
+                document.getElementById('ver-chofer').textContent = chofer;
+                
+                document.getElementById('ver-estatus').textContent = d.estatus_entrada;
+                document.getElementById('ver-obs').textContent = d.observaciones_recepcion || "Ninguna.";
+
+                // Llenar Imagen
+                const img = document.getElementById('ver-foto');
+                if (img) {
+                    img.src = d.foto_evidencia;
+                    // Manejo de error si la imagen no carga
+                    img.onerror = function() { 
+                        this.src = '../img/sin_foto.png'; // Asegúrate de tener una imagen placeholder o quita esta línea
+                        this.alt = "Imagen no disponible";
+                    };
+                }
+// Resetear pestañas al abrir (Simulamos click en la primera)
+                const primerBoton = document.querySelector('.tab-btn');
+                if(primerBoton) primerBoton.click();
+                // Mostrar Modal
+                modalDetalle.classList.remove('oculto');
+                modalDetalle.style.display = 'flex'; // Usamos flex para centrar según tu CSS
+                
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error al cargar los detalles.");
+        }
+    };
+
+    // Funciones para cerrar
+    function cerrarModalDetalle() {
+        if(modalDetalle) {
+            modalDetalle.classList.add('oculto');
+            modalDetalle.style.display = 'none';
+        }
+    }
+
+    if(btnCerrarDetalle) btnCerrarDetalle.addEventListener('click', cerrarModalDetalle);
+    if(equisCerrarDetalle) equisCerrarDetalle.addEventListener('click', cerrarModalDetalle);
+    
+    // Cerrar con click fuera (se añade al listener global existente o uno nuevo)
+    window.addEventListener('click', e => {
+        if (e.target == modalDetalle) cerrarModalDetalle();
+    });
+
+}
+);
+
+/* * Función Global para Cambiar Pestañas en el Modal 
+ * Se llama desde el HTML: onclick="cambiarTab(event, 'id-del-panel')"
+ */
+window.cambiarTab = function(evt, tabId) {
+    // 1. Ocultar todos los paneles
+    const paneles = document.getElementsByClassName("tab-panel");
+    for (let i = 0; i < paneles.length; i++) {
+        paneles[i].style.display = "none";
+        paneles[i].classList.remove("active");
+    }
+
+    // 2. Quitar la clase 'active' de todos los botones
+    const botones = document.getElementsByClassName("tab-btn");
+    for (let i = 0; i < botones.length; i++) {
+        botones[i].className = botones[i].className.replace(" active", "");
+    }
+
+    // 3. Mostrar el panel actual y activar el botón clickeado
+    document.getElementById(tabId).style.display = "block";
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.className += " active";
+};

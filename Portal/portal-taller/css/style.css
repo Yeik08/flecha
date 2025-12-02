@@ -449,3 +449,50 @@ tbody tr:hover {
 .btn-secundario:hover {
     background-color: #e2e6ea;
 }
+
+/* --- ESTILOS PARA TABS DEL MODAL DE DETALLE --- */
+.tabs-modal {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 12px 25px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent; /* Línea invisible */
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: #316960;
+    background-color: #f8f9fa;
+}
+
+/* Estado Activo (La pestaña seleccionada) */
+.tab-btn.active {
+    color: #316960;
+    border-bottom-color: #316960; /* Línea verde visible */
+}
+
+/* Paneles de contenido */
+.tab-panel {
+    display: none; /* Ocultos por defecto */
+    animation: fadeEffect 0.4s; /* Efecto suave de aparición */
+}
+
+.tab-panel.active {
+    display: block; /* Solo el activo se muestra */
+}
+
+/* Animación simple */
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
