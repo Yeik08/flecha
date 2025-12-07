@@ -41,11 +41,11 @@ document.addEventListener("DOMContentLoaded", function(){
                 // PLANTILLA PARA FILTROS (Piezas únicas)
                 // Conecta con tb_cat_filtros (Marca, Parte, Tipo) y tb_inventario_filtros (Serie)
                 fileName = "plantilla_alta_filtros.csv";
-                const headers = ["MARCA", "NUMERO_PARTE", "TIPO_FILTRO", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"];
+                const headers = ["MARCA", "NUMERO_PARTE", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"];
                 csvContent = headers.join(",") + "\n";
                 // Ejemplos para guiar al usuario
-                csvContent += "SCANIA,2002705,Aceite,SCA-SERIE-001,Almacén Poniente\n";
-                csvContent += "SCANIA,1928869PE,Centrifugo,DON-2025-X99,Almacén Magdalena\n";
+                csvContent += "SCANIA,2002705,SCA-SERIE-001,Almacén Poniente\n";
+                csvContent += "SCANIA,1928869PE,DON-2025-X99,Almacén Magdalena\n";
             
             } else {
                 // PLANTILLA PARA LUBRICANTES (Litros)
@@ -81,8 +81,7 @@ document.addEventListener("DOMContentLoaded", function(){
         uploadExcelMasivo.setAttribute("accept", ".csv");
     }
 
-    // --- 4. ENVÍO DEL FORMULARIO (Preparado para Backend) ---
-    if(formCargaMasiva) {
+if(formCargaMasiva) {
         formCargaMasiva.addEventListener("submit", async function(e){
             e.preventDefault();
             
@@ -91,11 +90,46 @@ document.addEventListener("DOMContentLoaded", function(){
                 return;
             }
 
+            const btnSubmit = formCargaMasiva.querySelector('button[type="submit"]');
+            const textoOriginal = btnSubmit.textContent;
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Procesando...";
+
             const archivo = uploadExcelMasivo.files[0];
             const tipo = tipoInventarioMasivo.value;
 
-            // Aquí irá la conexión con PHP en el siguiente paso
-            alert(`Simulando envío de: ${tipo}\nArchivo: ${archivo.name}\n(El backend se configurará en el siguiente paso)`);
+            // Preparamos los datos para enviar
+            const formData = new FormData();
+            formData.append('archivo_csv', archivo);
+            formData.append('tipo_carga', tipo); // 'filtro' o 'lubricante'
+
+            try {
+                // Hacemos la petición al PHP que acabamos de crear
+                const response = await fetch('php/procesar_carga_inventario.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Verificamos si la respuesta es JSON válido
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("✅ " + data.message);
+                    modalFondo.style.display = "none";
+                    formCargaMasiva.reset();
+                    // Opcional: Recargar la tabla si tuviéramos una función para eso
+                    location.reload(); 
+                } else {
+                    alert("⚠️ Hubo problemas:\n" + data.message);
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error de conexión con el servidor.");
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = textoOriginal;
+            }
         });
     }
 });
