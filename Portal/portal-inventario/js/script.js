@@ -152,17 +152,39 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     });
 
-    // --- 5. DESCARGA CSV ---
+    // --- 5. DESCARGA CSV (ACTUALIZADO: SIN TIPO DE FILTRO Y CON EJEMPLO) ---
     if(btnDescargarPlantilla) {
         btnDescargarPlantilla.addEventListener("click", function(e) {
             e.preventDefault();
             const tipo = tipoInventarioMasivo.value;
-            let fileName = (tipo === "filtro") ? "plantilla_alta_filtros.csv" : "plantilla_alta_lubricantes.csv";
-            let headers = (tipo === "filtro") 
-                ? ["MARCA", "NUMERO_PARTE", "TIPO_FILTRO", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"]
-                : ["NOMBRE_PRODUCTO_LUBRICANTE", "NOMBRE_ALMACEN", "LITROS_A_AGREGAR"];
+            let fileName = "";
+            let csvContent = "";
+
+            if(tipo === "filtro") {
+                // PLANTILLA PARA FILTROS (SIMPLIFICADA)
+                fileName = "plantilla_alta_filtros.csv";
+                // Headers: Solo lo necesario
+                const headers = ["MARCA", "NUMERO_PARTE", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"];
+                csvContent = headers.join(",") + "\n";
+                
+                // --- EJEMPLO DE LLENADO ---
+                // Fila 1: Ejemplo real (Scania Aceite)
+                csvContent += "SCANIA,2002705,SCA-SERIE-001,Poniente\n";
+                // Fila 2: Ejemplo real (Scania Centrífugo)
+                csvContent += "SCANIA,1928869PE,SCA-SERIE-002,Magdalena\n";
+                // Fila 3: Ejemplo de otra marca
+                // csvContent += "DONALDSON,P550008,DON-SERIE-X99,Almacén Poniente\n";
             
-            let csvContent = headers.join(",") + "\n";
+            } else {
+                // PLANTILLA PARA LUBRICANTES
+                fileName = "plantilla_alta_lubricantes.csv";
+                const headers = ["NOMBRE_PRODUCTO_LUBRICANTE", "NOMBRE_ALMACEN", "LITROS_A_AGREGAR"];
+                csvContent = headers.join(",") + "\n";
+                // --- EJEMPLO DE LLENADO ---
+                csvContent += "SAE 10W30 MULTIGRADO,Poniente,200\n";
+                csvContent += "SAE 15W30,Magdalena,50.5\n";
+            }
+
             descargarCSV(csvContent, fileName);
         });
     }

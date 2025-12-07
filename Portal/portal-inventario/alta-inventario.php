@@ -149,8 +149,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 <select id="edit-ubicacion" name="id_nueva_ubicacion" required>
                     <option value="3">Almacén Magdalena</option>
                     <option value="4">Almacén Poniente</option>
-                    <option value="1">Taller Magdalena</option>
-                    <option value="2">Taller Poniente</option>
                 </select>
             </div>
 
