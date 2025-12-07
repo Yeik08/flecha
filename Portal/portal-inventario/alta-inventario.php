@@ -72,13 +72,36 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <div class="tarjeta">
                 <h3>Filtros Instalados</h3>
                 <p id="kpi-instalados">Cargando...</p> </div>
-        </div>
-
+        </div><!--|-- Tabla de Inventario 
         <div class="tabla-contenido">
             <div class="tabla-titulo">
                 <h2>Filtros y Lubricantes Disponibles</h2>
+
+
+
+
+
                 <button class="btn-primario" id="btn-agregar-inventario">+ Agregar Inventario</button>
+            </div>---->
+
+
+            <div class="tabla-titulo">
+                <h2>Filtros y Lubricantes Disponibles</h2>
+                
+                <div class="filtros-tabla" style="display:flex; gap:10px; align-items:center;">
+                    <label for="filtro-ubicacion-ui" style="font-weight:bold; color:#555;">Ver Almacén:</label>
+                    <select id="filtro-ubicacion-ui" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="todos">🏭 Todos</option>
+                        <option value="Magdalena">📍 Magdalena</option>
+                        <option value="Poniente">📍 Poniente</option>
+                    </select>
+                    
+                    <button class="btn-primario" id="btn-agregar-inventario">+ Agregar Inventario</button>
+                </div>
             </div>
+
+
+            
             
             <table>
                 <thead>

@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function(){
     // --- REFERENCIAS DOM ---
     const botonAgregarInventario = document.getElementById("btn-agregar-inventario");
     const modalFondo = document.getElementById("modal-fondo");
+    const divCargaMasiva = document.getElementById("modal-carga-masiva"); // REFERENCIA NUEVA IMPORTANTE
+    
     const botonCancelarMasivo = document.getElementById("btn-cancelar-masivo");
     const btnDescargarPlantilla = document.getElementById("btn-descargar-plantilla");
     const tipoInventarioMasivo = document.getElementById("tipo-inventario-masivo");
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function(){
             console.error("Error:", error);
         }
     }
-    cargarInventario(); // Ejecutar al inicio
+    cargarInventario(); 
 
     // --- 2. GESTIÓN DE ACCIONES (CLICK EN TABLA) ---
     if (tablaBody) {
@@ -114,8 +116,10 @@ document.addEventListener("DOMContentLoaded", function(){
                     inputLitros.required = false;
                 }
 
-                if(modalFondo) modalFondo.style.display = 'block';
-                if(modalEditar) modalEditar.style.display = 'block';
+                // CORRECCIÓN: Mostrar solo lo necesario
+                if(modalFondo) modalFondo.style.display = 'block'; // Mostramos fondo oscuro
+                if(divCargaMasiva) divCargaMasiva.style.display = 'none'; // OCULTAMOS EL DE CARGA MASIVA
+                if(modalEditar) modalEditar.style.display = 'block'; // Mostramos el de editar
             }
         });
     }
@@ -141,18 +145,32 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     // --- 4. LÓGICA DE MODALES (Carga Masiva) ---
-    if(botonAgregarInventario) botonAgregarInventario.addEventListener("click", () => modalFondo.style.display = "block");
-    if(botonCancelarMasivo) botonCancelarMasivo.addEventListener("click", () => { modalFondo.style.display = "none"; formCargaMasiva.reset(); });
+    if(botonAgregarInventario) {
+        botonAgregarInventario.addEventListener("click", () => {
+            // CORRECCIÓN: Al abrir Agregar, mostramos su contenido y ocultamos editar
+            if(modalFondo) modalFondo.style.display = "block";
+            if(divCargaMasiva) divCargaMasiva.style.display = "block"; 
+            if(modalEditar) modalEditar.style.display = "none";
+        });
+    }
+
+    if(botonCancelarMasivo) {
+        botonCancelarMasivo.addEventListener("click", () => { 
+            if(modalFondo) modalFondo.style.display = "none"; 
+            formCargaMasiva.reset(); 
+        });
+    }
     
     // Cerrar al click fuera
     window.addEventListener('click', (e) => {
         if (e.target == modalFondo) {
             modalFondo.style.display = "none";
             if(modalEditar) modalEditar.style.display = 'none';
+            // No necesitamos ocultar divCargaMasiva aquí porque al ocultar el fondo desaparece todo
         }
     });
 
-    // --- 5. DESCARGA CSV (ACTUALIZADO: SIN TIPO DE FILTRO Y CON EJEMPLO) ---
+    // --- 5. DESCARGA CSV ---
     if(btnDescargarPlantilla) {
         btnDescargarPlantilla.addEventListener("click", function(e) {
             e.preventDefault();
@@ -161,26 +179,15 @@ document.addEventListener("DOMContentLoaded", function(){
             let csvContent = "";
 
             if(tipo === "filtro") {
-                // PLANTILLA PARA FILTROS (SIMPLIFICADA)
                 fileName = "plantilla_alta_filtros.csv";
-                // Headers: Solo lo necesario
                 const headers = ["MARCA", "NUMERO_PARTE", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"];
                 csvContent = headers.join(",") + "\n";
-                
-                // --- EJEMPLO DE LLENADO ---
-                // Fila 1: Ejemplo real (Scania Aceite)
                 csvContent += "SCANIA,2002705,SCA-SERIE-001,Poniente\n";
-                // Fila 2: Ejemplo real (Scania Centrífugo)
                 csvContent += "SCANIA,1928869PE,SCA-SERIE-002,Magdalena\n";
-                // Fila 3: Ejemplo de otra marca
-                // csvContent += "DONALDSON,P550008,DON-SERIE-X99,Almacén Poniente\n";
-            
             } else {
-                // PLANTILLA PARA LUBRICANTES
                 fileName = "plantilla_alta_lubricantes.csv";
                 const headers = ["NOMBRE_PRODUCTO_LUBRICANTE", "NOMBRE_ALMACEN", "LITROS_A_AGREGAR"];
                 csvContent = headers.join(",") + "\n";
-                // --- EJEMPLO DE LLENADO ---
                 csvContent += "SAE 10W30 MULTIGRADO,Poniente,200\n";
                 csvContent += "SAE 15W30,Magdalena,50.5\n";
             }
@@ -224,6 +231,35 @@ document.addEventListener("DOMContentLoaded", function(){
                 } else { alert("⚠️ " + data.message); }
             } catch (error) { alert("Error de conexión"); }
             finally { btn.disabled = false; btn.textContent = "Guardar y Continuar"; }
+        });
+    }
+
+
+    // =========================================================
+    // 7. FILTRO DE ALMACÉN EN TIEMPO REAL
+    // =========================================================
+    const selectFiltroUbicacion = document.getElementById('filtro-ubicacion-ui');
+    
+    if (selectFiltroUbicacion) {
+        selectFiltroUbicacion.addEventListener('change', function() {
+            const filtro = this.value.toLowerCase();
+            const filas = document.querySelectorAll('#tabla-inventario-body tr');
+
+            filas.forEach(fila => {
+                // La ubicación está en la columna 5 (índice 4)
+                const ubicacionTexto = fila.cells[4].textContent.toLowerCase();
+                
+                if (filtro === 'todos') {
+                    fila.style.display = '';
+                } else {
+                    // Si el texto de la ubicación (ej: "Almacén Magdalena") incluye el filtro ("magdalena")
+                    if (ubicacionTexto.includes(filtro)) {
+                        fila.style.display = '';
+                    } else {
+                        fila.style.display = 'none';
+                    }
+                }
+            });
         });
     }
 });
