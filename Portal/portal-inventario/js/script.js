@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function(){
 
-    // --- Modal de carga masiva ---
+    // --- REFERENCIAS DOM ---
     const botonAgregarInventario = document.getElementById("btn-agregar-inventario");
     const modalFondo = document.getElementById("modal-fondo");
     const botonCancelarMasivo = document.getElementById("btn-cancelar-masivo");
@@ -9,65 +9,93 @@ document.addEventListener("DOMContentLoaded", function(){
     const uploadExcelMasivo = document.getElementById("upload-excel-masivo");
     const formCargaMasiva = document.getElementById("form-carga-masiva");
 
-    // Abrir modal
-    botonAgregarInventario.addEventListener("click", function() {
-        modalFondo.style.display = "block";
-    });
+    // --- 1. LÓGICA DE MODALES ---
+    if(botonAgregarInventario) {
+        botonAgregarInventario.addEventListener("click", function() {
+            modalFondo.style.display = "block";
+        });
+    }
 
-    // Cerrar modal
-    botonCancelarMasivo.addEventListener("click", function() {
-        modalFondo.style.display = "none";
-        formCargaMasiva.reset();
-    });
+    if(botonCancelarMasivo) {
+        botonCancelarMasivo.addEventListener("click", function() {
+            modalFondo.style.display = "none";
+            formCargaMasiva.reset();
+        });
+    }
 
-    // Descargar plantilla según tipo
-    btnDescargarPlantilla.addEventListener("click", function() {
-        const tipo = tipoInventarioMasivo.value;
-        let data = [];
-
-        if(tipo === "filtro") {
-            data = [
-                ['ID', 'Número de Serie', 'Ubicación'],
-                ['FR-ACE-001', 'FR-ACE-100', 'Almacén A']
-            ];
-        } else {
-            data = [
-                ['ID', 'Número de Lote', 'Ubicación'],
-                ['LUB-001', 'LUB-001-A', 'Almacén A']
-            ];
-        }
-
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
-        XLSX.writeFile(wb, `${tipo}_Inventario.xlsx`);
-    });
-
-    // Subir archivo Excel
-    uploadExcelMasivo.addEventListener("change", function(event){
-        const file = event.target.files[0];
-        if(file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-            const reader = new FileReader();
-            reader.onload = function(e){
-                const data = e.target.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                console.log(jsonData);
-                alert('Archivo subido y procesado.');
-            };
-            reader.readAsBinaryString(file);
-        } else {
-            alert('Por favor, sube un archivo Excel válido (.xlsx).');
+    window.addEventListener('click', (e) => {
+        if (e.target == modalFondo) {
+            modalFondo.style.display = "none";
         }
     });
 
-    // Guardar y cerrar modal
-    formCargaMasiva.addEventListener("submit", function(e){
-        e.preventDefault();
-        alert('Inventario cargado correctamente.');
-        modalFondo.style.display = "none";
-        formCargaMasiva.reset();
-    });
+    // --- 2. LÓGICA DE DESCARGA DE PLANTILLA CSV ---
+    if(btnDescargarPlantilla) {
+        btnDescargarPlantilla.addEventListener("click", function(e) {
+            e.preventDefault();
+            const tipo = tipoInventarioMasivo.value;
+            let csvContent = "";
+            let fileName = "";
 
+            if(tipo === "filtro") {
+                // PLANTILLA PARA FILTROS (Piezas únicas)
+                // Conecta con tb_cat_filtros (Marca, Parte, Tipo) y tb_inventario_filtros (Serie)
+                fileName = "plantilla_alta_filtros.csv";
+                const headers = ["MARCA", "NUMERO_PARTE", "TIPO_FILTRO", "NUMERO_SERIE_UNICO", "NOMBRE_ALMACEN"];
+                csvContent = headers.join(",") + "\n";
+                // Ejemplos para guiar al usuario
+                csvContent += "SCANIA,2002705,Aceite,SCA-SERIE-001,Almacén Poniente\n";
+                csvContent += "SCANIA,1928869PE,Centrifugo,DON-2025-X99,Almacén Magdalena\n";
+            
+            } else {
+                // PLANTILLA PARA LUBRICANTES (Litros)
+                // Conecta con tb_cat_lubricantes (Nombre Producto)
+                fileName = "plantilla_alta_lubricantes.csv";
+                const headers = ["NOMBRE_PRODUCTO_LUBRICANTE", "NOMBRE_ALMACEN", "LITROS_A_AGREGAR"];
+                csvContent = headers.join(",") + "\n";
+                csvContent += "SAE 10W30 MULTIGRADO,Almacén Poniente,200\n";
+                csvContent += "SAE 15W30,Almacén Magdalena,50.5\n";
+            }
+
+            descargarCSV(csvContent, fileName);
+        });
+    }
+
+    // Función auxiliar para descargar
+    function descargarCSV(csvContent, fileName) {
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    // --- 3. PREPARAR INPUT PARA CSV ---
+    if(uploadExcelMasivo) {
+        uploadExcelMasivo.setAttribute("accept", ".csv");
+    }
+
+    // --- 4. ENVÍO DEL FORMULARIO (Preparado para Backend) ---
+    if(formCargaMasiva) {
+        formCargaMasiva.addEventListener("submit", async function(e){
+            e.preventDefault();
+            
+            if (uploadExcelMasivo.files.length === 0) {
+                alert("Por favor selecciona un archivo CSV.");
+                return;
+            }
+
+            const archivo = uploadExcelMasivo.files[0];
+            const tipo = tipoInventarioMasivo.value;
+
+            // Aquí irá la conexión con PHP en el siguiente paso
+            alert(`Simulando envío de: ${tipo}\nArchivo: ${archivo.name}\n(El backend se configurará en el siguiente paso)`);
+        });
+    }
 });

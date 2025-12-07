@@ -19,7 +19,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
     <title>Inventario</title>
     <link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script> <!-- Agregado SheetJS para manejo de Excel -->
 </head>
 
 <body>
@@ -138,8 +137,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </tbody>
             </table>
         </div>
-
-        <!-- Modal de carga masiva -->
         <div id="modal-fondo" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:1000;">
             <div class="contenedor-formulario" id="modal-carga-masiva" style="display:block; max-width:600px; margin: 50px auto; position: relative;">
                 <div class="modulo-titulo">
@@ -147,7 +144,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </div>
 
                 <form id="form-carga-masiva">
-                    <!-- Selección tipo inventario -->
                     <div class="campo-form">
                         <label>Selecciona el tipo de inventario:</label>
                         <select id="tipo-inventario-masivo" required>
@@ -156,18 +152,15 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </select>
                     </div>
 
-                    <!-- Descargar plantilla -->
                     <div class="acciones-form">
                         <button type="button" class="btn-primario" id="btn-descargar-plantilla">Descargar Plantilla</button>
                     </div>
 
-                    <!-- Subir archivo Excel -->
                     <div class="campo-form">
-                        <label>Subir archivo de Inventario (Excel)</label>
-                        <input type="file" id="upload-excel-masivo" accept=".xlsx, .xls" />
+                        <label>Subir archivo de Inventario (CSV)</label>
+                        <input type="file" id="upload-excel-masivo" accept=".csv" />
                     </div>
 
-                    <!-- Guardar y cancelar -->
                     <div class="acciones-form">
                         <button type="submit" class="btn-primario">Guardar y Continuar</button>
                         <button type="button" class="btn-eliminar" id="btn-cancelar-masivo">Cancelar</button>
@@ -176,156 +169,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
         </div>
 
-        <!-- Formulario de selección de tipo de inventario (existente) -->
-        <div class="contenedor-formulario" id="formulario-seleccion" style="display: none;">
-            <div class="modulo-titulo">
-                <h2>Selecciona Tipo de Inventario</h2>
-            </div>
-            <form>
-                <div class="campo-form">
-                    <label>Selecciona el tipo de inventario:</label>
-                    <select id="tipo-inventario" required>
-                        <option value="filtro">Filtro</option>
-                        <option value="lubricante">Lubricante</option>
-                    </select>
-                </div>
-                <div class="acciones-form">
-                    <button type="button" id="btn-confirmar-tipo" class="btn-primario">Confirmar</button>
-                    <button type="button" class="btn-eliminar" id="btn-cancelar">Cancelar</button>
-                </div>
-            </form>
-        </div>
+        </main>
 
-        <!-- Formulario de registro de filtro o lubricante (existente) -->
-        <div class="contenedor-formulario" id="formulario-registro" style="display: none;">
-            <div class="modulo-titulo">
-                <h2 id="titulo-formulario">Registrar Filtro</h2>
-            </div>
 
-            <form class="form-registro" id="form-inventario">
-                <!-- ID -->
-                <div class="campo-form">
-                    <label>ID del Inventario</label>
-                    <input type="text" id="inventario-id" placeholder="Ej. 1 o 2" required>
-                </div>
-
-                <!-- Número de serie o lote -->
-                <div class="campo-form" id="campo-numero-serie">
-                    <label>Número de Serie</label>
-                    <input type="text" id="numero-serie" placeholder="Ej. FR-ACE-100" required>
-                </div>
-
-                <div class="campo-form" id="campo-numero-lote" style="display: none;">
-                    <label>Número de Lote</label>
-                    <input type="text" id="numero-lote" placeholder="Ej. LUB-001" required>
-                </div>
-
-                <!-- Ubicación -->
-                <div class="campo-form">
-                    <label>Ubicación</label>
-                    <input type="text" id="ubicacion" placeholder="Ej. Taller Tenango" required>
-                </div>
-
-                <!-- Cantidad -->
-                <div class="campo-form">
-                    <label>Cantidad</label>
-                    <input type="number" id="cantidad" placeholder="Ej. 10" required>
-                </div>
-
-                <!-- Botones de acción -->
-                <div class="acciones-form">
-                    <button type="submit" class="btn-primario">Guardar Inventario</button>
-                    <button type="button" class="btn-eliminar" id="btn-cancelar-formulario">Cancelar</button>
-                </div>
-            </form>
-
-            <!-- Subir archivo -->
-            <div class="campo-form">
-                <label>Subir archivo de Inventario (Excel)</label>
-                <input type="file" id="upload-excel" accept=".xlsx, .xls" />
-            </div>
-
-            <!-- Botón para descargar Excel -->
-            <div class="acciones-form" id="acciones-descarga">
-                <button type="button" class="btn-primario" id="btn-descargar-excel">Descargar Excel</button>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function(){
-
-            // --- Modal de carga masiva ---
-            const botonAgregarInventario = document.getElementById("btn-agregar-inventario");
-            const modalFondo = document.getElementById("modal-fondo");
-            const botonCancelarMasivo = document.getElementById("btn-cancelar-masivo");
-            const btnDescargarPlantilla = document.getElementById("btn-descargar-plantilla");
-            const tipoInventarioMasivo = document.getElementById("tipo-inventario-masivo");
-            const uploadExcelMasivo = document.getElementById("upload-excel-masivo");
-            const formCargaMasiva = document.getElementById("form-carga-masiva");
-
-            // Abrir modal
-            botonAgregarInventario.addEventListener("click", function() {
-                modalFondo.style.display = "block";
-            });
-
-            // Cerrar modal
-            botonCancelarMasivo.addEventListener("click", function() {
-                modalFondo.style.display = "none";
-                formCargaMasiva.reset();
-            });
-
-            // Descargar plantilla según tipo
-            btnDescargarPlantilla.addEventListener("click", function() {
-                const tipo = tipoInventarioMasivo.value;
-                let data = [];
-
-                if(tipo === "filtro") {
-                    data = [
-                        ['ID', 'Número de Serie', 'Ubicación'],
-                        ['FR-ACE-001', 'FR-ACE-100', 'Almacén A']
-                    ];
-                } else {
-                    data = [
-                        ['ID', 'Número de Lote', 'Ubicación'],
-                        ['LUB-001', 'LUB-001-A', 'Almacén A']
-                    ];
-                }
-
-                const ws = XLSX.utils.aoa_to_sheet(data);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
-                XLSX.writeFile(wb, `${tipo}_Inventario.xlsx`);
-            });
-
-            // Subir archivo Excel
-            uploadExcelMasivo.addEventListener("change", function(event){
-                const file = event.target.files[0];
-                if(file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-                    const reader = new FileReader();
-                    reader.onload = function(e){
-                        const data = e.target.result;
-                        const workbook = XLSX.read(data, { type: 'binary' });
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(sheet);
-                        console.log(jsonData);
-                        alert('Archivo subido y procesado.');
-                    };
-                    reader.readAsBinaryString(file);
-                } else {
-                    alert('Por favor, sube un archivo Excel válido (.xlsx).');
-                }
-            });
-
-            // Guardar y cerrar modal
-            formCargaMasiva.addEventListener("submit", function(e){
-                e.preventDefault();
-                alert('Inventario cargado correctamente.');
-                modalFondo.style.display = "none";
-                formCargaMasiva.reset();
-            });
-
-        });
-    </script>
+<script src="js/script.js"></script>
 </body>
 </html>
