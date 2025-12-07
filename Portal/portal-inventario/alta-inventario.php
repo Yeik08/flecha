@@ -64,21 +64,14 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
         <div class="tarjetas">
             <div class="tarjeta">
-                <h3>Total de Filtros</h3>
-                <p>1,245</p>
-            </div>
+                <h3>Filtros Disponibles</h3> <p id="kpi-filtros">Cargando...</p> </div>
             <div class="tarjeta">
-                <h3>Total de Lubricantes</h3>
-                <p>200</p>
-            </div>
+                <h3>Litros de Aceite</h3> <p id="kpi-litros">Cargando...</p> </div>
             <div class="tarjeta alerta">
-                <h3>Inventario Bajo</h3>
-                <p>3</p>
-            </div>
+                <h3>Alertas Stock Bajo</h3> <p id="kpi-alertas">Cargando...</p> </div>
             <div class="tarjeta">
                 <h3>Filtros Instalados</h3>
-                <p>89</p>
-            </div>
+                <p id="kpi-instalados">Cargando...</p> </div>
         </div>
 
         <div class="tabla-contenido">
@@ -88,52 +81,14 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
             
             <table>
-                <!-- CABECERA DE TABLA -->
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Tipo</th>
-                        <th>Marca</th>
-                        <th>Cantidad en Inventario</th>
-                        <th>Ubicación</th>
+                        <th>Categoría</th>      <th>Descripción</th>    <th>Identificador</th>  <th>Stock Actual</th>   <th>Ubicación</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <!-- CUERPO DE TABLA -->
-                <tbody>
-                    <tr>
-                        <td>FR-ACE-001</td>
-                        <td>Filtro de Aceite</td>
-                        <td>PATITO1</td>
-                        <td>50</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr class="stock-bajo">
-                        <td>FR-AIR-003</td>
-                        <td>Filtro de Aire Primario</td>
-                        <td>PATITO2</td>
-                        <td>8</td>
-                        <td>Almacén B</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>FR-COMB-002</td>
-                        <td>Filtro de Combustible</td>
-                        <td>PATITO3</td>
-                        <td>120</td>
-                        <td>Almacén A</td>
-                        <td class="acciones">
-                            <button class="btn-editar">Editar</button>
-                            <button class="btn-eliminar">Eliminar</button>
-                        </td>
-                    </tr>
+                <tbody id="tabla-inventario-body">
+                    <tr><td colspan="6" style="text-align:center">Cargando datos...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -171,7 +126,45 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
         </main>
 
+<div id="modal-editar-inventario" class="contenedor-formulario" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div class="modulo-titulo">
+            <h2>Editar Inventario</h2>
+        </div>
+        
+        <form id="form-editar-item">
+            <input type="hidden" id="edit-id" name="id">
+            <input type="hidden" id="edit-tipo" name="tipo_bien">
 
+            <div class="campo-form">
+                <label>Descripción:</label>
+                <input type="text" id="edit-descripcion" readonly style="background-color: #f0f0f0; color: #555;">
+            </div>
+            <div class="campo-form">
+                <label>Identificador (Serie/Granel):</label>
+                <input type="text" id="edit-identificador" readonly style="background-color: #f0f0f0; color: #555;">
+            </div>
+
+            <div class="campo-form">
+                <label>Ubicación:</label>
+                <select id="edit-ubicacion" name="id_nueva_ubicacion" required>
+                    <option value="3">Almacén Magdalena</option>
+                    <option value="4">Almacén Poniente</option>
+                    <option value="1">Taller Magdalena</option>
+                    <option value="2">Taller Poniente</option>
+                </select>
+            </div>
+
+            <div class="campo-form" id="div-edit-litros" style="display:none;">
+                <label>Litros Disponibles:</label>
+                <input type="number" id="edit-litros" name="nuevos_litros" step="0.1" min="0">
+            </div>
+
+            <div class="acciones-form">
+                <button type="button" class="btn-eliminar" onclick="document.getElementById('modal-editar-inventario').style.display='none'; document.getElementById('modal-fondo').style.display='none';">Cancelar</button>
+                <button type="submit" class="btn-primario">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
 <script src="js/script.js"></script>
 </body>
 </html>
