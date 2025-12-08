@@ -1,11 +1,12 @@
 <?php
 /*
 * Portal/portal-mecanico/php/finalizar_mantenimiento.php
-* VERSIÓN TRAZABILIDAD TOTAL:
-* - Vincula cubetas usadas al ID del camión.
-* - Genera Hash SHA-256 para evitar fotos repetidas (Anti-Fraude).
-* - Guarda metadatos EXIF completos.
+* VERSIÓN FINAL BLINDADA:
+* - Trazabilidad Total (Hash SHA-256 + Metadatos).
+* - Validación Estricta Anti-WhatsApp (Requiere fecha original).
+* - Ciclo de Vida de Inventario (Baja automática de filtros retirados).
 */
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once '../../../php/db_connect.php'; 
@@ -28,7 +29,7 @@ function extraerMetadatos($ruta_temporal) {
         // Suprimimos errores con @ por si la imagen no tiene header EXIF válido
         $exif = @exif_read_data($ruta_temporal);
         if ($exif) {
-            // Intentar obtener fecha original
+            // Intentar obtener fecha original (Prioridad a DateTimeOriginal)
             if (isset($exif['DateTimeOriginal'])) {
                 $meta['fecha'] = $exif['DateTimeOriginal'];
             } elseif (isset($exif['DateTimeDigitized'])) {
@@ -115,7 +116,6 @@ try {
         }
 
         // C. CONSUMIR Y VINCULAR AL CAMIÓN
-        // Aquí agregamos 'id_camion_uso'
         $sql_use = "UPDATE tb_inventario_lubricantes 
                     SET estatus = 'Usado', id_camion_uso = ? 
                     WHERE id = ?";
@@ -125,7 +125,43 @@ try {
     }
 
     // =================================================================
-    // 4. PROCESAMIENTO DE FILTROS (Igual que antes)
+    // 3.5. DAR DE BAJA FILTROS ANTERIORES (CICLO DE VIDA)
+    // =================================================================
+    
+    // 1. Averiguar qué filtros tiene puestos el camión AHORA
+    $sql_actuales = "SELECT serie_filtro_aceite_actual, serie_filtro_centrifugo_actual 
+                     FROM tb_camiones WHERE id = ? LIMIT 1";
+    $stmt_act = $conn->prepare($sql_actuales);
+    $stmt_act->bind_param("i", $id_camion);
+    $stmt_act->execute();
+    $filtros_viejos = $stmt_act->get_result()->fetch_assoc();
+
+    // 2. Si hay nuevo filtro de aceite, dar de baja el viejo
+    $nuevo_aceite = trim($_POST['nuevo_filtro_aceite'] ?? '');
+    if (!empty($nuevo_aceite) && !empty($filtros_viejos['serie_filtro_aceite_actual'])) {
+        $serie_vieja = $filtros_viejos['serie_filtro_aceite_actual'];
+        $sql_baja = "UPDATE tb_inventario_filtros 
+                     SET estatus = 'Baja', id_camion_instalado = NULL 
+                     WHERE numero_serie = ?";
+        $stmt_baja = $conn->prepare($sql_baja);
+        $stmt_baja->bind_param("s", $serie_vieja);
+        $stmt_baja->execute();
+    }
+
+    // 3. Si hay nuevo filtro centrífugo, dar de baja el viejo
+    $nuevo_centrifugo = trim($_POST['nuevo_filtro_centrifugo'] ?? '');
+    if (!empty($nuevo_centrifugo) && !empty($filtros_viejos['serie_filtro_centrifugo_actual'])) {
+        $serie_vieja_cent = $filtros_viejos['serie_filtro_centrifugo_actual'];
+        $sql_baja_c = "UPDATE tb_inventario_filtros 
+                       SET estatus = 'Baja', id_camion_instalado = NULL 
+                       WHERE numero_serie = ?";
+        $stmt_baja_c = $conn->prepare($sql_baja_c);
+        $stmt_baja_c->bind_param("s", $serie_vieja_cent);
+        $stmt_baja_c->execute();
+    }
+
+    // =================================================================
+    // 4. PROCESAMIENTO DE FILTROS NUEVOS (Instalación)
     // =================================================================
     $filtros_a_procesar = [
         ['serie' => $_POST['nuevo_filtro_aceite'] ?? '', 'tipo_esperado' => 'Aceite'],
@@ -147,16 +183,17 @@ try {
             $stmt->execute();
             $res = $stmt->get_result();
 
-            if ($res->num_rows === 0) throw new Exception("El filtro '$serie' no existe.");
+            if ($res->num_rows === 0) throw new Exception("El filtro '$serie' no existe en el sistema.");
             $item = $res->fetch_assoc();
 
-            if ($item['estatus'] !== 'Disponible') throw new Exception("El filtro '$serie' no está disponible.");
+            if ($item['estatus'] !== 'Disponible') throw new Exception("El filtro '$serie' no está disponible (Estatus: ".$item['estatus'].").");
 
             if ($item['tipo_filtro'] !== $tipo_esperado) {
-                throw new Exception("🚫 ERROR: La serie '$serie' es de " . strtoupper($item['tipo_filtro']) . 
-                                    ", pero lo ingresaste en " . strtoupper($tipo_esperado) . ".");
+                throw new Exception("🚫 ERROR: La serie '$serie' es de tipo " . strtoupper($item['tipo_filtro']) . 
+                                    ", pero intentas instalarlo como " . strtoupper($tipo_esperado) . ".");
             }
 
+            // Marcar como Instalado
             $sql_up = "UPDATE tb_inventario_filtros SET estatus = 'Instalado', id_camion_instalado = ? WHERE id = ?";
             $stmt_up = $conn->prepare($sql_up);
             $stmt_up->bind_param("ii", $id_camion, $item['id']);
@@ -165,7 +202,7 @@ try {
     }
 
     // =================================================================
-    // 5. PROCESAR FOTOS + HASH + METADATOS
+    // 5. PROCESAR FOTOS + HASH + METADATOS (SEGURIDAD)
     // =================================================================
     $archivos = ['foto_viejos', 'foto_nuevos', 'foto_general'];
     $carpeta = "../../../uploads/evidencias_salidas/"; 
@@ -180,24 +217,20 @@ try {
             $hash_archivo = hash_file('sha256', $tmp);
 
             // B. Verificar Duplicados (Anti-Fraude Global)
-            // Buscamos si este hash ya existe en CUALQUIER evidencia del sistema
             $sql_dup = "SELECT id FROM tb_evidencias_entrada_taller WHERE hash_archivo = ? LIMIT 1";
             $stmt_dup = $conn->prepare($sql_dup);
             $stmt_dup->bind_param("s", $hash_archivo);
             $stmt_dup->execute();
             if ($stmt_dup->get_result()->num_rows > 0) {
-                throw new Exception("🚫 FOTO REPETIDA: La imagen de '$input_name' ya existe en el sistema. Debes tomar una foto nueva.");
+                throw new Exception("🚫 FOTO REPETIDA ($input_name): Esta imagen ya existe en el sistema. Debes tomar una foto nueva.");
             }
 
-// C. Extraer Metadatos
+            // C. Extraer Metadatos
             $info_meta = extraerMetadatos($tmp);
-            
-            // --- INICIO CAMBIO SEGURIDAD ---
             
             // D. Validar Existencia de Fecha (Bloqueo anti-WhatsApp)
             if (empty($info_meta['fecha'])) {
-                // Si no hay fecha, es WhatsApp, Facebook o edición. RECHAZAR.
-                throw new Exception("⛔ FOTO RECHAZADA ($input_name): La imagen no contiene metadatos de fecha original. Probablemente proviene de WhatsApp o es una captura de pantalla. Usa fotos originales.");
+                throw new Exception("⛔ FOTO RECHAZADA ($input_name): La imagen no contiene fecha original. Probablemente proviene de WhatsApp o es una captura. Usa la cámara directamente.");
             }
 
             // E. Validar Antigüedad (24h máximo)
@@ -208,25 +241,22 @@ try {
                 $ahora = new DateTime();
                 $horas = ($ahora->getTimestamp() - $fechaFoto->getTimestamp()) / 3600;
                 
-                // Tolerancia de 10 minutos hacia el futuro (por relojes desajustados)
+                // Tolerancia de 10 minutos hacia el futuro (relojes desajustados)
                 if ($horas < -0.16) {
-                     throw new Exception("⛔ Error: La fecha de la foto es futura. Revisa la hora de tu cámara.");
+                     throw new Exception("⛔ Error ($input_name): La fecha de la foto es futura. Revisa la hora de tu dispositivo.");
                 }
 
                 if ($horas > 24) {
                     throw new Exception("⛔ FOTO ANTIGUA ($input_name): La foto fue tomada hace " . round($horas, 1) . " horas. El límite es 24 horas.");
                 }
             } catch (Exception $e) {
-                // Relanzamos nuestras excepciones personalizadas
-                throw $e;
+                // Relanzamos nuestras excepciones de validación
+                if (strpos($e->getMessage(), 'FOTO') !== false || strpos($e->getMessage(), 'Error') !== false) {
+                    throw $e;
+                }
             }
-            
-            // --- FIN CAMBIO SEGURIDAD ---
 
-            // F. Guardar (Tu código original sigue aquí...)
-            $ext = pathinfo($_FILES[$input_name]['name'], PATHINFO_EXTENSION);
-
-            // E. Guardar
+            // F. Guardar Archivo
             $ext = pathinfo($_FILES[$input_name]['name'], PATHINFO_EXTENSION);
             $nombre_final = "SALIDA_" . $id_entrada . "_" . $input_name . "_" . time() . "." . $ext;
             
@@ -234,7 +264,7 @@ try {
                 $ruta_bd = "../uploads/evidencias_salidas/" . $nombre_final;
                 $tipo_foto = "Salida - " . ucfirst(str_replace('foto_', '', $input_name));
                 
-                // INSERTAMOS hash_archivo Y metadatos
+                // INSERTAMOS con hash y metadatos
                 $sql_ins = "INSERT INTO tb_evidencias_entrada_taller 
                             (id_entrada, ruta_archivo, tipo_foto, descripcion, fecha_captura, hash_archivo, metadatos_json) 
                             VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -245,10 +275,12 @@ try {
                     $tipo_foto, 
                     $comentarios, 
                     $info_meta['fecha'], // Fecha captura
-                    $hash_archivo,       // El hash SHA-256
+                    $hash_archivo,       // Hash SHA-256
                     $info_meta['json']   // JSON completo
                 );
                 $stmt_ins->execute();
+            } else {
+                throw new Exception("Error al mover el archivo $input_name al servidor.");
             }
         }
     }
@@ -258,7 +290,7 @@ try {
     // =================================================================
     $hoy = date('Y-m-d');
     
-    // Actualizar Camión
+    // Actualizar Camión (Estatus, Mantenimiento, Filtros y Aceite)
     $sql_camion = "UPDATE tb_camiones SET estatus = 'Activo', mantenimiento_requerido = 'No', fecha_ult_mantenimiento = ?";
     $params_types = "s";
     $params_vals = [$hoy];
@@ -271,7 +303,7 @@ try {
         $sql_camion .= ", fecha_ult_cambio_centrifugo = ?, serie_filtro_centrifugo_actual = ?";
         $params_types .= "ss"; $params_vals[] = $hoy; $params_vals[] = $_POST['nuevo_filtro_centrifugo'];
     }
-    // Si queremos actualizar el lubricante actual en el camión
+    // Actualizar lubricante actual en el camión si se usó alguno
     if ($tipo_aceite_previo) {
         $sql_camion .= ", lubricante_actual = ?";
         $params_types .= "s"; $params_vals[] = $tipo_aceite_previo['nombre'];
@@ -295,7 +327,7 @@ try {
     $stmt_close->execute();
 
     $conn->commit();
-    echo json_encode(['success' => true, 'message' => 'Mantenimiento finalizado exitosamente.']);
+    echo json_encode(['success' => true, 'message' => 'Mantenimiento finalizado exitosamente. Inventario actualizado y evidencias aseguradas.']);
 
 } catch (Exception $e) {
     $conn->rollback();
