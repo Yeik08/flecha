@@ -245,6 +245,7 @@ function recalcularMantenimiento($conn, $camion_id) {
     // 1. Obtener datos del camión
     $sql_config = "SELECT 
         c.kilometraje_total,
+        c.anio,  -- necesario para la regla del aceite
         c.fecha_ult_cambio_aceite, 
         c.fecha_ult_cambio_centrifugo,
         t.intervalo_horas_aceite 
@@ -310,6 +311,15 @@ function recalcularMantenimiento($conn, $camion_id) {
 
     // --- CÁLCULO 3: REGLA DEL LUBRICANTE (1 Millón KM) ---
     $km_actual = floatval($config['kilometraje_total']);
+    $anio_camion = intval($config['anio'] ?? 0);
+
+    if ($anio_camion <= 2020 || $km_actual >= 1000000) {
+        $lubricante_sugerido = "SAE 15W30";
+    } else {
+        $lubricante_sugerido = "SAE 10W30 MULTIGRADO";
+    }
+
+
     $lubricante_sugerido = ($km_actual >= 1000000) ? "SAE 15W30" : "SAE 10W30 MULTIGRADO";
 
 

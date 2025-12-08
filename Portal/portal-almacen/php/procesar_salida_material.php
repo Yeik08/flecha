@@ -72,8 +72,54 @@ try {
     if ($tipo_servicio === 'Completo' && empty($nuevo_centrifugo)) {
         throw new Exception("⛔ ERROR: Este camión requiere Servicio Completo. Falta escanear el Filtro Centrífugo.");
     }
+$sql_lub = "SELECT lubricante_sugerido FROM tb_camiones WHERE id = ?";
+    $stmt_lub = $conn->prepare($sql_lub);
+    $stmt_lub->bind_param("i", $id_camion);
+    $stmt_lub->execute();
+    $dato_lub = $stmt_lub->get_result()->fetch_assoc();
+    $aceite_requerido = strtoupper($dato_lub['lubricante_sugerido'] ?? '');
 
-    // 2.3 VALIDACIÓN DE MEZCLA DE ACEITES (NUEVO CANDADO) 🛑🛢️
+    // Función para validar que la cubeta escaneada sea del tipo requerido
+    function validarTipoCubetaContraCamion($conn, $serie_cubeta, $tipo_requerido) {
+        $sql = "SELECT c.nombre_producto 
+                FROM tb_inventario_lubricantes i
+                JOIN tb_cat_lubricantes c ON i.id_cat_lubricante = c.id
+                WHERE i.numero_serie = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $serie_cubeta);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($row = $res->fetch_assoc()) {
+            $tipo_cubeta = strtoupper($row['nombre_producto']);
+            
+            // Comparación estricta (usamos strpos para flexibilidad si hay variantes de nombre)
+            if (strpos($tipo_cubeta, $tipo_requerido) === false && strpos($tipo_requerido, $tipo_cubeta) === false) {
+                throw new Exception("⛔ ERROR DE VISCOSIDAD:\n" .
+                    "Este camión requiere: $tipo_requerido\n" .
+                    "La cubeta escaneada ($serie_cubeta) es: $tipo_cubeta\n\n" .
+                    "No puedes entregar este aceite.");
+            }
+        }
+    }
+
+    // Ejecutar validación contra el camión
+    if (!empty($aceite_requerido)) {
+        validarTipoCubetaContraCamion($conn, $cubeta1, $aceite_requerido);
+        validarTipoCubetaContraCamion($conn, $cubeta2, $aceite_requerido);
+    }
+
+
+
+
+
+
+
+
+
+
+    
+    // 2.3 VALIDACIÓN DE MEZCLA DE ACEITES (NUEVO CANDADO
     function validarMismoTipoAceite($conn, $serie1, $serie2) {
         $sql = "SELECT i.numero_serie, i.id_cat_lubricante, c.nombre_producto 
                 FROM tb_inventario_lubricantes i 
