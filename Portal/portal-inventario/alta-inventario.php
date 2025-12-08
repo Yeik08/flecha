@@ -1,9 +1,10 @@
 <?php
 session_start(); // Inicia la sesión
+$roles_permitidos = [1, 2, 6];
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['role_id'] != 2) {
-header("Location: ../index.html?error=acceso_denegado");
-exit;
+if (!isset($_SESSION['loggedin']) || !in_array($_SESSION['role_id'], $roles_permitidos)) {
+    header("Location: ../index.html?error=acceso_denegado");
+    exit;
 }
 
 $nombre_usuario = $_SESSION['nombre_completo']; 
@@ -28,17 +29,17 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <!-- Opciones del menú -->
             <div class="opciones">
                 <div class="fr">FLECHA ROJA</div>
-
+<!-- 
                 <ul class="menu">
                     <li><a href="../portal-camiones/camiones.php">Camiones</a></li>
                 </ul>
-
+-->
                 <ul class="menu">
-                    <li><a href="#">Inventario</a></li>
+                    <li><a href="../portal-almacen/almacen.php">Almacén</a></li>
                 </ul>
                 
                 <ul class="menu">
-                    <li><a href="../portal-personal/personal.html">Personal</a></li>
+                    <li><a href="#">Alta de inventario</a></li>
                 </ul>
             </div>
         

@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function(){
     // --- REFERENCIAS DOM ---
     const botonAgregarInventario = document.getElementById("btn-agregar-inventario");
     const modalFondo = document.getElementById("modal-fondo");
-    const divCargaMasiva = document.getElementById("modal-carga-masiva"); // REFERENCIA NUEVA IMPORTANTE
+    const divCargaMasiva = document.getElementById("modal-carga-masiva"); 
     
     const botonCancelarMasivo = document.getElementById("btn-cancelar-masivo");
     const btnDescargarPlantilla = document.getElementById("btn-descargar-plantilla");
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             // A. Llenar KPIs
             if(document.getElementById('kpi-filtros')) document.getElementById('kpi-filtros').textContent = data.kpis.filtros_disponibles;
-            if(document.getElementById('kpi-litros')) document.getElementById('kpi-litros').textContent = data.kpis.litros_totales;
+            if(document.getElementById('kpi-litros')) document.getElementById('kpi-litros').textContent = data.kpis.litros_totales; // Ahora esto mostrará Cubetas
             if(document.getElementById('kpi-alertas')) document.getElementById('kpi-alertas').textContent = data.kpis.stock_bajo;
             if(document.getElementById('kpi-instalados')) document.getElementById('kpi-instalados').textContent = data.kpis.filtros_instalados;
 
@@ -44,7 +44,8 @@ document.addEventListener("DOMContentLoaded", function(){
                 data.tabla.forEach(item => {
                     const tr = document.createElement('tr');
                     let icono = item.tipo_bien === 'Filtro' ? '⚙️' : '🛢️';
-                    let claseExtra = (item.tipo_bien === 'Lubricante' && parseFloat(item.cantidad_formato) < 50) ? 'stock-bajo' : '';
+                    // Alerta visual simple si hay poco stock (ajustable)
+                    let claseExtra = (item.tipo_bien === 'Lubricante' && parseFloat(item.cantidad_formato) < 5) ? 'stock-bajo' : '';
 
                     tr.className = claseExtra;
                     tr.innerHTML = `
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function(){
                         <td style="font-weight:bold; color:#316960;">${item.cantidad_formato}</td>
                         <td>${item.ubicacion}</td>
                         <td class="acciones">
-                            <button class="btn-editar" data-id="${item.id}" data-tipo="${item.tipo_bien}" title="Editar / Corregir">✏️</button>
+                            <button class="btn-editar" data-id="${item.id}" data-tipo="${item.tipo_bien}" title="Editar Ubicación">✏️</button>
                             <button class="btn-eliminar" data-id="${item.id}" data-tipo="${item.tipo_bien}" title="Dar de Baja">🗑️</button>
                         </td>
                     `;
@@ -104,22 +105,13 @@ document.addEventListener("DOMContentLoaded", function(){
                 document.getElementById('edit-descripcion').value = fila.cells[1].textContent;
                 document.getElementById('edit-identificador').value = fila.cells[2].textContent;
 
+                // Ocultamos el campo de litros porque ahora son unitarios (cubetas)
                 const divLitros = document.getElementById('div-edit-litros');
-                const inputLitros = document.getElementById('edit-litros');
-                
-                if (tipo === 'Lubricante') {
-                    divLitros.style.display = 'block';
-                    inputLitros.required = true;
-                    inputLitros.value = parseFloat(fila.cells[3].textContent);
-                } else {
-                    divLitros.style.display = 'none';
-                    inputLitros.required = false;
-                }
+                if(divLitros) divLitros.style.display = 'none';
 
-                // CORRECCIÓN: Mostrar solo lo necesario
-                if(modalFondo) modalFondo.style.display = 'block'; // Mostramos fondo oscuro
-                if(divCargaMasiva) divCargaMasiva.style.display = 'none'; // OCULTAMOS EL DE CARGA MASIVA
-                if(modalEditar) modalEditar.style.display = 'block'; // Mostramos el de editar
+                if(modalFondo) modalFondo.style.display = 'block'; 
+                if(divCargaMasiva) divCargaMasiva.style.display = 'none'; 
+                if(modalEditar) modalEditar.style.display = 'block'; 
             }
         });
     }
@@ -147,7 +139,6 @@ document.addEventListener("DOMContentLoaded", function(){
     // --- 4. LÓGICA DE MODALES (Carga Masiva) ---
     if(botonAgregarInventario) {
         botonAgregarInventario.addEventListener("click", () => {
-            // CORRECCIÓN: Al abrir Agregar, mostramos su contenido y ocultamos editar
             if(modalFondo) modalFondo.style.display = "block";
             if(divCargaMasiva) divCargaMasiva.style.display = "block"; 
             if(modalEditar) modalEditar.style.display = "none";
@@ -161,16 +152,14 @@ document.addEventListener("DOMContentLoaded", function(){
         });
     }
     
-    // Cerrar al click fuera
     window.addEventListener('click', (e) => {
         if (e.target == modalFondo) {
             modalFondo.style.display = "none";
             if(modalEditar) modalEditar.style.display = 'none';
-            // No necesitamos ocultar divCargaMasiva aquí porque al ocultar el fondo desaparece todo
         }
     });
 
-    // --- 5. DESCARGA CSV ---
+    // --- 5. DESCARGA CSV (ACTUALIZADO PARA CUBETAS) ---
     if(btnDescargarPlantilla) {
         btnDescargarPlantilla.addEventListener("click", function(e) {
             e.preventDefault();
@@ -185,11 +174,12 @@ document.addEventListener("DOMContentLoaded", function(){
                 csvContent += "SCANIA,2002705,SCA-SERIE-001,Poniente\n";
                 csvContent += "SCANIA,1928869PE,SCA-SERIE-002,Magdalena\n";
             } else {
-                fileName = "plantilla_alta_lubricantes.csv";
-                const headers = ["NOMBRE_PRODUCTO_LUBRICANTE", "NOMBRE_ALMACEN", "LITROS_A_AGREGAR"];
+                // ✅ CAMBIO: Plantilla para Cubetas (Individuales)
+                fileName = "plantilla_alta_cubetas.csv";
+                const headers = ["NOMBRE_PRODUCTO", "NUMERO_SERIE_CUBETA", "NOMBRE_ALMACEN"];
                 csvContent = headers.join(",") + "\n";
-                csvContent += "SAE 10W30 MULTIGRADO,Poniente,200\n";
-                csvContent += "SAE 15W30,Magdalena,50.5\n";
+                csvContent += "SAE 10W30 MULTIGRADO,CUB-LUB-1001,Poniente\n";
+                csvContent += "SAE 15W30,CUB-LUB-1002,Magdalena\n";
             }
 
             descargarCSV(csvContent, fileName);
@@ -234,10 +224,7 @@ document.addEventListener("DOMContentLoaded", function(){
         });
     }
 
-
-    // =========================================================
-    // 7. FILTRO DE ALMACÉN EN TIEMPO REAL
-    // =========================================================
+    // --- 7. FILTRO DE ALMACÉN EN TIEMPO REAL ---
     const selectFiltroUbicacion = document.getElementById('filtro-ubicacion-ui');
     
     if (selectFiltroUbicacion) {
@@ -246,13 +233,11 @@ document.addEventListener("DOMContentLoaded", function(){
             const filas = document.querySelectorAll('#tabla-inventario-body tr');
 
             filas.forEach(fila => {
-                // La ubicación está en la columna 5 (índice 4)
                 const ubicacionTexto = fila.cells[4].textContent.toLowerCase();
                 
                 if (filtro === 'todos') {
                     fila.style.display = '';
                 } else {
-                    // Si el texto de la ubicación (ej: "Almacén Magdalena") incluye el filtro ("magdalena")
                     if (ubicacionTexto.includes(filtro)) {
                         fila.style.display = '';
                     } else {

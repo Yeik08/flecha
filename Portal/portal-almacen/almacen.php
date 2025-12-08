@@ -36,15 +36,22 @@ require_once '../../php/db_connect.php';
 			<div class="opciones">
 
 				<div class="fr">FLECHA ROJA</div>
-                    
+                    <ul class="menu">
+                        <li><a href="#">Almacén</a></li>
+                    </ul>
+
+                    <ul class="menu">
+                        <li><a href="../portal-inventario/alta-inventario.php">Alta de inventario</a></li>
+                    </ul>
+
 				</div>
         
-				<div class="perfil">
-					<?php echo htmlspecialchars($nombre_usuario); ?>
-         
-					<a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
-			
-				</div>
+                <div class="perfil">
+
+                    
+                    <?php echo htmlspecialchars($nombre_usuario); ?>
+                    <a href="../../php/logout.php"><button type="button">Cerrar sesión</button></a>
+                </div>
 
 			</div>
 	</div>

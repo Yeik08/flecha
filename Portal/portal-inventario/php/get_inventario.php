@@ -1,7 +1,7 @@
 <?php
 /*
 * Portal/portal-inventario/php/get_inventario.php
-* Versión Corregida y Expandida (Sin errores de sintaxis)
+* VERSIÓN FINAL: Soporte para Almacén (Rol 6) + Cubetas Serializadas
 */
 
 // Evitar salidas de texto antes del JSON
@@ -10,22 +10,22 @@ ob_start();
 session_start();
 header('Content-Type: application/json');
 
-// Ajuste de ruta (Subir 3 niveles)
 require_once '../../../php/db_connect.php';
 
-// 1. Seguridad
-if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 2 && $_SESSION['role_id'] != 1)) {
-    ob_end_clean(); // Limpiar buffer
+// 1. Seguridad: Agregamos el Rol 6 (Almacén)
+$roles_permitidos = [1, 2, 6];
+
+if (!isset($_SESSION['loggedin']) || !in_array($_SESSION['role_id'], $roles_permitidos)) {
+    ob_end_clean(); 
     echo json_encode(['success' => false, 'message' => 'Acceso denegado']);
     exit;
 }
 
-// Inicializar respuesta
 $response = [
     'success' => true,
     'kpis' => [
         'filtros_disponibles' => 0,
-        'litros_totales' => 0,
+        'litros_totales' => 0, // En el front dice "Litros", le mandaremos el conteo de cubetas
         'filtros_instalados' => 0,
         'stock_bajo' => 0
     ],
@@ -33,11 +33,9 @@ $response = [
 ];
 
 try {
-    if (!$conn) {
-        throw new Exception("Error de conexión a BD");
-    }
+    if (!$conn) throw new Exception("Error de conexión a BD");
 
-    // --- 1. CÁLCULO DE KPIS (TARJETAS) ---
+    // --- 1. CÁLCULO DE KPIS ---
     
     // A. Filtros Disponibles
     $sql_filtros = "SELECT COUNT(*) as total FROM tb_inventario_filtros WHERE estatus = 'Disponible'";
@@ -46,13 +44,12 @@ try {
         $response['kpis']['filtros_disponibles'] = $row['total'];
     }
 
-    // B. Litros de Aceite
-    $sql_aceite = "SELECT SUM(litros_disponibles) as total FROM tb_inventario_lubricantes";
+    // B. Stock de Aceite (AHORA CUENTA CUBETAS, YA NO SUMA LITROS)
+    // La tabla ya no tiene 'litros_disponibles', usamos COUNT(*)
+    $sql_aceite = "SELECT COUNT(*) as total FROM tb_inventario_lubricantes WHERE estatus = 'Disponible'";
     $res_a = $conn->query($sql_aceite);
     if ($res_a && $row = $res_a->fetch_assoc()) {
-        // Validamos si es null (0 si no hay nada)
-        $total = $row['total'] ? $row['total'] : 0;
-        $response['kpis']['litros_totales'] = number_format($total, 1);
+        $response['kpis']['litros_totales'] = $row['total']; // Enviamos el número de cubetas
     }
 
     // C. Filtros Instalados
@@ -62,7 +59,7 @@ try {
         $response['kpis']['filtros_instalados'] = $row['total'];
     }
 
-    // D. Alertas de Stock Bajo
+    // D. Alertas (Filtros bajos)
     $sql_bajos = "SELECT COUNT(*) as tipos_bajos FROM (
                     SELECT id_cat_filtro 
                     FROM tb_inventario_filtros 
@@ -77,7 +74,6 @@ try {
 
 
     // --- 2. DATOS PARA LA TABLA ---
-    
     $lista_final = [];
 
     // A. Consultar Filtros
@@ -89,13 +85,12 @@ try {
                             f.numero_serie as identificador,
                             '1 pza' as cantidad_formato,
                             u.nombre as ubicacion,
-                            'Disponible' as estatus
+                            f.estatus
                           FROM tb_inventario_filtros f
                           JOIN tb_cat_filtros cf ON f.id_cat_filtro = cf.id
                           JOIN tb_cat_ubicaciones u ON f.id_ubicacion = u.id
                           WHERE f.estatus = 'Disponible'
-                          ORDER BY f.id DESC
-                          LIMIT 50";
+                          ORDER BY f.id DESC LIMIT 100";
     
     $res_tab_f = $conn->query($sql_tabla_filtros);
     if ($res_tab_f) {
@@ -104,20 +99,22 @@ try {
         }
     }
 
-    // B. Consultar Lubricantes
+    // B. Consultar Lubricantes (CORREGIDO A NUEVA ESTRUCTURA)
+    // Usamos numero_serie en lugar de 'A Granel' y quitamos litros_disponibles
     $sql_tabla_lub = "SELECT 
                         l.id,
                         'Lubricante' as tipo_bien,
                         'Aceite' as categoria,
                         cl.nombre_producto as descripcion,
-                        'A Granel' as identificador,
-                        CONCAT(l.litros_disponibles, ' L') as cantidad_formato,
+                        l.numero_serie as identificador,
+                        '1 Cubeta' as cantidad_formato,
                         u.nombre as ubicacion,
-                        'Disponible' as estatus
+                        l.estatus
                       FROM tb_inventario_lubricantes l
                       JOIN tb_cat_lubricantes cl ON l.id_cat_lubricante = cl.id
                       JOIN tb_cat_ubicaciones u ON l.id_ubicacion = u.id
-                      ORDER BY l.id DESC";
+                      WHERE l.estatus = 'Disponible'
+                      ORDER BY l.id DESC LIMIT 100";
 
     $res_tab_l = $conn->query($sql_tabla_lub);
     if ($res_tab_l) {
@@ -128,7 +125,6 @@ try {
 
     $response['tabla'] = $lista_final;
 
-    // Limpiar cualquier salida previa y enviar JSON
     ob_end_clean();
     echo json_encode($response);
 

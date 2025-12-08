@@ -1,7 +1,7 @@
 <?php
 /*
 * Portal/portal-inventario/php/procesar_carga_inventario.php
-* VERSIÓN V3: Corrección de lógica de ubicación (Prioridad Almacén)
+* VERSIÓN V4: Soporte para Cubetas Serializadas (Trazabilidad Total)
 */
 
 ini_set('auto_detect_line_endings', true);
@@ -11,9 +11,10 @@ error_reporting(0);
 session_start();
 header('Content-Type: application/json');
 
-// 1. Seguridad
-if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 2 && $_SESSION['role_id'] != 1)) {
-    echo json_encode(['success' => false, 'message' => 'Acceso no autorizado.']);
+// 1. Seguridad (Admin, Mesa, Almacén)
+$roles_permitidos = [1, 2, 6];
+if (!isset($_SESSION['loggedin']) || !in_array($_SESSION['role_id'], $roles_permitidos)) {
+    echo json_encode(['success' => false, 'message' => 'Acceso denegado. Rol no autorizado.']);
     exit;
 }
 
@@ -49,22 +50,28 @@ try {
 
     while (($columna = fgetcsv($handle, 2000, ",")) !== FALSE) {
         $fila++;
+        
+        // Limpieza básica de columna vacía
         if (empty($columna[0])) continue;
 
-        // Limpiar BOM
+        // Limpiar BOM (Byte Order Mark) que a veces traen los Excel
         $columna[0] = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $columna[0]);
 
-        // === CASO 1: FILTROS ===
+        // =========================================================
+        // CASO 1: FILTROS (Lógica existente - Mantenida)
+        // Estructura CSV: Marca, NumeroParte, Serie, Almacen
+        // =========================================================
         if ($tipo_carga === 'filtro') {
             
             $marca = trim(strtoupper($columna[0]));
             $parte = trim(strtoupper($columna[1]));
             
-            // Detección de columnas (4 o 5)
+            // Ajuste por si el CSV tiene diferente orden de columnas
             if (count($columna) == 4) {
                 $serie = trim(strtoupper($columna[2]));
                 $almacen_input = trim($columna[3]);
             } else {
+                // Fallback por si usan formato viejo de 5 columnas
                 $serie = trim(strtoupper($columna[3]));
                 $almacen_input = trim($columna[4]);
             }
@@ -79,67 +86,65 @@ try {
                 $errores[] = "Fila $fila: Filtro '$marca - $parte' no existe en catálogo.";
                 continue; 
             }
-            $id_filtro = $res_cat->fetch_assoc()['id'];
+            $id_item_cat = $res_cat->fetch_assoc()['id'];
+            $tabla_destino = "tb_inventario_filtros";
+            $col_fk = "id_cat_filtro";
 
-            // B. Validar Almacén (CORREGIDO)
-            $id_ubicacion = resolverUbicacion($conn, $almacen_input);
-            if (!$id_ubicacion) {
-                $errores[] = "Fila $fila: Almacén '$almacen_input' no encontrado (¿Es un Taller?).";
-                continue;
-            }
-
-            // C. Insertar
-            $sql_ins = "INSERT INTO tb_inventario_filtros (id_cat_filtro, numero_serie, id_ubicacion, estatus) VALUES (?, ?, ?, 'Disponible')";
-            $stmt_ins = $conn->prepare($sql_ins);
-            $stmt_ins->bind_param("isi", $id_filtro, $serie, $id_ubicacion);
-            
-            if ($stmt_ins->execute()) {
-                $exitosos++;
-            } else {
-                if ($conn->errno == 1062) {
-                    $errores[] = "Fila $fila: Serie '$serie' duplicada.";
-                } else {
-                    $errores[] = "Fila $fila: Error BD " . $stmt_ins->error;
-                }
-            }
-
-        // === CASO 2: LUBRICANTES ===
+        // =========================================================
+        // CASO 2: LUBRICANTES (Cubetas Serializadas) - ¡ACTUALIZADO!
+        // Estructura CSV: NombreProducto, NumeroSerie, Almacen
+        // =========================================================
         } elseif ($tipo_carga === 'lubricante') {
-            $producto = trim(strtoupper($columna[0]));
-            $almacen_input = trim($columna[1]);
-            $litros = floatval($columna[2]);
+            
+            $producto = trim(strtoupper($columna[0])); // Ej: SAE 15W40
+            $serie = trim(strtoupper($columna[1]));    // Ej: CUB-LUB-1001
+            $almacen_input = trim($columna[2]);        // Ej: Magdalena
 
-            // A. Validar Producto
+            // A. Validar Producto en Catálogo
+            // Usamos LIKE para ser un poco flexibles con el nombre
             $stmt_lub = $conn->prepare("SELECT id FROM tb_cat_lubricantes WHERE nombre_producto = ? LIMIT 1");
             $stmt_lub->bind_param("s", $producto);
             $stmt_lub->execute();
             $res_lub = $stmt_lub->get_result();
 
             if ($res_lub->num_rows === 0) {
-                $errores[] = "Fila $fila: Producto '$producto' no existe.";
+                $errores[] = "Fila $fila: El aceite '$producto' no existe en el catálogo.";
                 continue;
             }
-            $id_lubricante = $res_lub->fetch_assoc()['id'];
+            $id_item_cat = $res_lub->fetch_assoc()['id'];
+            $tabla_destino = "tb_inventario_lubricantes";
+            $col_fk = "id_cat_lubricante";
+        }
 
-            // B. Validar Almacén
-            $id_ubicacion = resolverUbicacion($conn, $almacen_input);
-            if (!$id_ubicacion) {
-                $errores[] = "Fila $fila: Ubicación '$almacen_input' inválida.";
-                continue;
-            }
+        // =========================================================
+        // PROCESO COMÚN DE INSERCIÓN (Para Filtros y Cubetas)
+        // =========================================================
+        
+        // B. Validar Almacén
+        $id_ubicacion = resolverUbicacion($conn, $almacen_input);
+        if (!$id_ubicacion) {
+            $errores[] = "Fila $fila: Almacén '$almacen_input' no válido. Debe ser un Almacén (no Taller).";
+            continue;
+        }
 
-            // C. Upsert
-            $sql_upsert = "INSERT INTO tb_inventario_lubricantes (id_cat_lubricante, id_ubicacion, litros_disponibles) 
-                           VALUES (?, ?, ?) 
-                           ON DUPLICATE KEY UPDATE litros_disponibles = litros_disponibles + VALUES(litros_disponibles)";
-            
-            $stmt_up = $conn->prepare($sql_upsert);
-            $stmt_up->bind_param("iid", $id_lubricante, $id_ubicacion, $litros);
-            
-            if ($stmt_up->execute()) {
+        // C. Insertar Item Individual
+        // Nota: Ambos inventarios tienen la misma estructura básica (id, id_cat_..., serie, ubicacion, estatus)
+        $sql_ins = "INSERT INTO $tabla_destino ($col_fk, numero_serie, id_ubicacion, estatus) VALUES (?, ?, ?, 'Disponible')";
+        $stmt_ins = $conn->prepare($sql_ins);
+        $stmt_ins->bind_param("isi", $id_item_cat, $serie, $id_ubicacion);
+        
+        try {
+            if ($stmt_ins->execute()) {
                 $exitosos++;
             } else {
-                $errores[] = "Fila $fila: Error al guardar lubricante.";
+                throw new Exception($stmt_ins->error);
+            }
+        } catch (Exception $e) {
+            // Capturar error de duplicados (Código 1062 en MySQL)
+            if ($conn->errno == 1062) {
+                $errores[] = "Fila $fila: La serie '$serie' YA EXISTE en el sistema. (Duplicada)";
+            } else {
+                $errores[] = "Fila $fila: Error BD - " . $e->getMessage();
             }
         }
     }
@@ -147,15 +152,16 @@ try {
 
     if ($exitosos > 0) {
         $conn->commit();
-        $msj = "Proceso terminado. $exitosos registros exitosos.";
+        $msj = "✅ Carga Exitosa: $exitosos ítems registrados.";
         if (count($errores) > 0) {
-            $msj .= "\n\n⚠️ Errores no procesados:\n" . implode("\n", array_slice($errores, 0, 5));
+            $msj .= "\n\n⚠️ Se omitieron algunos errores:\n" . implode("\n", array_slice($errores, 0, 5));
+            if(count($errores) > 5) $msj .= "\n... y " . (count($errores)-5) . " más.";
         }
         echo json_encode(['success' => true, 'message' => $msj]);
     } else {
         $conn->rollback();
-        $msj_err = "No se guardó nada.";
-        if (count($errores) > 0) $msj_err .= "\nErrores:\n" . implode("\n", array_slice($errores, 0, 5));
+        $msj_err = "⛔ No se guardó nada.";
+        if (count($errores) > 0) $msj_err .= "\nErrores detectados:\n" . implode("\n", array_slice($errores, 0, 10));
         echo json_encode(['success' => false, 'message' => $msj_err]);
     }
 
@@ -164,15 +170,15 @@ try {
     echo json_encode(['success' => false, 'message' => 'Error Servidor: ' . $e->getMessage()]);
 }
 
-// --- FUNCIÓN CORREGIDA ---
-// Ahora prioriza tipo = 'Almacén'
+// --- FUNCIÓN DE AYUDA PARA UBICACIÓN ---
 function resolverUbicacion($conn, $input) {
     if (empty($input)) return null;
 
-    // 1. Si es ID numérico (ej: "4"), búsqueda directa exacta
+    // 1. Si es número (ID directo)
     if (is_numeric($input)) {
         $id = intval($input);
-        $sql = "SELECT id FROM tb_cat_ubicaciones WHERE id = ? LIMIT 1";
+        // Validamos que sea tipo Almacén para evitar errores
+        $sql = "SELECT id FROM tb_cat_ubicaciones WHERE id = ? AND tipo = 'Almacén' LIMIT 1";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -180,14 +186,12 @@ function resolverUbicacion($conn, $input) {
         return null; 
     }
 
-    // 2. Si es texto, búsqueda estricta por TIPO 'Almacén'
-    // Esto evita que "Magdalena" seleccione el Taller (ID 1)
+    // 2. Si es texto (Nombre)
     $input = trim($input);
     $like = "%" . $input . "%";
     
-    // Aquí está el truco: AND tipo = 'Almacén'
+    // Busca coincidencias SOLO en Almacenes (Magdalena, Poniente, etc.)
     $sql = "SELECT id FROM tb_cat_ubicaciones WHERE nombre LIKE ? AND tipo = 'Almacén' LIMIT 1";
-    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $like);
     $stmt->execute();
@@ -196,9 +200,6 @@ function resolverUbicacion($conn, $input) {
     if ($res->num_rows > 0) {
         return $res->fetch_assoc()['id'];
     }
-    
-    // Si no encuentra nada en almacenes, devolvemos null para forzar el error
-    // y evitar que se cargue inventario en un taller por accidente.
     return null;
 }
 ?>
