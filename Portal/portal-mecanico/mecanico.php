@@ -171,6 +171,6 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                 </form>
             </div>
         </main>
-    <script src="js/mecanico.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
