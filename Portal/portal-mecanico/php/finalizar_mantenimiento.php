@@ -189,25 +189,42 @@ try {
                 throw new Exception("🚫 FOTO REPETIDA: La imagen de '$input_name' ya existe en el sistema. Debes tomar una foto nueva.");
             }
 
-            // C. Extraer Metadatos
+// C. Extraer Metadatos
             $info_meta = extraerMetadatos($tmp);
             
-            // D. Validar Tiempo (24h máximo)
-            if ($info_meta['fecha']) {
-                // Limpieza de fecha EXIF (YYYY:MM:DD -> YYYY-MM-DD)
-                $fecha_limpia = preg_replace('/^(\d{4}):(\d{2}):(\d{2})/', '$1-$2-$3', $info_meta['fecha']);
-                try {
-                    $fechaFoto = new DateTime($fecha_limpia);
-                    $ahora = new DateTime();
-                    $horas = ($ahora->getTimestamp() - $fechaFoto->getTimestamp()) / 3600;
-                    
-                    if ($horas > 24) throw new Exception("La evidencia '$input_name' es antigua (>24h).");
-                } catch (Exception $e) {
-                    // Si falla el parseo de fecha, decidimos si bloquear o dejar pasar.
-                    // Aquí relanzamos si es nuestro error de >24h.
-                    if ($e->getMessage() === "La evidencia '$input_name' es antigua (>24h).") throw $e;
-                }
+            // --- INICIO CAMBIO SEGURIDAD ---
+            
+            // D. Validar Existencia de Fecha (Bloqueo anti-WhatsApp)
+            if (empty($info_meta['fecha'])) {
+                // Si no hay fecha, es WhatsApp, Facebook o edición. RECHAZAR.
+                throw new Exception("⛔ FOTO RECHAZADA ($input_name): La imagen no contiene metadatos de fecha original. Probablemente proviene de WhatsApp o es una captura de pantalla. Usa fotos originales.");
             }
+
+            // E. Validar Antigüedad (24h máximo)
+            // Limpieza de fecha EXIF (YYYY:MM:DD -> YYYY-MM-DD)
+            $fecha_limpia = preg_replace('/^(\d{4}):(\d{2}):(\d{2})/', '$1-$2-$3', $info_meta['fecha']);
+            try {
+                $fechaFoto = new DateTime($fecha_limpia);
+                $ahora = new DateTime();
+                $horas = ($ahora->getTimestamp() - $fechaFoto->getTimestamp()) / 3600;
+                
+                // Tolerancia de 10 minutos hacia el futuro (por relojes desajustados)
+                if ($horas < -0.16) {
+                     throw new Exception("⛔ Error: La fecha de la foto es futura. Revisa la hora de tu cámara.");
+                }
+
+                if ($horas > 24) {
+                    throw new Exception("⛔ FOTO ANTIGUA ($input_name): La foto fue tomada hace " . round($horas, 1) . " horas. El límite es 24 horas.");
+                }
+            } catch (Exception $e) {
+                // Relanzamos nuestras excepciones personalizadas
+                throw $e;
+            }
+            
+            // --- FIN CAMBIO SEGURIDAD ---
+
+            // F. Guardar (Tu código original sigue aquí...)
+            $ext = pathinfo($_FILES[$input_name]['name'], PATHINFO_EXTENSION);
 
             // E. Guardar
             $ext = pathinfo($_FILES[$input_name]['name'], PATHINFO_EXTENSION);

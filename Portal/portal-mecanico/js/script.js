@@ -257,23 +257,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 EXIF.getData(archivo, function() {
                     const meta = EXIF.getAllTags(this);
                     
-                    // VALIDACIÓN CRÍTICA: ¿Tiene fecha original?
+                    // VALIDACIÓN CRÍTICA: WhatsApp borra este dato. Si no existe, es foto "falsa" o descargada.
                     if (!meta.DateTimeOriginal) {
-                        // RECHAZO TOTAL
-                        inputElement.value = ""; // Borramos el archivo
-                        msgBox.innerHTML = '⛔ <strong>FOTO RECHAZADA:</strong> Sin fecha original (WhatsApp/Captura).';
+                        
+                        // 1. Limpiar el input para que no se pueda enviar
+                        inputElement.value = ""; 
+                        
+                        // 2. Mostrar mensaje visual rojo
+                        msgBox.innerHTML = '⛔ <strong>FOTO RECHAZADA:</strong> Es de WhatsApp o captura.';
                         msgBox.style.color = 'red';
                         
-                        alert("🚫 FOTO NO VÁLIDA\n\nEl sistema detectó que esta imagen no tiene fecha original.\n\nPosibles causas:\n1. Fue descargada de WhatsApp.\n2. Es una captura de pantalla.\n\nSolución: Sube la foto original tomada directamente con la cámara.");
+                        // 3. Alerta explicativa
+                        alert("🚫 IMAGEN NO VÁLIDA\n\n" +
+                            "Esta foto no tiene fecha original. El sistema detecta que:\n" +
+                            "- Fue enviada por WhatsApp (WhatsApp borra los datos).\n" +
+                            "- O es una captura de pantalla.\n\n" +
+                            "SOLUCIÓN: Toma la foto directamente con la cámara o sube el archivo original.");
                     } else {
                         // ACEPTADA
-                        msgBox.innerHTML = '✅ Foto válida (Original).';
+                        msgBox.innerHTML = '✅ Foto válida (Original: ' + meta.DateTimeOriginal + ').';
                         msgBox.style.color = 'green';
                     }
                 });
             } else {
-                msgBox.innerHTML = '⚠️ Advertencia: No se pudo verificar la autenticidad (Librería faltante).';
-                msgBox.style.color = 'orange';
+                // Esto pasa si olvidaste el Paso 1
+                console.error("Error: La librería EXIF no está cargada.");
+                msgBox.innerHTML = '⚠️ Error del sistema: Librería faltante.';
             }
         });
     }

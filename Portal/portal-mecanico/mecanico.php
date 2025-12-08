@@ -18,6 +18,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
     <title>Portal Mecanico</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 
 <body>
