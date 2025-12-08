@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $url_destino = "../Portal/portal_tecnico.html";
                 break;
             case 4: // 4 = Jefe de Taller (Tu "portal mecanico")
-                $url_destino = "../Portal/portal_mecanico.html";
+                $url_destino = "../Portal/portal-mecanico/mecanico.php";
                 break;
             case 5: // 5 = Receptor de Taller
                 $url_destino = "../Portal/portal-taller/taller.php";
