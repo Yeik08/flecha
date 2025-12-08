@@ -1,71 +1,77 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    const btnBuscarTicket = document.getElementById('btn-buscar-ticket');
+    const btnBuscar = document.getElementById('btn-buscar-ticket');
     const formIntercambio = document.getElementById('form-intercambio');
+    const inputTicket = document.getElementById('ticket-id');
 
-    // Evento para el botón "Buscar" ticket
-    btnBuscarTicket.addEventListener('click', function() {
-        const ticketId = document.getElementById('ticket-id').value;
+    // BUSCAR TICKET
+    if(btnBuscar) {
+        btnBuscar.addEventListener('click', async () => {
+            const ticket = inputTicket.value.trim();
+            if (!ticket) return alert("Ingresa un folio.");
 
-        if (!ticketId) {
-            alert('Por favor, ingrese un número de ticket.');
-            return;
-        }
+            btnBuscar.textContent = "Buscando...";
+            btnBuscar.disabled = true;
 
-        // --- SIMULACIÓN DE LLAMADA AL BACKEND ---
-        // En una aplicación real, aquí harías una llamada (fetch) a tu API:
-        // fetch(`/api/tickets/${ticketId}`)
-        
-        alert(`Buscando información para el ticket: ${ticketId}...`);
+            try {
+                const res = await fetch(`php/buscar_datos_intercambio.php?ticket=${ticket}`);
+                const data = await res.json();
 
-        // Simulamos una respuesta exitosa del backend
-       setTimeout(() => {
-    const camionIdInput = document.getElementById('camion-id');
-    const filtroViejoMarcaInput = document.getElementById('filtro-viejo-marca');
-    const mecanicoIdInput = document.getElementById('mecanico-id');
-    const almacenSelect = document.getElementById('almacen');
+                if (data.success) {
+                    const d = data.data;
+                    document.getElementById('id_entrada_hidden').value = d.id;
+                    document.getElementById('id_camion_hidden').value = d.id_camion;
+                    document.getElementById('info-unidad').value = `${d.numero_economico} - ${d.placas}`;
+                    document.getElementById('info-mecanico').value = d.nombre_mecanico || "Sin Asignar";
+                    document.getElementById('info-filtro-actual').value = d.serie_filtro_aceite_actual;
+                    
+                    alert("✅ Ticket validado. Procede a escanear las piezas.");
+                } else {
+                    alert("❌ " + data.message);
+                    formIntercambio.reset();
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error de conexión.");
+            } finally {
+                btnBuscar.textContent = "🔍 Buscar";
+                btnBuscar.disabled = false;
+            }
+        });
+    }
 
-    // Llenamos los campos con datos simulados del ticket
-    camionIdInput.value = 'ECO-112';
-    mecanicoIdInput.value = 'MEC-045';
-    filtroViejoMarcaInput.value = 'PATITO1';
-    almacenSelect.value = 'poniente'; // Puede ser 'magdalena' u 'otro'
+    // REGISTRAR SALIDA
+    if(formIntercambio) {
+        formIntercambio.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Validación visual rápida
+            const actual = document.getElementById('info-filtro-actual').value.trim().toUpperCase();
+            const escaneado = formIntercambio.querySelector('input[name="filtro_viejo_serie"]').value.trim().toUpperCase();
+            
+            if (actual && actual !== escaneado) {
+                alert("⛔ ALERTA: El filtro usado escaneado NO ES el que trae el camión.\n\nEsperado: " + actual + "\nEscaneado: " + escaneado);
+                return;
+            }
 
-    alert('Información del ticket cargada.');
-}, 1000);
+            if(!confirm("¿Confirmas la entrega de este material? Se descontará del inventario.")) return;
 
-    // Evento para manejar el envío del formulario
-    formIntercambio.addEventListener('submit', function(event) {
-        event.preventDefault(); // Evitamos que la página se recargue
-
-        // Aquí iría la lógica para enviar los datos y las fotos al backend.
-        // Se usaría FormData para poder incluir los archivos de las fotos.
-        
-        // const formData = new FormData(formIntercambio);
-        // fetch('/api/inventory/exchange', { method: 'POST', body: formData });
-        
-        alert('Registro de intercambio enviado con éxito. La salida de inventario ha sido registrada.');
-
-        // Limpiamos el formulario después del envío
-        formIntercambio.reset();
-    });
-    const inputSerieNuevo = document.getElementById("filtro-nuevo-serie");
-    const inputMarcaNuevo = document.getElementById("filtro-nuevo-marca");
-
-    inputSerieNuevo.addEventListener("input", function () {
-        const serie = inputSerieNuevo.value.trim().toUpperCase(); // Aseguramos mayúsculas
-
-        // Detectar marca por prefijo del número de serie
-        if (serie.startsWith("FF")) {
-            inputMarcaNuevo.value = "Fleetguard";
-        } else if (serie.startsWith("DC")) {
-            inputMarcaNuevo.value = "Donaldson";
-        } else if (serie.startsWith("MAH")) {
-            inputMarcaNuevo.value = "Mahle";
-        } else if (serie.startsWith("FR")) {
-            inputMarcaNuevo.value = "Fram";
-        } else {
-            inputMarcaNuevo.value = "Desconocida";
-        }
-    });
+            const formData = new FormData(formIntercambio);
+            
+            try {
+                const res = await fetch('php/procesar_salida_material.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert("✅ " + data.message);
+                    formIntercambio.reset();
+                    document.getElementById('info-unidad').value = "";
+                } else {
+                    alert("❌ Error: " + data.message);
+                }
+            } catch (e) {
+                alert("Error de conexión.");
+            }
+        });
+    }
 });

@@ -204,7 +204,7 @@ try {
     // =================================================================
     // 5. PROCESAR FOTOS + HASH + METADATOS (SEGURIDAD)
     // =================================================================
-    $archivos = ['foto_viejos', 'foto_nuevos', 'foto_general'];
+    $archivos = ['foto_viejos', 'foto_nuevos', 'foto_cubetas', 'foto_general'];
     $carpeta = "../../../uploads/evidencias_salidas/"; 
     if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
 

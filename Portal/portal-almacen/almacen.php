@@ -77,112 +77,117 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <p>480</p>
                 </div>
                 
-                <div class="notificaciones-kpi">
-                    <h2>Notificaciones</h2>
-                        <div class="notificaciones-grid">
-                        <div class="notificacion-card alerta">
-                    <h3>Stock Bajo</h3>
-                    <p>El almacén Poniente tiene menos de 20 filtros disponibles.</p>
-                    <span class="fecha">Actualizado: 22/10/2025</span>
-                </div>
-
-                <div class="notificacion-card info">
-                    <h3>Nueva Solicitud</h3>
-                    <p>Se registró una nueva solicitud de intercambio del ticket #3245.</p>
-                    <span class="fecha">Hace 15 min</span>
-                </div>
-
-                <div class="notificacion-card exito">
-                    <h3>Entrega Confirmada</h3>
-                    <p>El filtro del camión 45 fue entregado exitosamente.</p>
-                    <span class="fecha">Hoy 11:32 AM</span>
-                </div>
+                
             </div>
         </div>
     </div>
             <div class="form-container">
-                <h2>Registrar Intercambio por Ticket</h2>
+                <h2>Salida de Material (Intercambio)</h2>
                 <form id="form-intercambio">
+                    <input type="hidden" id="id_entrada_hidden" name="id_entrada">
+                    <input type="hidden" id="id_camion_hidden" name="id_camion">
 
                     <fieldset>
-                        <legend>Información de la Solicitud</legend>
-
+                        <legend>1. Validación de Ticket</legend>
                         <div class="campo-form">
-                            <label for="ticket-id">Número de Ticket:</label>
+                            <label>Número de Ticket:</label>
                             <div class="input-con-boton">
-                            <input type="text" id="ticket-id" name="ticket-id" placeholder="Ingrese el ticket del mecánico" required>
-                            <button type="button" id="btn-buscar-ticket">Buscar</button>
+                                <input type="text" id="ticket-id" placeholder="Ej: ENT-251208-XXXX" required>
+                                <button type="button" id="btn-buscar-ticket">🔍 Buscar</button>
+                            </div>
                         </div>
-                    </div>
-
-                        <div class="campo-form">
-                            <label for="camion-id">ID de Camión:</label>
-                            <input type="text" id="camion-id" name="camion-id" readonly>
-                        </div>
-
-                        <div class="campo-form">
-                            <label for="mecanico-id">ID del Mecánico:</label>
-                            <input type="text" id="mecanico-id" name="mecanico-id" readonly required>
-                        </div>
-
-                        <div class="campo-form">
-                            <label for="almacen">Almacén de Salida:</label>
-                            <input type="text" id="almacen-id" name="almacen-id" readonly required>   
-                        </div>
-                    </fieldset>
-
-
-                    <fieldset>
-                        <legend>Detalles del Intercambio</legend>
                         <div class="columnas-dos">
-                            <div class="columna">
-                                <strong>Filtro Retirado (Viejo)</strong>
-                                <div class="campo-form">
-                                    <label for="filtro-viejo-serie">Número de Serie:</label>
-                                    <input type="text" id="filtro-viejo-serie" name="filtro-viejo-serie" required>
-                                </div>
-                                <div class="campo-form">
-                                    <label for="filtro-viejo-marca">Marca:</label>
-                                    <input type="text" id="filtro-viejo-marca" name="filtro-viejo-marca" readonly>
-                                </div>
+                            <div class="campo-form">
+                                <label>Unidad:</label>
+                                <input type="text" id="info-unidad" readonly style="background:#eee;">
                             </div>
-                            <div class="columna">
-                                <strong>Filtro Entregado (Nuevo)</strong>
-                                <div class="campo-form">
-                                    <label for="filtro-nuevo-serie">Número de Serie:</label>
-                                    <input type="text" id="filtro-nuevo-serie" name="filtro-nuevo-serie" required>
-                                </div>
-                                <div class="campo-form">
-                                    <label for="filtro-nuevo-marca">Marca:</label>
-                                    <input type="text" id="filtro-nuevo-marca" name="filtro-nuevo-marca" readonly>
-                                </div>
+                            <div class="campo-form">
+                                <label>Mecánico Responsable:</label>
+                                <input type="text" id="info-mecanico" readonly style="background:#eee;">
                             </div>
+                        </div>
+                        <div class="campo-form">
+                            <label>Filtro Actual (Según Sistema):</label>
+                            <input type="text" id="info-filtro-actual" readonly style="color:#d32f2f; font-weight:bold;">
                         </div>
                     </fieldset>
 
                     <fieldset>
-                        <legend>Evidencia Fotográfica (Obligatoria)</legend>
-                        <div class="campo-form-evidencia">
-                            <label for="foto-viejo">1. Foto del Filtro Viejo:</label>
-                            <input type="file" id="foto-viejo" name="foto-viejo" accept="image/*" required>
+                        <legend>2. Retorno de Material (Validación)</legend>
+                        <div class="campo-form">
+                            <label>Escanear Serie Filtro Aceite (USADO):</label>
+                            <input type="text" name="filtro_viejo_serie" placeholder="Escanea el filtro sucio..." required style="border-color:#d32f2f;">
+                            <small>Debe coincidir con el 'Filtro Actual' mostrado arriba.</small>
                         </div>
-                        <div class="campo-form-evidencia">
-                            <label for="foto-nuevo">2. Foto del Filtro Nuevo:</label>
-                            <input type="file" id="foto-nuevo" name="foto-nuevo" accept="image/*" required>
-                        </div>
-                        <div class="campo-form-evidencia">
-                            <label for="foto-comparacion">3. Foto de Ambos Filtros Juntos:</label>
-                            <input type="file" id="foto-comparacion" name="foto-comparacion" accept="image/*" required>
+                        <div class="campo-form">
+                            <label>Escanear Serie Filtro Centrífugo (USADO):</label>
+                            <input type="text" name="filtro_viejo_centrifugo_serie" placeholder="Escanea el filtro sucio..." required style="border-color:#d32f2f;">
+                            <small>Debe coincidir con el 'Filtro Actual' mostrado arriba.</small>
                         </div>
                     </fieldset>
+
+                    <fieldset>
+                        <legend>3. Entrega de Material Nuevo</legend>
+                        <div class="columnas-dos">
+                            <div class="campo-form">
+                                <label>Filtro Aceite Nuevo:</label>
+                                <input type="text" name="filtro_nuevo_serie" placeholder="Escanear..." required>
+                            </div>
+                            <div class="campo-form">
+                                <label>Filtro Centrífugo Nuevo (Opcional):</label>
+                                <input type="text" name="filtro_nuevo_centrifugo" placeholder="Escanear...">
+                            </div>
+                        </div>
+                        <div class="columnas-dos">
+                            <div class="campo-form">
+                                <label>Cubeta Aceite 1:</label>
+                                <input type="text" name="cubeta_1" placeholder="Escanear...">
+                            </div>
+                            <div class="campo-form">
+                                <label>Cubeta Aceite 2:</label>
+                                <input type="text" name="cubeta_2" placeholder="Escanear...">
+                            </div>
+                        </div>
+                    </fieldset>
+
+
+
+                    <fieldset>
+                        <legend>📸 Evidencia Fotográfica</legend>
+                        
+                        <div class="campo-form-evidencia">
+                            <label>1. Filtros Retirados (Viejos):</label>
+                            <input type="file" name="foto_viejos" accept="image/*" required>
+                            <small style="color:#666;">Muestra los números de serie sucios.</small>
+                        </div>
+
+                        <div class="campo-form-evidencia">
+                            <label>2. Filtros Nuevos Instalados:</label>
+                            <input type="file" name="foto_nuevos" accept="image/*" required>
+                        </div>
+
+                        <div class="campo-form-evidencia">
+                            <label>3. Cubetas de Aceite Usadas:</label>
+                            <input type="file" name="foto_cubetas" accept="image/*" required>
+                            <small style="color:#666;">Foto clara de las etiquetas de las cubetas.</small>
+                        </div>
+
+                        <div class="campo-form-evidencia">
+                            <label>4. Foto General (Terminado):</label>
+                            <input type="file" name="foto_general" accept="image/*" required>
+                        </div>
+                    </fieldset>
+
+
+
 
                     <div class="acciones-form">
-                        <button type="submit" class="btn-primario">Confirmar y Registrar Salida</button>
+                        <button type="submit" class="btn-primario">Confirmar Entrega de Material</button>
                     </div>
                 </form>
             </div>
         </main>
 
-<script src="js/inventario.js"></script>
+<script src="js/scripts.js"></script>
 </body>
 </html>
