@@ -146,12 +146,12 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         </div>
                         <div class="columnas-dos">
                             <div class="campo-form">
-                                <label>Cubeta Aceite 1:</label>
-                                <input type="text" name="cubeta_1" placeholder="Escanear...">
+                                <label>Cubeta Aceite 1: <span style="color:red">*</span></label>
+                                <input type="text" name="cubeta_1" placeholder="Escanear..." required>
                             </div>
                             <div class="campo-form">
-                                <label>Cubeta Aceite 2:</label>
-                                <input type="text" name="cubeta_2" placeholder="Escanear...">
+                                <label>Cubeta Aceite 2: <span style="color:red">*</span></label>
+                                <input type="text" name="cubeta_2" placeholder="Escanear..." required>
                             </div>
                         </div>
                     </fieldset>

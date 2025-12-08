@@ -46,7 +46,10 @@ try {
     $cubeta2 = trim($_POST['cubeta_2'] ?? '');
 
     if (!$id_entrada || !$id_camion) throw new Exception("Faltan datos de la orden.");
-
+    
+    if (empty($cubeta1) || empty($cubeta2)) {
+        throw new Exception("⛔ FALTAN DATOS: Es obligatorio escanear las 2 cubetas de aceite para completar la entrega.");
+    }
     // =================================================================
     // 2. VALIDACIONES DE LOGICA Y TIPO
     // =================================================================
