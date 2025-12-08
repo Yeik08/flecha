@@ -136,12 +136,43 @@ document.addEventListener('DOMContentLoaded', function() {
     inputsFotos.forEach(input => validarInputFoto(input));
 
 
+
+
+
+
+    const selAlmacen = document.getElementById('select-almacen-actual');
+
+    // Actualizar KPIs al cambiar almacén
+    if(selAlmacen) {
+        selAlmacen.addEventListener('change', async () => {
+            const id = selAlmacen.value;
+            if(!id) return;
+
+            // Guardar en input oculto para enviarlo al backend
+            // (Asegúrate de agregar <input type="hidden" name="id_almacen_origen" id="id_almacen_origen"> al form)
+            document.getElementById('id_almacen_origen').value = id;
+
+            try {
+                const res = await fetch(`php/get_kpis_almacen.php?id_almacen=${id}`);
+                const data = await res.json();
+                document.getElementById('kpi-filtros').textContent = data.filtros;
+                document.getElementById('kpi-cubetas').textContent = data.cubetas;
+            } catch(e) { console.error(e); }
+        });
+    }
+
     // =========================================================
     // ENVÍO DEL FORMULARIO
     // =========================================================
     if(formIntercambio) {
         formIntercambio.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if(!selAlmacen.value) {
+                e.preventDefault();
+                alert("⚠️ Selecciona desde qué almacén estás despachando (arriba).");
+                return;
+            }
             
             const tipoServicio = document.getElementById('tipo-servicio-hidden').value;
 
