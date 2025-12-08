@@ -156,7 +156,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 </div>
                                 <div class="campo-form">
                                     <label>Nuevo (Escanear):</label>
-                                    <input type="text" name="nuevo_filtro_centrifugo" placeholder="Escanear serie nueva..." required>
+                                    <input type="text" name="nuevo_filtro_centrifugo" placeholder="Escanear serie nueva...">
                                 </div>
                             </div>
                         </div>
