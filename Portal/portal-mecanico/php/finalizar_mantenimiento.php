@@ -63,6 +63,19 @@ try {
         throw new Exception("Faltan identificadores del servicio.");
     }
 
+    $sql_taller = "SELECT id_taller FROM tb_entradas_taller WHERE id = ? LIMIT 1";
+    $stmt_t = $conn->prepare($sql_taller);
+    $stmt_t->bind_param("i", $id_entrada);
+    $stmt_t->execute();
+    $res_t = $stmt_t->get_result();
+    $row_t = $res_t->fetch_assoc();
+    
+    if (!$row_t) throw new Exception("No se encontró la información de la entrada.");
+    $id_ubicacion_actual = $row_t['id_taller']; // Aquí se quedan los viejos
+
+
+
+
     // =================================================================
     // 3. PROCESAMIENTO DE CUBETAS (Vincular al Camión)
     // =================================================================
@@ -115,10 +128,11 @@ try {
             ];
         }
 
-        // C. CONSUMIR Y VINCULAR AL CAMIÓN
-        $sql_use = "UPDATE tb_inventario_lubricantes SET estatus = 'Usado', id_camion_uso = ? WHERE id = ?";
+$sql_use = "UPDATE tb_inventario_lubricantes 
+                    SET estatus = 'Usado', id_camion_uso = ?, id_ubicacion = ? 
+                    WHERE id = ?";
         $stmt_use = $conn->prepare($sql_use);
-        $stmt_use->bind_param("ii", $id_camion, $item['id']);
+        $stmt_use->bind_param("iii", $id_camion, $id_ubicacion_actual, $item['id']);
         $stmt_use->execute();
     }
 
@@ -138,11 +152,13 @@ try {
     $nuevo_aceite = trim($_POST['nuevo_filtro_aceite'] ?? '');
     if (!empty($nuevo_aceite) && !empty($filtros_viejos['serie_filtro_aceite_actual'])) {
         $serie_vieja = $filtros_viejos['serie_filtro_aceite_actual'];
+        
+        // ✅ CAMBIO: id_ubicacion = $id_ubicacion_actual (Se queda en el taller como desecho)
         $sql_baja = "UPDATE tb_inventario_filtros 
-                     SET estatus = 'Baja', id_camion_instalado = NULL 
+                     SET estatus = 'Baja', id_camion_instalado = NULL, id_ubicacion = ?
                      WHERE numero_serie = ?";
         $stmt_baja = $conn->prepare($sql_baja);
-        $stmt_baja->bind_param("s", $serie_vieja);
+        $stmt_baja->bind_param("is", $id_ubicacion_actual, $serie_vieja);
         $stmt_baja->execute();
     }
 
@@ -150,13 +166,16 @@ try {
     $nuevo_centrifugo = trim($_POST['nuevo_filtro_centrifugo'] ?? '');
     if (!empty($nuevo_centrifugo) && !empty($filtros_viejos['serie_filtro_centrifugo_actual'])) {
         $serie_vieja_cent = $filtros_viejos['serie_filtro_centrifugo_actual'];
+        
+        // ✅ CAMBIO: id_ubicacion = $id_ubicacion_actual
         $sql_baja_c = "UPDATE tb_inventario_filtros 
-                       SET estatus = 'Baja', id_camion_instalado = NULL 
+                       SET estatus = 'Baja', id_camion_instalado = NULL, id_ubicacion = ?
                        WHERE numero_serie = ?";
         $stmt_baja_c = $conn->prepare($sql_baja_c);
-        $stmt_baja_c->bind_param("s", $serie_vieja_cent);
+        $stmt_baja_c->bind_param("is", $id_ubicacion_actual, $serie_vieja_cent);
         $stmt_baja_c->execute();
     }
+
 
     // =================================================================
     // 4. PROCESAMIENTO DE FILTROS NUEVOS (Instalación)
@@ -193,7 +212,9 @@ try {
             }
 
             // Marcar como Instalado
-            $sql_up = "UPDATE tb_inventario_filtros SET estatus = 'Instalado', id_camion_instalado = ? WHERE id = ?";
+             $sql_up = "UPDATE tb_inventario_filtros 
+                       SET estatus = 'Instalado', id_camion_instalado = ?, id_ubicacion = 5
+                       WHERE id = ?";
             $stmt_up = $conn->prepare($sql_up);
             $stmt_up->bind_param("ii", $id_camion, $item['id']);
             $stmt_up->execute();
