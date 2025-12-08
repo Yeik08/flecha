@@ -127,14 +127,10 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
                             </div>
                             
-                            <div class="campo-form">
+                            <div class="campo-form" id="container-centrifugo-viejo">
                                 <label>Escanear Filtro Centrífugo (USADO):</label>
                                 <input type="text" name="filtro_viejo_centrifugo_serie" placeholder="Escanea la serie de la pieza física..." autocomplete="off">
-                           
-                           
-                           
                             </div>
-
                         </div>
                     </fieldset>
 
@@ -153,6 +149,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <label>Filtro Centrífugo Nuevo: <span style="color:red">*</span></label>
                                 <input type="text" name="filtro_nuevo_centrifugo" placeholder="Escanear...">
                             </div>
+
+
                         </div>
                         <div class="columnas-dos">
                             <div class="campo-form">

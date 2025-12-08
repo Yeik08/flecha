@@ -1,7 +1,10 @@
 <?php
 /*
 * Portal/portal-almacen/php/procesar_salida_material.php
-* VERSIÓN FINAL: Validación de Tipos + Fotos Seguras (Anti-WhatsApp) + Hash
+* VERSIÓN FINAL BLINDADA:
+* - Validación de Tipos de Filtro.
+* - Validación de Mezcla de Aceites (NUEVO).
+* - Fotos Seguras (Anti-WhatsApp) + Hash.
 */
 session_start();
 header('Content-Type: application/json');
@@ -11,7 +14,7 @@ if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 6 && $_SESSION['ro
     echo json_encode(['success' => false, 'message' => 'Acceso denegado']); exit;
 }
 
-// Función auxiliar para metadatos (Igual que en mecánico)
+// Función auxiliar para metadatos
 function extraerMetadatos($ruta_temporal) {
     $meta = ['fecha' => null, 'json' => null];
     if (function_exists('exif_read_data')) {
@@ -30,30 +33,11 @@ function extraerMetadatos($ruta_temporal) {
 
 $conn->begin_transaction();
 
-
-// 1.1 Consultar qué tipo de servicio es
-    $sql_tipo = "SELECT proximo_servicio_tipo FROM tb_camiones WHERE id = ?";
-    $stmt_tipo = $conn->prepare($sql_tipo);
-    $stmt_tipo->bind_param("i", $id_camion);
-    $stmt_tipo->execute();
-    $datos_camion_tipo = $stmt_tipo->get_result()->fetch_assoc();
-    $tipo_servicio = $datos_camion_tipo['proximo_servicio_tipo'] ?? 'Basico';
-
- // 1.2 Validación de Obligatoriedad
-    if (empty($nuevo_aceite)) throw new Exception("El filtro de aceite es obligatorio.");
-    if (empty($cubeta1) || empty($cubeta2)) throw new Exception("Las cubetas son obligatorias.");
-
-    // Si es COMPLETO, el centrífugo es obligatorio
-    if ($tipo_servicio === 'Completo' && empty($nuevo_centrifugo)) {
-        throw new Exception("⛔ ERROR: Este camión requiere Servicio Completo. Falta escanear el Filtro Centrífugo.");
-    }
-
-
 try {
-    // 1. Recibir Datos
+    // 1. RECIBIR DATOS
     $id_entrada = $_POST['id_entrada'] ?? null;
     $id_camion = $_POST['id_camion'] ?? null;
-    $comentarios = "Entrega de Material en Almacén"; // Descripción automática para las fotos
+    $comentarios = "Entrega de Material en Almacén";
     
     // Inputs
     $viejo_aceite_input = trim($_POST['filtro_viejo_serie'] ?? '');
@@ -64,32 +48,77 @@ try {
     $cubeta1 = trim($_POST['cubeta_1'] ?? '');
     $cubeta2 = trim($_POST['cubeta_2'] ?? '');
 
-    if (!$id_entrada || !$id_camion) throw new Exception("Faltan datos de la orden.");
-    
-    if (empty($cubeta1) || empty($cubeta2)) {
-        throw new Exception("⛔ FALTAN DATOS: Es obligatorio escanear las 2 cubetas de aceite para completar la entrega.");
+    // Validación básica
+    if (!$id_entrada || !$id_camion) {
+        throw new Exception("Faltan datos de la orden.");
     }
+
     // =================================================================
-    // 2. VALIDACIONES DE LOGICA Y TIPO
+    // 2. VALIDACIONES DE NEGOCIO
     // =================================================================
 
-    // Función para validar que la serie corresponda al TIPO correcto en la BD
+    // 2.1 Consultar Tipo de Servicio
+    $sql_tipo = "SELECT proximo_servicio_tipo FROM tb_camiones WHERE id = ?";
+    $stmt_tipo = $conn->prepare($sql_tipo);
+    $stmt_tipo->bind_param("i", $id_camion);
+    $stmt_tipo->execute();
+    $datos_camion_tipo = $stmt_tipo->get_result()->fetch_assoc();
+    $tipo_servicio = $datos_camion_tipo['proximo_servicio_tipo'] ?? 'Basico';
+
+    // 2.2 Validación de Obligatoriedad
+    if (empty($nuevo_aceite)) throw new Exception("El filtro de aceite es obligatorio.");
+    if (empty($cubeta1) || empty($cubeta2)) throw new Exception("Es obligatorio escanear las 2 cubetas de aceite.");
+
+    if ($tipo_servicio === 'Completo' && empty($nuevo_centrifugo)) {
+        throw new Exception("⛔ ERROR: Este camión requiere Servicio Completo. Falta escanear el Filtro Centrífugo.");
+    }
+
+    // 2.3 VALIDACIÓN DE MEZCLA DE ACEITES (NUEVO CANDADO) 🛑🛢️
+    function validarMismoTipoAceite($conn, $serie1, $serie2) {
+        $sql = "SELECT i.numero_serie, i.id_cat_lubricante, c.nombre_producto 
+                FROM tb_inventario_lubricantes i 
+                JOIN tb_cat_lubricantes c ON i.id_cat_lubricante = c.id 
+                WHERE i.numero_serie = ?";
+        
+        $stmt = $conn->prepare($sql);
+        
+        // Obtener info Cubeta 1
+        $stmt->bind_param("s", $serie1);
+        $stmt->execute();
+        $res1 = $stmt->get_result();
+        if($res1->num_rows === 0) throw new Exception("La cubeta '$serie1' no existe en inventario.");
+        $info1 = $res1->fetch_assoc();
+
+        // Obtener info Cubeta 2
+        $stmt->bind_param("s", $serie2);
+        $stmt->execute();
+        $res2 = $stmt->get_result();
+        if($res2->num_rows === 0) throw new Exception("La cubeta '$serie2' no existe en inventario.");
+        $info2 = $res2->fetch_assoc();
+
+        // Comparar tipos (IDs de categoría)
+        if ($info1['id_cat_lubricante'] != $info2['id_cat_lubricante']) {
+            throw new Exception("⛔ ERROR CRÍTICO DE MEZCLA:\nEstás intentando entregar dos aceites diferentes.\n\n" . 
+                "• Cubeta 1 ($serie1): " . $info1['nombre_producto'] . "\n" .
+                "• Cubeta 2 ($serie2): " . $info2['nombre_producto'] . "\n\n" .
+                "Deben ser del mismo tipo.");
+        }
+    }
+
+    // Ejecutar validación de mezcla
+    validarMismoTipoAceite($conn, $cubeta1, $cubeta2);
+
+
+    // 2.4 Función para validar Tipos de Filtros
     function validarTipoFiltro($conn, $serie, $tipoEsperado, $esInventario = true) {
         if (empty($serie)) return;
         
-        // Si está en inventario, consultamos tb_inventario_filtros
         if ($esInventario) {
             $sql = "SELECT c.tipo_filtro 
                     FROM tb_inventario_filtros i
                     JOIN tb_cat_filtros c ON i.id_cat_filtro = c.id
                     WHERE i.numero_serie = ? LIMIT 1";
-        } else {
-            // Si ya fue usado (no está activo en inventario), podríamos buscar en logs, 
-            // pero para simplificar validamos contra lo que dice el catálogo si existe
-            // Ojo: Para filtros "viejos" que ya salieron, asumimos que eran correctos.
-            // Esta validación es crucial para los NUEVOS que van a salir.
-            return; 
-        }
+        } else { return; }
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $serie);
@@ -104,7 +133,7 @@ try {
         }
     }
 
-    // A. Validar Viejos (Contra lo que tiene el camión)
+    // 2.5 Validar Coincidencia de Filtros Viejos
     $sql_camion = "SELECT serie_filtro_aceite_actual, serie_filtro_centrifugo_actual FROM tb_camiones WHERE id = ?";
     $stmt = $conn->prepare($sql_camion);
     $stmt->bind_param("i", $id_camion);
@@ -116,22 +145,25 @@ try {
             throw new Exception("⛔ ERROR: El filtro de aceite usado NO COINCIDE con el sistema.");
         }
     }
-    if (!empty($datos_camion['serie_filtro_centrifugo_actual']) && !empty($viejo_cent_input)) {
-        if (strtoupper($viejo_cent_input) !== strtoupper($datos_camion['serie_filtro_centrifugo_actual'])) {
-            throw new Exception("⛔ ERROR: El filtro centrífugo usado NO COINCIDE con el sistema.");
+    
+    if ($tipo_servicio === 'Completo' && !empty($datos_camion['serie_filtro_centrifugo_actual'])) {
+        if (empty($viejo_cent_input) || strtoupper($viejo_cent_input) !== strtoupper($datos_camion['serie_filtro_centrifugo_actual'])) {
+            throw new Exception("⛔ ERROR: El filtro centrífugo usado NO COINCIDE o no fue escaneado.");
         }
     }
 
-    // B. Validar Tipos de los NUEVOS (Crucial para no dar aceite por centrífugo)
+    // 2.6 Validar Tipos Nuevos
     validarTipoFiltro($conn, $nuevo_aceite, 'Aceite');
-    validarTipoFiltro($conn, $nuevo_centrifugo, 'Centrifugo');
+    if (!empty($nuevo_centrifugo)) {
+        validarTipoFiltro($conn, $nuevo_centrifugo, 'Centrifugo');
+    }
 
 
     // =================================================================
-    // 3. PROCESAMIENTO DE FOTOS (Igual que mecánico)
+    // 3. PROCESAMIENTO DE FOTOS (Hash + Anti-WhatsApp)
     // =================================================================
     $archivos = ['foto_viejos', 'foto_nuevos', 'foto_cubetas', 'foto_general'];
-    $carpeta = "../../../uploads/evidencias_salidas/"; // Usamos la misma carpeta central
+    $carpeta = "../../../uploads/evidencias_salidas/"; 
     if (!is_dir($carpeta)) mkdir($carpeta, 0777, true);
 
     foreach ($archivos as $input_name) {
@@ -139,20 +171,20 @@ try {
             
             $tmp = $_FILES[$input_name]['tmp_name'];
             
-            // Hash (Anti-Duplicado)
+            // Hash
             $hash_archivo = hash_file('sha256', $tmp);
             $sql_dup = "SELECT id FROM tb_evidencias_entrada_taller WHERE hash_archivo = ? LIMIT 1";
             $stmt_dup = $conn->prepare($sql_dup);
             $stmt_dup->bind_param("s", $hash_archivo);
             $stmt_dup->execute();
             if ($stmt_dup->get_result()->num_rows > 0) {
-                throw new Exception("🚫 FOTO REPETIDA ($input_name): Ya existe en el sistema.");
+                throw new Exception("🚫 FOTO REPETIDA ($input_name): Esta imagen ya existe en el sistema.");
             }
 
-            // Metadatos (Anti-WhatsApp)
+            // Metadatos
             $info_meta = extraerMetadatos($tmp);
             if (empty($info_meta['fecha'])) {
-                throw new Exception("⛔ FOTO RECHAZADA ($input_name): Sin fecha original (WhatsApp/Captura).");
+                throw new Exception("⛔ FOTO RECHAZADA ($input_name): Sin fecha original (Posible WhatsApp/Captura).");
             }
 
             // Antigüedad (24h)
@@ -183,7 +215,7 @@ try {
     }
 
     // =================================================================
-    // 4. RESERVA Y ASIGNACIÓN DE MATERIAL (Lógica anterior)
+    // 4. RESERVA Y ASIGNACIÓN
     // =================================================================
     
     function validarYReservar($conn, $serie, $tabla, $campo_id_entrada, $id_entrada) {
@@ -212,12 +244,16 @@ try {
     }
 
     validarYReservar($conn, $nuevo_aceite, 'tb_inventario_filtros', 'filtro_aceite_entregado', $id_entrada);
-    validarYReservar($conn, $nuevo_centrifugo, 'tb_inventario_filtros', 'filtro_centrifugo_entregado', $id_entrada);
+    
+    if (!empty($nuevo_centrifugo)) {
+        validarYReservar($conn, $nuevo_centrifugo, 'tb_inventario_filtros', 'filtro_centrifugo_entregado', $id_entrada);
+    }
+    
     validarYReservar($conn, $cubeta1, 'tb_inventario_lubricantes', 'cubeta_1_entregada', $id_entrada);
     validarYReservar($conn, $cubeta2, 'tb_inventario_lubricantes', 'cubeta_2_entregada', $id_entrada);
 
     $conn->commit();
-    echo json_encode(['success' => true, 'message' => 'Material validado, fotos guardadas y entrega registrada.']);
+    echo json_encode(['success' => true, 'message' => 'Material validado correctamente. Se ha verificado que los aceites son del mismo tipo.']);
 
 } catch (Exception $e) {
     $conn->rollback();
