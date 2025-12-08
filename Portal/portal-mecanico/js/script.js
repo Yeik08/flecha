@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================
     // 2. BANDEJA DE ENTRADA (Cargar Pendientes)
     // =========================================================
-    async function cargarPendientes() {
+      async function cargarPendientes() {
         if (!tablaPendientes) return;
         
         try {
@@ -37,43 +37,75 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.data.length > 0) {
                 data.data.forEach(t => {
                     const tr = document.createElement('tr');
-                    // Guardamos todo el objeto 't' en el botón para usarlo al dar click
-                    // Usamos .replace para evitar errores con comillas simples en los datos
                     const jsonData = JSON.stringify(t).replace(/'/g, "&apos;");
                     
+                    // LÓGICA DE BOTONES
+                    let botonHTML = '';
+                    let estatusHTML = '';
+
+                    if (t.estatus_entrada === 'Recibido') {
+                        // Botón para INICIAR (Amarillo/Azul)
+                        estatusHTML = '<span style="color:#f39c12; font-weight:bold;">⏳ En Espera</span>';
+                        botonHTML = `<button class="btn-primario btn-iniciar" style="background-color:#3498db;" data-id="${t.id}">▶ Iniciar</button>`;
+                    } else if (t.estatus_entrada === 'En Proceso') {
+                        // Botón para FINALIZAR (Verde)
+                        estatusHTML = '<span style="color:#3498db; font-weight:bold;">🔨 Trabajando</span>';
+                        botonHTML = `<button class="btn-primario btn-finalizar" data-json='${jsonData}'>✅ Finalizar</button>`;
+                    }
+
                     tr.innerHTML = `
                         <td><strong>${t.folio}</strong></td>
                         <td>${t.numero_economico}<br><small>${t.placas}</small></td>
-                        <td>${t.tipo_mantenimiento_solicitado}</td>
-                        <td>${new Date(t.fecha_ingreso).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn-primario btn-atender" data-json='${jsonData}'>
-                                Atender
-                            </button>
-                        </td>
+                        <td>${t.tipo_mantenimiento_solicitado}<br>${estatusHTML}</td>
+                        <td>${new Date(t.fecha_ingreso).toLocaleDateString()} ${new Date(t.fecha_ingreso).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td>${botonHTML}</td>
                     `;
                     tablaPendientes.appendChild(tr);
                 });
             } else {
-                tablaPendientes.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay vehículos esperando servicio.</td></tr>';
+                tablaPendientes.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay trabajos pendientes.</td></tr>';
             }
         } catch (error) { 
-            console.error("Error cargando pendientes:", error); 
+            console.error(error); 
             tablaPendientes.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error de conexión.</td></tr>';
         }
     }
     
-    // Cargar la tabla al iniciar la página
     cargarPendientes();
 
     // =========================================================
     // 3. SELECCIÓN DE TRABAJO (Click en "Atender" de la tabla)
     // =========================================================
-    if (tablaPendientes) {
-        tablaPendientes.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-atender')) {
+ if (tablaPendientes) {
+        tablaPendientes.addEventListener('click', async (e) => {
+            
+            // CASO A: INICIAR REPARACIÓN
+            if (e.target.classList.contains('btn-iniciar')) {
+                const idEntrada = e.target.dataset.id;
+                if(!confirm("¿Confirmas que vas a iniciar la reparación de esta unidad ahora mismo?")) return;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('id', idEntrada);
+                    
+                    const res = await fetch('php/iniciar_reparacion.php', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        // Recargamos la tabla para que el botón cambie a "Finalizar"
+                        cargarPendientes(); 
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                } catch(err) {
+                    alert("Error de conexión al iniciar reparación.");
+                }
+            }
+
+            // CASO B: FINALIZAR REPARACIÓN (Abrir formulario)
+            if (e.target.classList.contains('btn-finalizar')) {
                 const data = JSON.parse(e.target.dataset.json);
-                iniciarServicio(data);
+                mostrarFormularioFinalizar(data);
             }
         });
     }
@@ -142,6 +174,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================
     // 5. ENVÍO DEL FORMULARIO (FINALIZAR TRABAJO)
     // =========================================================
+      function mostrarFormularioFinalizar(data) {
+        formContainer.style.display = 'block';
+        formContainer.scrollIntoView({ behavior: 'smooth' });
+
+        inputIdEntrada.value = data.id;
+        inputIdCamion.value = data.id_camion;
+        inputCamionInfo.value = `${data.numero_economico} - ${data.placas}`;
+        if(inputFolioInfo) inputFolioInfo.value = data.folio;
+        
+        if(inputFiltroAceiteActual) inputFiltroAceiteActual.value = data.serie_filtro_aceite_actual || 'N/A';
+        if(inputFiltroCentActual) inputFiltroCentActual.value = data.serie_filtro_centrifugo_actual || 'N/A';
+    }
+  
+  
     if (formSalida) {
         formSalida.addEventListener('submit', async (e) => {
             e.preventDefault();

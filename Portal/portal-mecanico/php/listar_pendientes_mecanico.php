@@ -1,6 +1,6 @@
 <?php
 session_start();
-header('Content-Type: application/json; charset=utf-8'); // Forzar UTF-8
+header('Content-Type: application/json; charset=utf-8');
 require_once '../../../php/db_connect.php';
 
 if (!isset($_SESSION['loggedin'])) {
@@ -9,9 +9,9 @@ if (!isset($_SESSION['loggedin'])) {
 }
 
 try {
-    // IMPORTANTE: Verifica que los nombres de columna coincidan con tu BD
+    // AGREGAMOS 't.estatus_entrada' AL SELECT
     $sql = "SELECT 
-                t.id, t.folio, t.fecha_ingreso, 
+                t.id, t.folio, t.fecha_ingreso, t.estatus_entrada,
                 c.id as id_camion, 
                 c.numero_economico, c.placas, c.marca,
                 c.serie_filtro_aceite_actual, c.serie_filtro_centrifugo_actual,
@@ -23,6 +23,7 @@ try {
 
     $result = $conn->query($sql);
     
+    // ... (el resto del código sigue igual)
     if (!$result) {
         throw new Exception("Error SQL: " . $conn->error);
     }
