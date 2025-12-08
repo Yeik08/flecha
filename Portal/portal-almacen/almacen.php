@@ -17,6 +17,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
     <title>Portal almacen</title>
 	<link rel="shortcut icon" href="../img/bus_8502475.png">
     <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 
 <body>
@@ -87,7 +89,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <input type="hidden" id="id_entrada_hidden" name="id_entrada">
                     <input type="hidden" id="id_camion_hidden" name="id_camion">
 
-                    <fieldset>
+<fieldset>
                         <legend>1. Validación de Ticket</legend>
                         <div class="campo-form">
                             <label>Número de Ticket:</label>
@@ -106,23 +108,27 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                                 <input type="text" id="info-mecanico" readonly style="background:#eee;">
                             </div>
                         </div>
-                        <div class="campo-form">
-                            <label>Filtro Actual (Según Sistema):</label>
-                            <input type="text" id="info-filtro-actual" readonly style="color:#d32f2f; font-weight:bold;">
-                        </div>
+                        
+                        <input type="hidden" id="secret-filtro-aceite">
+                        <input type="hidden" id="secret-filtro-centrifugo">
                     </fieldset>
 
                     <fieldset>
-                        <legend>2. Retorno de Material (Validación)</legend>
-                        <div class="campo-form">
-                            <label>Escanear Serie Filtro Aceite (USADO):</label>
-                            <input type="text" name="filtro_viejo_serie" placeholder="Escanea el filtro sucio..." required style="border-color:#d32f2f;">
-                            <small>Debe coincidir con el 'Filtro Actual' mostrado arriba.</small>
-                        </div>
-                        <div class="campo-form">
-                            <label>Escanear Serie Filtro Centrífugo (USADO):</label>
-                            <input type="text" name="filtro_viejo_centrifugo_serie" placeholder="Escanea el filtro sucio..." required style="border-color:#d32f2f;">
-                            <small>Debe coincidir con el 'Filtro Actual' mostrado arriba.</small>
+                        <legend>2. Retorno de Material (Validación Ciega)</legend>
+                        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                            ℹ️ Escanea los filtros sucios que entrega el mecánico para validar que corresponden a esta unidad.
+                        </p>
+                        
+                        <div class="columnas-dos">
+                            <div class="campo-form">
+                                <label>Escanear Filtro Aceite (USADO):</label>
+                                <input type="text" name="filtro_viejo_serie" placeholder="Escanea la serie de la pieza física..." required autocomplete="off">
+                            </div>
+                            
+                            <div class="campo-form">
+                                <label>Escanear Filtro Centrífugo (USADO):</label>
+                                <input type="text" name="filtro_viejo_centrifugo_serie" placeholder="Escanea la serie de la pieza física..." autocomplete="off">
+                            </div>
                         </div>
                     </fieldset>
 
