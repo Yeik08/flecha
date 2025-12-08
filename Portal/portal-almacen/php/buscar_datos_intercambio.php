@@ -22,6 +22,7 @@ try {
                 c.id as id_camion, c.numero_economico, c.placas,
                 c.serie_filtro_aceite_actual, 
                 c.serie_filtro_centrifugo_actual,
+                c.proximo_servicio_tipo,  -- ✅ NUEVO CAMPO IMPORTANTE
                 CONCAT(e.nombre, ' ', e.apellido_p) as nombre_mecanico
             FROM tb_entradas_taller t
             JOIN tb_camiones c ON t.id_camion = c.id

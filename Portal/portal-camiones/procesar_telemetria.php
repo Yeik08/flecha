@@ -1,8 +1,4 @@
 <?php
-/*
-* Portal/portal-camiones/procesar_telemetria.php
-* VERSIÓN CON ALERTA DE DUPLICADOS
-*/
 
 session_start();
 header('Content-Type: application/json');
@@ -316,17 +312,27 @@ function recalcularMantenimiento($conn, $camion_id) {
     $km_actual = floatval($config['kilometraje_total']);
     $lubricante_sugerido = ($km_actual >= 1000000) ? "SAE 15W30" : "SAE 10W30 MULTIGRADO";
 
+
+    $diferencia_dias = $f_est_aceite->diff($f_est_cent);
+    $dias_diff = (int)$diferencia_dias->format('%r%a'); // Puede ser negativo o positivo
+    $proximo_tipo = 'Basico';
+
+    if ($dias_diff < 60) { 
+        $proximo_tipo = 'Completo';
+    }
+
     // 4. ACTUALIZAR TODO EN LA BD
-    $sql_update = "UPDATE tb_camiones SET 
+$sql_update = "UPDATE tb_camiones SET 
         promedio_horas_mensual = ?,
         meses_estimados_vida = ?,
         fecha_estimada_mantenimiento = ?,
         estado_salud = ?,
         fecha_estimada_centrifugo = ?,
         estado_centrifugo = ?,
-        lubricante_sugerido = ?
+        lubricante_sugerido = ?,
+        proximo_servicio_tipo = ?  -- <--- NUEVO CAMPO
         WHERE id = ?";
-    
+
     $f_aceite_str = $f_est_aceite->format('Y-m-d');
     $f_cent_str = $f_est_cent->format('Y-m-d');
 
@@ -339,6 +345,7 @@ function recalcularMantenimiento($conn, $camion_id) {
         $f_cent_str,
         $estado_centrifugo,
         $lubricante_sugerido,
+        $proximo_tipo,
         $camion_id
     );
     $stmt_up->execute();

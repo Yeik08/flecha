@@ -24,11 +24,47 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('info-unidad').value = `${d.numero_economico} - ${d.placas}`;
                     document.getElementById('info-mecanico').value = d.nombre_mecanico || "Sin Asignar";
                     
-                    // Guardamos en oculto para validación ciega
                     document.getElementById('secret-filtro-aceite').value = d.serie_filtro_aceite_actual || '';
                     document.getElementById('secret-filtro-centrifugo').value = d.serie_filtro_centrifugo_actual || '';
-                    
-                    alert("✅ Ticket validado. Procede a escanear las piezas.");
+                    document.getElementById('tipo-servicio-hidden').value = d.proximo_servicio_tipo || 'Basico';
+
+                    // --- LÓGICA DINÁMICA DE SERVICIO ---
+                    const tipoServicio = d.proximo_servicio_tipo; // 'Basico' o 'Completo'
+                    const divViejo = document.getElementById('container-centrifugo-viejo');
+                    const divNuevo = document.getElementById('container-centrifugo-nuevo');
+                    const inputCentNuevo = document.querySelector('input[name="filtro_nuevo_centrifugo"]');
+                    const inputCentViejo = document.querySelector('input[name="filtro_viejo_centrifugo_serie"]');
+                    const alertaDiv = document.getElementById('alerta-servicio');
+
+                    if (tipoServicio === 'Completo') {
+                        // MOSTRAR TODO
+                        divViejo.style.display = 'block';
+                        divNuevo.style.display = 'block';
+                        
+                        // Hacer obligatorios
+                        inputCentNuevo.setAttribute('required', 'true');
+                        inputCentViejo.setAttribute('required', 'true'); // Opcional, según política
+
+                        alertaDiv.textContent = "🔵 SERVICIO COMPLETO: Se requiere cambio de ambos filtros.";
+                        alertaDiv.style.backgroundColor = "#d1ecf1";
+                        alertaDiv.style.color = "#0c5460";
+                    } else {
+                        // OCULTAR CENTRÍFUGOS (Servicio Básico)
+                        divViejo.style.display = 'none';
+                        divNuevo.style.display = 'none';
+                        
+                        // Quitar obligatoriedad para que deje enviar el form
+                        inputCentNuevo.removeAttribute('required');
+                        inputCentNuevo.value = ""; // Limpiar por si acaso
+                        inputCentViejo.removeAttribute('required');
+                        inputCentViejo.value = "";
+
+                        alertaDiv.textContent = "🟢 SERVICIO BÁSICO: Solo cambio de Aceite y Filtro de Aceite.";
+                        alertaDiv.style.backgroundColor = "#d4edda";
+                        alertaDiv.style.color = "#155724";
+                    }
+
+                    alert("✅ Ticket validado. Tipo de Servicio: " + tipoServicio);
                 } else {
                     alert("❌ " + data.message);
                     formIntercambio.reset();
@@ -42,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
     // =========================================================
     // VALIDACIÓN ESTRICTA DE FOTOS (Igual que Mecánico)
     // =========================================================
@@ -108,22 +143,26 @@ document.addEventListener('DOMContentLoaded', function() {
         formIntercambio.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // VALIDACIÓN CIEGA (FRONTEND)
+            const tipoServicio = document.getElementById('tipo-servicio-hidden').value;
+
+            // 1. VALIDACIÓN CIEGA DE ACEITE (Siempre aplica)
             const esperadoAceite = document.getElementById('secret-filtro-aceite').value.trim().toUpperCase();
             const escaneadoAceite = formIntercambio.querySelector('input[name="filtro_viejo_serie"]').value.trim().toUpperCase();
             
             if (esperadoAceite && esperadoAceite !== escaneadoAceite) {
-                alert("⛔ ERROR DE SEGURIDAD (ACEITE)\n\nEl filtro escaneado NO PERTENECE a este camión.\n\nEscaneado: " + escaneadoAceite + "\n\nVerifica la pieza física.");
+                alert("⛔ ERROR DE SEGURIDAD (ACEITE)\n\nEl filtro escaneado NO CORRESPONDE.");
                 return;
             }
 
-            const esperadoCent = document.getElementById('secret-filtro-centrifugo').value.trim().toUpperCase();
-            const inputCent = formIntercambio.querySelector('input[name="filtro_viejo_centrifugo_serie"]');
-            const escaneadoCent = inputCent ? inputCent.value.trim().toUpperCase() : '';
+            // 2. VALIDACIÓN CIEGA DE CENTRÍFUGO (Solo si es Completo)
+            if (tipoServicio === 'Completo') {
+                const esperadoCent = document.getElementById('secret-filtro-centrifugo').value.trim().toUpperCase();
+                const escaneadoCent = formIntercambio.querySelector('input[name="filtro_viejo_centrifugo_serie"]').value.trim().toUpperCase();
 
-            if (esperadoCent && escaneadoCent && esperadoCent !== escaneadoCent) {
-                alert("⛔ ERROR DE SEGURIDAD (CENTRÍFUGO)\n\nEl filtro escaneado NO PERTENECE a este camión.\n\nEscaneado: " + escaneadoCent);
-                return;
+                if (esperadoCent && escaneadoCent !== esperadoCent) {
+                    alert("⛔ ERROR DE SEGURIDAD (CENTRÍFUGO)\n\nEl filtro escaneado NO CORRESPONDE.");
+                    return;
+                }
             }
 
             // Validar fotos vacías (si el validador las borró)

@@ -90,7 +90,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <input type="hidden" id="id_camion_hidden" name="id_camion">
 
 <fieldset>
-                        <legend>1. Validación de Ticket</legend>
+                    <legend>1. Validación de Ticket</legend>
                         <div class="campo-form">
                             <label>Número de Ticket:</label>
                             <div class="input-con-boton">
@@ -111,6 +111,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                         
                         <input type="hidden" id="secret-filtro-aceite">
                         <input type="hidden" id="secret-filtro-centrifugo">
+                        <input type="hidden" id="tipo-servicio-hidden">
                     </fieldset>
 
                     <fieldset>
@@ -123,24 +124,33 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                             <div class="campo-form">
                                 <label>Escanear Filtro Aceite (USADO):</label>
                                 <input type="text" name="filtro_viejo_serie" placeholder="Escanea la serie de la pieza física..." required autocomplete="off">
+
                             </div>
                             
                             <div class="campo-form">
                                 <label>Escanear Filtro Centrífugo (USADO):</label>
                                 <input type="text" name="filtro_viejo_centrifugo_serie" placeholder="Escanea la serie de la pieza física..." autocomplete="off">
+                           
+                           
+                           
                             </div>
+
                         </div>
                     </fieldset>
 
                     <fieldset>
                         <legend>3. Entrega de Material Nuevo</legend>
+                         <div id="alerta-servicio" style="margin-bottom:15px; padding:10px; border-radius:5px; font-weight:bold; text-align:center;"></div>
+                        
+                        
                         <div class="columnas-dos">
                             <div class="campo-form">
-                                <label>Filtro Aceite Nuevo:</label>
+                                <label>Filtro Aceite Nuevo: <span style="color:red">*</span></label>
                                 <input type="text" name="filtro_nuevo_serie" placeholder="Escanear..." required>
                             </div>
-                            <div class="campo-form">
-                                <label>Filtro Centrífugo Nuevo (Opcional):</label>
+
+                            <div class="campo-form" id="container-centrifugo-nuevo">
+                                <label>Filtro Centrífugo Nuevo: <span style="color:red">*</span></label>
                                 <input type="text" name="filtro_nuevo_centrifugo" placeholder="Escanear...">
                             </div>
                         </div>

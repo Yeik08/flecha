@@ -30,6 +30,25 @@ function extraerMetadatos($ruta_temporal) {
 
 $conn->begin_transaction();
 
+
+// 1.1 Consultar qué tipo de servicio es
+    $sql_tipo = "SELECT proximo_servicio_tipo FROM tb_camiones WHERE id = ?";
+    $stmt_tipo = $conn->prepare($sql_tipo);
+    $stmt_tipo->bind_param("i", $id_camion);
+    $stmt_tipo->execute();
+    $datos_camion_tipo = $stmt_tipo->get_result()->fetch_assoc();
+    $tipo_servicio = $datos_camion_tipo['proximo_servicio_tipo'] ?? 'Basico';
+
+ // 1.2 Validación de Obligatoriedad
+    if (empty($nuevo_aceite)) throw new Exception("El filtro de aceite es obligatorio.");
+    if (empty($cubeta1) || empty($cubeta2)) throw new Exception("Las cubetas son obligatorias.");
+
+    // Si es COMPLETO, el centrífugo es obligatorio
+    if ($tipo_servicio === 'Completo' && empty($nuevo_centrifugo)) {
+        throw new Exception("⛔ ERROR: Este camión requiere Servicio Completo. Falta escanear el Filtro Centrífugo.");
+    }
+
+
 try {
     // 1. Recibir Datos
     $id_entrada = $_POST['id_entrada'] ?? null;
