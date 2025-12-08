@@ -162,17 +162,19 @@ require_once '../../php/db_connect.php';
                             <label>¿Quién recoge el material?</label>
                             <select name="id_recibe" required>
                                 <option value="">-- Selecciona personal --</option>
-                               <?php
-                                $sql_pers = "SELECT id_empleado, nombre, apellido_p, nombre_rol 
-                                             FROM empleados e JOIN roles r ON e.role_id = r.id 
-                                             WHERE r.nombre_rol IN ('Jefe Mecánico', 'Técnico Mecánico', 'Jefe de Taller') 
-                                             AND estatus='activo'
+                                <?php
+                                // Buscamos cualquier rol que contenga "Jefe", "Técnico" o "Tecnico" (sin acento)
+                                $sql_pers = "SELECT id_empleado, nombre, apellido_p, r.nombre_rol 
+                                             FROM empleados e 
+                                             JOIN roles r ON e.role_id = r.id 
+                                             WHERE (r.nombre_rol LIKE '%Jefe%' OR r.nombre_rol LIKE '%Técnico%' OR r.nombre_rol LIKE '%Tecnico%')
+                                             AND e.estatus='activo'
                                              ORDER BY nombre ASC";
                                 
                                 $res_p = $conn->query($sql_pers);
                                 if ($res_p) {
                                     while($p = $res_p->fetch_assoc()){
-                                        echo "<option value='{$p['id_empleado']}'>{$p['nombre']} {$p['apellido_p']} ({$p['nombre_rol']})</option>";
+                                        echo "<option value='{$p['id_empleado']}'>{$p['nombre']} {$p['apellido_p']} - {$p['nombre_rol']}</option>";
                                     }
                                 }
                                 ?>
