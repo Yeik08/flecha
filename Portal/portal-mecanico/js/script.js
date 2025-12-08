@@ -33,6 +33,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputCubeta1 = document.querySelector('input[name="serie_cubeta_1"]');
     const inputCubeta2 = document.querySelector('input[name="serie_cubeta_2"]');
 
+
+
+
+    // Variable global para guardar los datos crudos
+    let todosLosPendientes = [];
+
+    // Referencia al filtro
+    const filtroSelect = document.getElementById('filtro-estatus');
+
+    // Listener para el filtro
+    if (filtroSelect) {
+        filtroSelect.addEventListener('change', () => {
+            renderizarTabla(todosLosPendientes);
+        });
+    }
+
     // =========================================================
     // 2. BANDEJA DE ENTRADA (Cargar Pendientes)
     // =========================================================
@@ -43,53 +59,75 @@ document.addEventListener('DOMContentLoaded', function() {
             const res = await fetch('php/listar_pendientes_mecanico.php');
             const data = await res.json();
             
-            tablaPendientes.innerHTML = '';
-            
-            if (data.success && data.data.length > 0) {
-                data.data.forEach(t => {
-                    const tr = document.createElement('tr');
-                    // Escapamos comillas simples para evitar errores en el JSON dentro del HTML
-                    const jsonData = JSON.stringify(t).replace(/'/g, "&apos;");
-                    
-                    // LÓGICA DE BOTONES INTELIGENTES
-                    let botonHTML = '';
-                    let estatusHTML = '';
-                    let responsableHTML = '';
-
-                    if (t.estatus_entrada === 'Recibido') {
-                        // Botón INICIAR
-                        estatusHTML = '<span style="color:#f39c12; font-weight:bold;">⏳ En Espera</span>';
-                        botonHTML = `<button class="btn-primario btn-iniciar" style="background-color:#3498db;" data-id="${t.id}">▶ Iniciar</button>`;
-                    } else if (t.estatus_entrada === 'En Proceso') {
-                        // Botón FINALIZAR
-                        estatusHTML = '<span style="color:#3498db; font-weight:bold;">🔨 Trabajando</span>';
-                        botonHTML = `<button class="btn-primario btn-finalizar" data-json='${jsonData}'>✅ Finalizar</button>`;
-                    }
-
-                    // Mostrar responsable si existe
-                    if (t.nombre_responsable) {
-                        responsableHTML = `<br><small style="color:#555;">👷 Asignado: <strong>${t.nombre_responsable}</strong></small>`;
-                    }
-
-                    tr.innerHTML = `
-                        <td><strong>${t.folio}</strong></td>
-                        <td>${t.numero_economico}<br><small>${t.placas}</small></td>
-                        <td>${t.tipo_mantenimiento_solicitado}<br>${estatusHTML}${responsableHTML}</td>
-                        <td>${new Date(t.fecha_ingreso).toLocaleDateString()} ${new Date(t.fecha_ingreso).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-                        <td>${botonHTML}</td>
-                    `;
-                    tablaPendientes.appendChild(tr);
-                });
+            if (data.success) {
+                todosLosPendientes = data.data; // Guardamos en memoria
+                renderizarTabla(todosLosPendientes); // Dibujamos
             } else {
-                tablaPendientes.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay trabajos pendientes.</td></tr>';
+                tablaPendientes.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay trabajos pendientes.</td></tr>';
             }
         } catch (error) { 
             console.error(error); 
-            tablaPendientes.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error de conexión.</td></tr>';
+            tablaPendientes.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error de conexión.</td></tr>';
         }
     }
-    
-    cargarPendientes();
+
+    // 2. Función para dibujar la tabla (con filtro aplicado)
+    function renderizarTabla(datos) {
+        const filtro = filtroSelect ? filtroSelect.value : 'todos';
+        tablaPendientes.innerHTML = '';
+
+        // Filtramos según el select
+        const datosFiltrados = datos.filter(t => {
+            if (filtro === 'todos') return true;
+            return t.estatus_entrada === filtro;
+        });
+
+        if (datosFiltrados.length === 0) {
+            tablaPendientes.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay vehículos con este estatus.</td></tr>';
+            return;
+        }
+
+        datosFiltrados.forEach(t => {
+            const tr = document.createElement('tr');
+            // Escapar comillas para el JSON
+            const jsonData = JSON.stringify(t).replace(/'/g, "&apos;");
+            
+            let botonHTML = '';
+            let estatusBadge = '';
+            let claseFila = '';
+
+            // Lógica visual según estatus
+            if (t.estatus_entrada === 'Recibido') {
+                estatusBadge = '<span class="badge badge-espera">⏳ Por Iniciar</span>';
+                botonHTML = `<button class="btn-accion btn-iniciar" data-id="${t.id}">▶ INICIAR</button>`;
+                claseFila = 'fila-espera';
+            } else if (t.estatus_entrada === 'En Proceso') {
+                estatusBadge = '<span class="badge badge-proceso">🔨 En Trabajo</span>';
+                botonHTML = `<button class="btn-accion btn-finalizar" data-json='${jsonData}'>✅ FINALIZAR</button>`;
+                claseFila = 'fila-proceso'; // Para resaltar ligeramente
+            }
+
+            // Formateo de fecha
+            const fechaObj = new Date(t.fecha_ingreso);
+            const fechaFmt = fechaObj.toLocaleDateString() + ' ' + fechaObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            tr.className = claseFila;
+            tr.innerHTML = `
+                <td><span style="font-weight:bold; color:#555;">${t.folio}</span></td>
+                <td>📍 ${t.origen_taller || 'N/A'}</td> <td>
+                    <div style="font-weight:bold; font-size:1.1em;">${t.numero_economico}</div>
+                    <div style="font-size:0.85em; color:#777;">${t.placas}</div>
+                </td>
+                <td>
+                    <div>${t.tipo_mantenimiento_solicitado}</div>
+                    <div style="margin-top:5px;">${estatusBadge}</div>
+                </td>
+                <td style="font-size:0.9em;">${fechaFmt}</td>
+                <td style="text-align:center;">${botonHTML}</td>
+            `;
+            tablaPendientes.appendChild(tr);
+        });
+    }
 
     // =========================================================
     // 3. SELECCIÓN DE TRABAJO (Click en Tabla)
@@ -127,6 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    cargarPendientes();
 
     // --- FUNCIÓN CENTRAL: PREPARAR EL FORMULARIO ---
     function iniciarServicio(data) {

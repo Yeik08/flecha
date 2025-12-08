@@ -11,16 +11,25 @@ if (!isset($_SESSION['loggedin'])) {
 try {
     // AGREGAMOS 't.estatus_entrada' AL SELECT
     $sql = "SELECT 
-                t.id, t.folio, t.fecha_ingreso, t.estatus_entrada,
+                t.id, 
+                t.folio, 
+                t.fecha_ingreso, 
+                t.estatus_entrada,
                 c.id as id_camion, 
-                c.numero_economico, c.placas, c.marca,
-                c.serie_filtro_aceite_actual, c.serie_filtro_centrifugo_actual,
-                t.tipo_mantenimiento_solicitado
+                c.numero_economico, 
+                c.placas, 
+                c.marca,
+                c.serie_filtro_aceite_actual, 
+                c.serie_filtro_centrifugo_actual,
+                t.tipo_mantenimiento_solicitado,
+                u.nombre as origen_taller  -- <--- NUEVO CAMPO
             FROM tb_entradas_taller t
             JOIN tb_camiones c ON t.id_camion = c.id
+            LEFT JOIN tb_cat_ubicaciones u ON t.id_taller = u.id -- JOIN para el nombre del taller
             WHERE t.estatus_entrada IN ('Recibido', 'En Proceso')
-            ORDER BY t.fecha_ingreso ASC";
-
+            ORDER BY 
+                CASE WHEN t.estatus_entrada = 'En Proceso' THEN 1 ELSE 2 END, -- Prioridad a los que ya se iniciaron
+                t.fecha_ingreso ASC";
     $result = $conn->query($sql);
     
     // ... (el resto del código sigue igual)

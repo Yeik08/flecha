@@ -268,7 +268,7 @@ textarea {
 }
 
 .btn-primario {
-    padding: 12px 30px;
+    padding: 12px 25px;
     border-radius: 5px;
     border: none;
     background-color: var(--verde); /* Verde para indicar finalización */
@@ -281,4 +281,122 @@ textarea {
 
 .btn-primario:hover {
     background-color: white;
+}
+
+/* --- MEJORAS TABLA MECÁNICO --- */
+
+.tabla-moderna {
+    width: 100%;
+    border-collapse: separate; /* Permite bordes redondeados */
+    border-spacing: 0 8px; /* Espacio entre filas */
+    margin-top: 10px;
+}
+
+.tabla-moderna thead th {
+    background-color: transparent;
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 10px 15px;
+    border-bottom: 2px solid #316960;
+}
+
+.tabla-moderna tbody tr {
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.tabla-moderna tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.tabla-moderna td {
+    padding: 15px;
+    vertical-align: middle;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.tabla-moderna td:first-child {
+    border-left: 1px solid #eee;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.tabla-moderna td:last-child {
+    border-right: 1px solid #eee;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Badges de estatus */
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge-espera {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-proceso {
+    background-color: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
+
+/* Botones de Acción Grandes */
+.btn-accion {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    transition: background 0.3s;
+}
+
+.btn-iniciar {
+    background-color: #316960; /* Verde Institucional */
+    color: white;
+}
+.btn-iniciar:hover { background-color: #26524b; }
+
+.btn-finalizar {
+    background-color: red; /* Naranja para acción final */
+    color: white;
+}
+.btn-finalizar:hover { background-color: #26524b; }
+
+/* Resalte sutil para filas en proceso */
+.fila-proceso {
+    border-left: 4px solid #e67e22 !important; /* Borde naranja a la izquierda */
+}
+
+
+/* Botón secundario (Cancelar) */
+.btn-secundario {
+    padding: 10px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+.btn-secundario:hover {
+    background-color: #e2e6ea;
 }

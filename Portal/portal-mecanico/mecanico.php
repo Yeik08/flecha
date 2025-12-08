@@ -59,22 +59,36 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
 
             <div class="tabla-contenido" style="margin-bottom: 30px;">
-                <h2 style="color: #316960;">Vehículos en Espera de Servicio</h2>
-                <table>
-                    <thead>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="color: #316960; margin: 0;">Vehículos en Espera de Servicio</h2>
+                    
+                    <div class="filtro-container">
+                        <label for="filtro-estatus" style="font-weight: bold; color: #555;">Mostrar:</label>
+                        <select id="filtro-estatus" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="todos">Todos</option>
+                            <option value="Recibido">Por Iniciar (En espera)</option>
+                            <option value="En Proceso">Por Finalizar (En trabajo)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="tabla-moderna"> <thead>
                         <tr>
                             <th>Ticket</th>
-                            <th>Unidad</th>
-                            <th>Servicio</th>
+                            <th>Origen</th> <th>Unidad</th>
+                            <th>Servicio Solicitado</th>
                             <th>Ingreso</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-pendientes-body">
-                        <tr><td colspan="5" style="text-align:center">Cargando trabajos pendientes...</td></tr>
+                        <tr><td colspan="6" style="text-align:center">Cargando trabajos pendientes...</td></tr>
                     </tbody>
                 </table>
             </div>
+
+
 
             <div class="form-container" id="contenedor-servicio" style="display:none;">
                 <h2 id="titulo-servicio">Finalizar Mantenimiento</h2>
