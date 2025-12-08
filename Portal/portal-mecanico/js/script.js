@@ -104,6 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
             let botonHTML = '';
             let estatusBadge = '';
             let claseFila = '';
+            
+            const tieneMaterial = t.filtro_aceite_entregado ? true : false;
+            const badgeMaterial = tieneMaterial 
+                ? '<span class="badge badge-material-ok" title="Material entregado por almacén">📦 Material Listo</span>' 
+                : '<span class="badge badge-material-no" title="Debes ir al almacén a solicitar piezas">⚪ Sin Material</span>';
+
 
             // Configuración visual según estatus
             if (t.estatus_entrada === 'Recibido') {
@@ -120,17 +126,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const fechaObj = new Date(t.fecha_ingreso);
             const fechaFmt = fechaObj.toLocaleDateString() + ' ' + fechaObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            tr.className = claseFila;
+tr.className = claseFila;
             tr.innerHTML = `
                 <td><span style="font-weight:bold; color:#555;">${t.folio}</span></td>
-                <td> ${t.origen_taller || 'N/A'}</td>
+                <td>${t.origen_taller || 'N/A'}</td>
                 <td>
                     <div style="font-weight:bold; font-size:1.1em;">${t.numero_economico}</div>
                     <div style="font-size:0.85em; color:#777;">${t.placas}</div>
                 </td>
                 <td>
-                    <div>${t.tipo_mantenimiento_solicitado}</div>
-                    <div style="margin-top:5px;">${estatusBadge}</div>
+                    <div style="font-weight:bold; font-size:0.9em;">${t.tipo_mantenimiento_solicitado}</div>
+                    <div style="margin-top:5px; display:flex; gap:5px; flex-wrap:wrap;">
+                        ${estatusBadge}
+                        ${badgeMaterial} </div>
                 </td>
                 <td style="font-size:0.9em;">${fechaFmt}</td>
                 <td style="text-align:center;">${botonHTML}</td>
@@ -189,17 +197,57 @@ document.addEventListener('DOMContentLoaded', function() {
         if(inputFolioInfo) inputFolioInfo.value = data.folio;
         if(inputTipoMto) inputTipoMto.value = data.tipo_mantenimiento_solicitado;
 
+        // Filtros ACTUALES del camión (Info)
         if(inputFiltroAceiteActual) inputFiltroAceiteActual.value = data.serie_filtro_aceite_actual || 'N/A';
         if(inputFiltroCentActual) inputFiltroCentActual.value = data.serie_filtro_centrifugo_actual || 'N/A';
+
+        // =========================================================
+        // ✅ AUTO-LLENADO Y BLOQUEO DE MATERIAL (DEL ALMACÉN)
+        // =========================================================
         
-        // Limpiar búsqueda manual
+        // Referencias a los inputs del formulario de cierre
+        const inNuevoAceite = document.querySelector('input[name="nuevo_filtro_aceite"]');
+        const inNuevoCent = document.querySelector('input[name="nuevo_filtro_centrifugo"]');
+        const inCubeta1 = document.querySelector('input[name="serie_cubeta_1"]');
+        const inCubeta2 = document.querySelector('input[name="serie_cubeta_2"]');
+
+        const aplicarCandado = (input, valor) => {
+            if (input) {
+                // 1. SIEMPRE BLOQUEADO (Nadie escribe a mano)
+                input.setAttribute('readonly', true);
+                input.style.pointerEvents = "none"; // Evita clicks
+                
+                // 2. Lógica visual según si hay dato o no
+                if (valor && valor !== "null" && valor !== "") {
+                    // CASO A: Almacén entregó material
+                    input.value = valor;
+                    input.style.backgroundColor = "#e9ecef"; // Gris sólido (Datos OK)
+                    input.style.border = "1px solid #ced4da";
+                    input.style.color = "#495057";
+                    input.style.fontWeight = "bold";
+                } else {
+                    // CASO B: No se entregó material (No aplica o falta)
+                    input.value = ""; 
+                    input.placeholder = "⛔ No asignado por almacén";
+                    input.style.backgroundColor = "#f2f2f2"; // Gris claro
+                    input.style.border = "1px dashed #ccc";  // Borde punteado (Inactivo)
+                    input.style.color = "#aaa";
+                }
+            }
+        };
+
+        aplicarCandado(inNuevoAceite, data.filtro_aceite_entregado);
+        aplicarCandado(inNuevoCent, data.filtro_centrifugo_entregado); // Ahora este se bloqueará aunque venga vacío
+        aplicarCandado(inCubeta1, data.cubeta_1_entregada);
+        aplicarCandado(inCubeta2, data.cubeta_2_entregada);
+
+        // =========================================================
+
         if(inputTicket) inputTicket.value = "";
         
-        // Limpiar inputs de archivo y mensajes previos
         document.querySelectorAll('.mensaje-validacion').forEach(msg => msg.innerHTML = '');
         document.querySelectorAll('input[type="file"]').forEach(inp => inp.value = '');
     }
-
 
     // =========================================================
     // 4. BÚSQUEDA MANUAL (Respaldo)

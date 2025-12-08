@@ -97,8 +97,8 @@ try {
         $item = $res->fetch_assoc();
 
         // Validación A: Disponibilidad
-        if ($item['estatus'] !== 'Disponible') {
-            throw new Exception("La cubeta '$serie' ya fue utilizada o dada de baja.");
+        if ($item['estatus'] !== 'Disponible' && $item['estatus'] !== 'Asignado') {
+            throw new Exception("La cubeta '$serie' ya fue utilizada o dada de baja (Estatus: ".$item['estatus'].").");
         }
 
         // Validación B: Consistencia de Mezcla
@@ -116,9 +116,7 @@ try {
         }
 
         // C. CONSUMIR Y VINCULAR AL CAMIÓN
-        $sql_use = "UPDATE tb_inventario_lubricantes 
-                    SET estatus = 'Usado', id_camion_uso = ? 
-                    WHERE id = ?";
+        $sql_use = "UPDATE tb_inventario_lubricantes SET estatus = 'Usado', id_camion_uso = ? WHERE id = ?";
         $stmt_use = $conn->prepare($sql_use);
         $stmt_use->bind_param("ii", $id_camion, $item['id']);
         $stmt_use->execute();
@@ -186,11 +184,12 @@ try {
             if ($res->num_rows === 0) throw new Exception("El filtro '$serie' no existe en el sistema.");
             $item = $res->fetch_assoc();
 
-            if ($item['estatus'] !== 'Disponible') throw new Exception("El filtro '$serie' no está disponible (Estatus: ".$item['estatus'].").");
+            if ($item['estatus'] !== 'Disponible' && $item['estatus'] !== 'Asignado') {
+                throw new Exception("El filtro '$serie' no está disponible (Estatus: ".$item['estatus'].").");
+            }
 
             if ($item['tipo_filtro'] !== $tipo_esperado) {
-                throw new Exception("🚫 ERROR: La serie '$serie' es de tipo " . strtoupper($item['tipo_filtro']) . 
-                                    ", pero intentas instalarlo como " . strtoupper($tipo_esperado) . ".");
+                throw new Exception("🚫 ERROR: La serie '$serie' es de tipo " . strtoupper($item['tipo_filtro']) . ".");
             }
 
             // Marcar como Instalado

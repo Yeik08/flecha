@@ -10,7 +10,7 @@ if (!isset($_SESSION['loggedin'])) {
 
 try {
     // AGREGAMOS 't.estatus_entrada' AL SELECT
-    $sql = "SELECT 
+$sql = "SELECT 
                 t.id, 
                 t.folio, 
                 t.fecha_ingreso, 
@@ -22,13 +22,18 @@ try {
                 c.serie_filtro_aceite_actual, 
                 c.serie_filtro_centrifugo_actual,
                 t.tipo_mantenimiento_solicitado,
-                u.nombre as origen_taller  -- <--- NUEVO CAMPO
+                u.nombre as origen_taller,
+                -- ✅ NUEVOS CAMPOS: Material entregado por Almacén
+                t.filtro_aceite_entregado,
+                t.filtro_centrifugo_entregado,
+                t.cubeta_1_entregada,
+                t.cubeta_2_entregada
             FROM tb_entradas_taller t
             JOIN tb_camiones c ON t.id_camion = c.id
-            LEFT JOIN tb_cat_ubicaciones u ON t.id_taller = u.id -- JOIN para el nombre del taller
+            LEFT JOIN tb_cat_ubicaciones u ON t.id_taller = u.id 
             WHERE t.estatus_entrada IN ('Recibido', 'En Proceso')
             ORDER BY 
-                CASE WHEN t.estatus_entrada = 'En Proceso' THEN 1 ELSE 2 END, -- Prioridad a los que ya se iniciaron
+                CASE WHEN t.estatus_entrada = 'En Proceso' THEN 1 ELSE 2 END, 
                 t.fecha_ingreso ASC";
     $result = $conn->query($sql);
     
