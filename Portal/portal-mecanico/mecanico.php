@@ -61,16 +61,34 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <div class="tabla-contenido" style="margin-bottom: 30px;">
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2 style="color: #316960; margin: 0;">Vehículos en Espera de Servicio</h2>
+                    <h2 style="color: #316960; margin: 0;">Camiones en Espera de Servicio</h2>
                     
-                    <div class="filtro-container">
-                        <label for="filtro-estatus" style="font-weight: bold; color: #555;">Mostrar:</label>
-                        <select id="filtro-estatus" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-                            <option value="todos">Todos</option>
-                            <option value="Recibido">Por Iniciar (En espera)</option>
-                            <option value="En Proceso">Por Finalizar (En trabajo)</option>
-                        </select>
-                    </div>
+<div class="filtro-container" style="display: flex; gap: 15px;">
+            
+            <div>
+                <label for="filtro-estatus" style="font-weight: bold; color: #555;">Estatus:</label>
+                <select id="filtro-estatus" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="todos">Todos</option>
+                    <option value="Recibido">Por Iniciar</option>
+                    <option value="En Proceso">En Trabajo</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="filtro-taller" style="font-weight: bold; color: #555;">Origen:</label>
+                <select id="filtro-taller" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="todos">Todos</option>
+                    <option value="Magdalena">Magdalena</option>
+                    <option value="Poniente">Poniente</option>
+                </select>
+            </div>
+
+        </div>
+
+
+
+
+
                 </div>
 
                 <table class="tabla-moderna"> <thead>
@@ -98,7 +116,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
                     <input type="hidden" id="id_camion_hidden" name="id_camion_real">
 
                     <fieldset>
-                        <legend>Datos del Vehículo</legend>
+                        <legend>Datos del Camion</legend>
                         <div class="columnas-dos">
                             <div class="campo-form">
                                 <label>Unidad:</label>
