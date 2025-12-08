@@ -44,10 +44,10 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
         
 				<div class="perfil">
-
+<!-- 
 					<a href="../index.html">
 						<img src="../img/cinta_principal2.png" class="img-perfil">
-					</a>
+					</a>-->
 
                     <?php echo htmlspecialchars($nombre_usuario); ?>
 
@@ -63,17 +63,33 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             <h1>Gestión de Inventario de Filtros y Lubricantes</h1>
         </div>
 
-        <div class="tarjetas">
+<div class="tarjetas">
             <div class="tarjeta">
-                <h3>Filtros Disponibles</h3> <p id="kpi-filtros">Cargando...</p> </div>
+                <h3>Stock Filtros</h3>
+                <div id="kpi-filtros-container" style="text-align: left; margin-top: 10px; font-size: 0.9em;">
+                    <p style="color:#aaa;">Cargando...</p>
+                </div>
+            </div>
+
             <div class="tarjeta">
-                <h3>Litros de Aceite</h3> <p id="kpi-litros">Cargando...</p> </div>
+                <h3>Cubetas Disponibles</h3> 
+                <p id="kpi-cubetas" style="font-size: 2.5em; font-weight: bold; color: #316960;">0</p> 
+            </div>
+
             <div class="tarjeta alerta">
-                <h3>Alertas Stock Bajo</h3> <p id="kpi-alertas">Cargando...</p> </div>
+                <h3>⚠️ Stock Bajo (< 3)</h3> 
+                <ul id="kpi-alertas-lista" style="text-align: left; padding-left: 20px; margin-top:10px; color: #721c24;">
+                    <li>Cargando...</li>
+                </ul> 
+            </div>
+
             <div class="tarjeta">
-                <h3>Filtros Instalados</h3>
-                <p id="kpi-instalados">Cargando...</p> </div>
-        </div><!--|-- Tabla de Inventario 
+                <h3>Total Instalados</h3>
+                <p id="kpi-instalados" style="font-size: 2.5em; font-weight: bold;">0</p> 
+            </div>
+        </div>
+        
+        <!--|-- Tabla de Inventario 
         <div class="tabla-contenido">
             <div class="tabla-titulo">
                 <h2>Filtros y Lubricantes Disponibles</h2>
@@ -86,18 +102,25 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>---->
 
 
-            <div class="tabla-titulo">
+<div class="tabla-titulo">
                 <h2>Filtros y Lubricantes Disponibles</h2>
                 
                 <div class="filtros-tabla" style="display:flex; gap:10px; align-items:center;">
-                    <label for="filtro-ubicacion-ui" style="font-weight:bold; color:#555;">Ver Almacén:</label>
+                    <label for="filtro-ubicacion-ui" style="font-weight:bold; color:#555;">Almacén:</label>
                     <select id="filtro-ubicacion-ui" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
                         <option value="todos">🏭 Todos</option>
-                        <option value="Magdalena">📍 Magdalena</option>
-                        <option value="Poniente">📍 Poniente</option>
+                        <option value="Magdalena">Magdalena</option>
+                        <option value="Poniente">Poniente</option>
+                    </select>
+
+                    <label for="filtro-tipo-ui" style="font-weight:bold; color:#555; margin-left:10px;">Tipo:</label>
+                    <select id="filtro-tipo-ui" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="todos">📦 Todos</option>
+                        <option value="Filtro">⚙️Filtros</option>
+                        <option value="Lubricante">🛢️Aceites</option>
                     </select>
                     
-                    <button class="btn-primario" id="btn-agregar-inventario">+ Agregar Inventario</button>
+                    <button class="btn-primario" id="btn-agregar-inventario" style="margin-left:15px;">+ Agregar Inventario</button>
                 </div>
             </div>
 

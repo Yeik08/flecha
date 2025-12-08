@@ -1,3 +1,8 @@
+/*
+ * Portal/portal-inventario/js/script.js
+ * VERSIÓN FINAL: Carga Masiva + Edición + Filtros Dinámicos + KPIs Detallados
+ */
+
 document.addEventListener("DOMContentLoaded", function(){
 
     // --- REFERENCIAS DOM ---
@@ -16,35 +21,99 @@ document.addEventListener("DOMContentLoaded", function(){
     const formEditar = document.getElementById('form-editar-item');
     const tablaBody = document.getElementById('tabla-inventario-body');
 
-    // --- 1. CARGAR INVENTARIO AL INICIO ---
+    // Referencias de Filtros (Nuevos)
+    const filtroUbicacion = document.getElementById('filtro-ubicacion-ui');
+    const filtroTipo = document.getElementById('filtro-tipo-ui');
+
+    // =========================================================
+    // 1. CARGAR INVENTARIO (CON FILTROS AL SERVIDOR)
+    // =========================================================
     async function cargarInventario() {
+        // Leer valores actuales de los filtros
+        const ubi = filtroUbicacion ? filtroUbicacion.value : 'todos';
+        const tipo = filtroTipo ? filtroTipo.value : 'todos';
+
+        // Construir URL con parámetros para que el PHP recalcule KPIs
+        const url = `php/get_inventario.php?ubicacion=${encodeURIComponent(ubi)}&tipo=${encodeURIComponent(tipo)}`;
+
         try {
-            const res = await fetch('php/get_inventario.php');
+            // UI de carga
+            if(tablaBody) tablaBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#666;">🔄 Actualizando datos y KPIs...</td></tr>';
+            
+            const res = await fetch(url);
             const data = await res.json();
 
             if (!data.success) {
                 console.error("Error backend:", data.message);
+                if(tablaBody) tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${data.message}</td></tr>`;
                 return;
             }
 
-            // A. Llenar KPIs
-            if(document.getElementById('kpi-filtros')) document.getElementById('kpi-filtros').textContent = data.kpis.filtros_disponibles;
-            if(document.getElementById('kpi-litros')) document.getElementById('kpi-litros').textContent = data.kpis.litros_totales; // Ahora esto mostrará Cubetas
-            if(document.getElementById('kpi-alertas')) document.getElementById('kpi-alertas').textContent = data.kpis.stock_bajo;
-            if(document.getElementById('kpi-instalados')) document.getElementById('kpi-instalados').textContent = data.kpis.filtros_instalados;
+            // --- A. ACTUALIZAR KPIS DETALLADOS ---
 
-            // B. Llenar Tabla
+            // 1. Desglose de Filtros (Lista)
+            const containerFiltros = document.getElementById('kpi-filtros-container');
+            if (containerFiltros) {
+                if (data.kpis.filtros_detalle && data.kpis.filtros_detalle.length > 0) {
+                    let html = '<ul style="list-style: none; padding: 0;">';
+                    data.kpis.filtros_detalle.forEach(f => {
+                        html += `<li style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:3px 0;">
+                                    <span>${f.tipo}:</span> 
+                                    <strong>${f.total}</strong>
+                                 </li>`;
+                    });
+                    html += '</ul>';
+                    containerFiltros.innerHTML = html;
+                } else {
+                    containerFiltros.innerHTML = '<p style="color:#999; text-align:center; margin-top:10px;">Sin stock</p>';
+                }
+            } else if (document.getElementById('kpi-filtros')) {
+                // Fallback por si no has actualizado el HTML todavía
+                document.getElementById('kpi-filtros').textContent = data.kpis.filtros_disponibles || 0;
+            }
+
+            // 2. Cubetas (Total Simple)
+            if(document.getElementById('kpi-cubetas')) 
+                document.getElementById('kpi-cubetas').textContent = data.kpis.cubetas_total;
+            // Fallback antiguo nombre
+            if(document.getElementById('kpi-litros')) 
+                document.getElementById('kpi-litros').textContent = data.kpis.cubetas_total;
+
+            // 3. Alertas de Stock Bajo (Lista Roja)
+            const listaAlertas = document.getElementById('kpi-alertas-lista');
+            if (listaAlertas) {
+                if (data.kpis.alertas_lista && data.kpis.alertas_lista.length > 0) {
+                    listaAlertas.innerHTML = ''; // Limpiar
+                    data.kpis.alertas_lista.forEach(aviso => {
+                        const li = document.createElement('li');
+                        li.textContent = aviso;
+                        listaAlertas.appendChild(li);
+                    });
+                } else {
+                    listaAlertas.innerHTML = '<li style="list-style:none; color:green;">✅ Stock Saludable</li>';
+                }
+            } else if (document.getElementById('kpi-alertas')) {
+                // Fallback antiguo
+                document.getElementById('kpi-alertas').textContent = data.kpis.stock_bajo;
+            }
+
+            // 4. Instalados
+            if(document.getElementById('kpi-instalados')) 
+                document.getElementById('kpi-instalados').textContent = data.kpis.filtros_instalados;
+
+
+            // --- B. LLENAR TABLA ---
             if (tablaBody) {
                 tablaBody.innerHTML = '';
                 if (data.tabla.length === 0) {
-                    tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center">Inventario vacío. Sube un archivo.</td></tr>`;
+                    tablaBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">No hay resultados con estos filtros.</td></tr>`;
                     return;
                 }
 
                 data.tabla.forEach(item => {
                     const tr = document.createElement('tr');
                     let icono = item.tipo_bien === 'Filtro' ? '⚙️' : '🛢️';
-                    // Alerta visual simple si hay poco stock (ajustable)
+                    // Alerta visual si es lubricante y queda poco (ej. menos de 5 cubetas)
                     let claseExtra = (item.tipo_bien === 'Lubricante' && parseFloat(item.cantidad_formato) < 5) ? 'stock-bajo' : '';
 
                     tr.className = claseExtra;
@@ -64,11 +133,26 @@ document.addEventListener("DOMContentLoaded", function(){
             }
         } catch (error) {
             console.error("Error:", error);
+            if(tablaBody) tablaBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center">Error de conexión.</td></tr>`;
         }
     }
+
+    // Cargar al inicio
     cargarInventario(); 
 
-    // --- 2. GESTIÓN DE ACCIONES (CLICK EN TABLA) ---
+    // =========================================================
+    // 2. LISTENERS DE FILTROS (RECARGA INTELIGENTE)
+    // =========================================================
+    if (filtroUbicacion) {
+        filtroUbicacion.addEventListener('change', cargarInventario);
+    }
+    if (filtroTipo) {
+        filtroTipo.addEventListener('change', cargarInventario);
+    }
+
+    // =========================================================
+    // 3. GESTIÓN DE ACCIONES (EDICIÓN / ELIMINACIÓN)
+    // =========================================================
     if (tablaBody) {
         tablaBody.addEventListener('click', async function(e) {
             const btnEliminar = e.target.closest('.btn-eliminar');
@@ -88,8 +172,12 @@ document.addEventListener("DOMContentLoaded", function(){
                 try {
                     const res = await fetch('php/gestion_inventario.php', { method: 'POST', body: formData });
                     const data = await res.json();
-                    if (data.success) { alert("✅ " + data.message); cargarInventario(); }
-                    else { alert("❌ " + data.message); }
+                    if (data.success) { 
+                        alert("✅ " + data.message); 
+                        cargarInventario(); // Recargar para actualizar tabla y KPIs
+                    } else { 
+                        alert("❌ " + data.message); 
+                    }
                 } catch (error) { alert("Error de conexión"); }
             }
 
@@ -105,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 document.getElementById('edit-descripcion').value = fila.cells[1].textContent;
                 document.getElementById('edit-identificador').value = fila.cells[2].textContent;
 
-                // Ocultamos el campo de litros porque ahora son unitarios (cubetas)
+                // Ocultamos el campo de litros (ya no se usa)
                 const divLitros = document.getElementById('div-edit-litros');
                 if(divLitros) divLitros.style.display = 'none';
 
@@ -116,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function(){
         });
     }
 
-    // --- 3. ENVÍO DE EDICIÓN ---
+    // --- ENVÍO DE EDICIÓN ---
     if (formEditar) {
         formEditar.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -130,13 +218,15 @@ document.addEventListener("DOMContentLoaded", function(){
                     alert("✅ " + data.message);
                     modalEditar.style.display = 'none';
                     modalFondo.style.display = 'none';
-                    cargarInventario();
+                    cargarInventario(); // Recargar todo
                 } else { alert("❌ " + data.message); }
             } catch (error) { alert("Error al editar."); }
         });
     }
 
-    // --- 4. LÓGICA DE MODALES (Carga Masiva) ---
+    // =========================================================
+    // 4. LÓGICA DE MODALES (CARGA MASIVA)
+    // =========================================================
     if(botonAgregarInventario) {
         botonAgregarInventario.addEventListener("click", () => {
             if(modalFondo) modalFondo.style.display = "block";
@@ -174,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 csvContent += "SCANIA,2002705,SCA-SERIE-001,Poniente\n";
                 csvContent += "SCANIA,1928869PE,SCA-SERIE-002,Magdalena\n";
             } else {
-                // ✅ CAMBIO: Plantilla para Cubetas (Individuales)
+                // Plantilla para Cubetas (Individuales)
                 fileName = "plantilla_alta_cubetas.csv";
                 const headers = ["NOMBRE_PRODUCTO", "NUMERO_SERIE_CUBETA", "NOMBRE_ALMACEN"];
                 csvContent = headers.join(",") + "\n";
@@ -217,34 +307,10 @@ document.addEventListener("DOMContentLoaded", function(){
                     alert("✅ " + data.message);
                     modalFondo.style.display = "none";
                     formCargaMasiva.reset();
-                    cargarInventario();
+                    cargarInventario(); // Recarga automática al terminar
                 } else { alert("⚠️ " + data.message); }
             } catch (error) { alert("Error de conexión"); }
             finally { btn.disabled = false; btn.textContent = "Guardar y Continuar"; }
-        });
-    }
-
-    // --- 7. FILTRO DE ALMACÉN EN TIEMPO REAL ---
-    const selectFiltroUbicacion = document.getElementById('filtro-ubicacion-ui');
-    
-    if (selectFiltroUbicacion) {
-        selectFiltroUbicacion.addEventListener('change', function() {
-            const filtro = this.value.toLowerCase();
-            const filas = document.querySelectorAll('#tabla-inventario-body tr');
-
-            filas.forEach(fila => {
-                const ubicacionTexto = fila.cells[4].textContent.toLowerCase();
-                
-                if (filtro === 'todos') {
-                    fila.style.display = '';
-                } else {
-                    if (ubicacionTexto.includes(filtro)) {
-                        fila.style.display = '';
-                    } else {
-                        fila.style.display = 'none';
-                    }
-                }
-            });
         });
     }
 });

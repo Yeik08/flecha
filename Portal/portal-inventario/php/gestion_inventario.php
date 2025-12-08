@@ -1,99 +1,84 @@
 <?php
 /*
 * Portal/portal-inventario/php/gestion_inventario.php
-* Maneja acciones: Eliminar (Baja) y Editar (Ajustes).
+* VERSIÓN FINAL: Permisos para Almacén + Lógica de Cubetas
 */
 
 session_start();
 header('Content-Type: application/json');
+require_once '../../../php/db_connect.php';
 
-require_once '../../../php/db_connect.php'; 
+// 1. SEGURIDAD: Ahora permitimos Rol 6 (Almacén)
+$roles_permitidos = [1, 2, 6];
 
-// 1. Seguridad: Solo Mesa de Mantenimiento (2) y Admin (1)
-if (!isset($_SESSION['loggedin']) || ($_SESSION['role_id'] != 2 && $_SESSION['role_id'] != 1)) {
-    echo json_encode(['success' => false, 'message' => 'Acceso denegado.']);
+if (!isset($_SESSION['loggedin']) || !in_array($_SESSION['role_id'], $roles_permitidos)) {
+    echo json_encode(['success' => false, 'message' => '❌ Acceso denegado. No tienes permisos para modificar el inventario.']);
     exit;
 }
 
-// 2. Recibir datos comunes
 $accion = $_POST['accion'] ?? '';
-$id = $_POST['id'] ?? null;
-$tipo = $_POST['tipo_bien'] ?? ''; // 'Filtro' o 'Lubricante'
+$id = $_POST['id'] ?? '';
+$tipo_bien = $_POST['tipo_bien'] ?? ''; // 'Filtro' o 'Lubricante'
 
-if (!$id || !$accion) {
-    echo json_encode(['success' => false, 'message' => 'Datos incompletos.']);
+if (empty($id) || empty($tipo_bien)) {
+    echo json_encode(['success' => false, 'message' => 'Faltan datos identificadores.']);
+    exit;
+}
+
+// Determinar tabla según el tipo
+if ($tipo_bien === 'Filtro') {
+    $tabla = 'tb_inventario_filtros';
+} elseif ($tipo_bien === 'Lubricante') {
+    $tabla = 'tb_inventario_lubricantes';
+} else {
+    echo json_encode(['success' => false, 'message' => 'Tipo de bien desconocido.']);
     exit;
 }
 
 try {
-    $conn->begin_transaction();
-
-    // --- ACCIÓN: ELIMINAR (DAR DE BAJA) ---
+    // =================================================================
+    // CASO A: ELIMINAR (DAR DE BAJA)
+    // =================================================================
     if ($accion === 'eliminar') {
-        if ($tipo === 'Filtro') {
-            // Soft Delete para filtros (Historial)
-            $sql = "UPDATE tb_inventario_filtros SET estatus = 'Baja' WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-        } elseif ($tipo === 'Lubricante') {
-            // Hard Delete para lubricantes (Error de carga o vaciado)
-            $sql = "DELETE FROM tb_inventario_lubricantes WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
+        // No borramos el registro (DELETE), solo cambiamos estatus a 'Baja' para mantener historial
+        $sql = "UPDATE $tabla SET estatus = 'Baja' WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Ítem dado de baja correctamente.']);
+        } else {
+            throw new Exception("Error al actualizar BD.");
         }
-        $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Item eliminado/baja correctamente.']);
-    } 
-    
-    // --- ACCIÓN: EDITAR (MOVER O AJUSTAR) ---
+    }
+
+    // =================================================================
+    // CASO B: EDITAR (CAMBIAR UBICACIÓN)
+    // =================================================================
     elseif ($accion === 'editar') {
+        $nueva_ubicacion = $_POST['id_nueva_ubicacion'] ?? '';
         
-        $nueva_ubicacion = $_POST['id_nueva_ubicacion'] ?? null;
-        
-        if (!$nueva_ubicacion) {
-            throw new Exception("Debes seleccionar una ubicación válida.");
+        if (empty($nueva_ubicacion)) {
+            throw new Exception("Debes seleccionar una ubicación.");
         }
 
-        if ($tipo === 'Filtro') {
-            // Filtros: Solo movemos de ubicación
-            $sql = "UPDATE tb_inventario_filtros SET id_ubicacion = ? WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $nueva_ubicacion, $id);
-            
-            if ($stmt->execute()) {
-                $conn->commit();
-                echo json_encode(['success' => true, 'message' => 'Filtro reubicado correctamente.']);
-            } else {
-                throw new Exception("Error al mover filtro: " . $stmt->error);
-            }
+        // Solo actualizamos la ubicación. 
+        // Nota: Ya no actualizamos litros porque ahora son cubetas unitarias.
+        $sql = "UPDATE $tabla SET id_ubicacion = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $nueva_ubicacion, $id);
 
-        } elseif ($tipo === 'Lubricante') {
-            // Lubricantes: Ajustamos Ubicación y Litros
-            $nuevos_litros = $_POST['nuevos_litros'] ?? null;
-            
-            if ($nuevos_litros === null || $nuevos_litros < 0) {
-                throw new Exception("La cantidad de litros no es válida.");
-            }
-
-            $sql = "UPDATE tb_inventario_lubricantes SET id_ubicacion = ?, litros_disponibles = ? WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("idi", $nueva_ubicacion, $nuevos_litros, $id);
-
-            if ($stmt->execute()) {
-                $conn->commit();
-                echo json_encode(['success' => true, 'message' => 'Inventario de lubricante ajustado.']);
-            } else {
-                throw new Exception("Error al ajustar lubricante: " . $stmt->error);
-            }
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Ubicación actualizada correctamente.']);
+        } else {
+            throw new Exception("Error al actualizar ubicación.");
         }
-    } else {
-        throw new Exception("Acción desconocida.");
+    } 
+    else {
+        throw new Exception("Acción no válida.");
     }
 
 } catch (Exception $e) {
-    $conn->rollback();
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Error del servidor: ' . $e->getMessage()]);
 }
 ?>
