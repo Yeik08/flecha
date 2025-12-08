@@ -1,6 +1,6 @@
 /*
  * Portal/portal-mecanico/js/script.js
- * VERSIÓN FINAL: Validaciones de Filtros, Mezcla de Aceites y Metadatos EXIF.
+ * VERSIÓN BLINDADA (SALIDAS): Validación estricta de fotos y procesos de cierre.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -145,6 +145,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if(inputFiltroCentActual) inputFiltroCentActual.value = data.serie_filtro_centrifugo_actual || 'N/A';
         
         if(inputTicket) inputTicket.value = "";
+        
+        // Limpiar inputs de archivo y mensajes previos al abrir
+        document.querySelectorAll('.mensaje-validacion').forEach(msg => msg.innerHTML = '');
+        document.querySelectorAll('input[type="file"]').forEach(inp => inp.value = '');
     }
 
     // =========================================================
@@ -184,41 +188,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================================================
     
     // A. Validar que no mezcle filtros (Lógica simple por nombre)
-    function validarTipoFiltro(input, tipoProhibido) {
-        const valor = input.value.toUpperCase();
-        if (valor.includes(tipoProhibido)) {
-            alert(`⚠️ CUIDADO: Parece que estás ingresando un filtro de ${tipoProhibido} en el campo incorrecto.`);
-            input.style.borderColor = "red";
-            return false;
-        }
-        input.style.borderColor = "#ccc";
-        return true;
-    }
-
     if(inputNuevoFiltroAceite) {
         inputNuevoFiltroAceite.addEventListener('change', () => {
-            // Si la serie tiene "AIR" o "CENT" y es campo de aceite... alerta
             if(inputNuevoFiltroAceite.value.toUpperCase().includes('CENT')) {
-                alert("Este parece ser un filtro Centrífugo. Verifica el campo.");
+                alert("⚠️ Este parece ser un filtro Centrífugo. Verifica el campo.");
             }
         });
     }
 
     // B. Validar Mezcla de Aceites (Cubetas deben parecerse)
     function validarMezclaAceites() {
+        if (!inputCubeta1 || !inputCubeta2) return;
         const c1 = inputCubeta1.value.trim().toUpperCase();
         const c2 = inputCubeta2.value.trim().toUpperCase();
         
         if (c1 && c2) {
-            // Ejemplo muy básico: Si las series tienen prefijos de tipo de aceite
-            // Suponiendo series tipo "15W40-001" y "10W30-002"
             const prefijo1 = c1.split('-')[0]; // Toma lo que está antes del primer guion
             const prefijo2 = c2.split('-')[0];
 
             if (prefijo1 !== prefijo2) {
-                // Solo advertencia visual en frontend, el bloqueo real lo hace el backend
                 inputCubeta2.style.borderColor = "orange";
-                console.warn("Posible mezcla de aceites detectada por prefijo.");
+                // Solo advertencia, el bloqueo real lo hace el backend
             } else {
                 inputCubeta2.style.borderColor = "#ccc";
             }
@@ -230,9 +220,71 @@ document.addEventListener('DOMContentLoaded', function() {
         inputCubeta2.addEventListener('change', validarMezclaAceites);
     }
 
+    // =========================================================
+    // 6. VALIDACIÓN ESTRICTA DE FOTOS (CERO TOLERANCIA)
+    // =========================================================
+
+    function validarInputFoto(inputElement) {
+        inputElement.addEventListener('change', async function(e) {
+            const archivo = e.target.files[0];
+            if (!archivo) return;
+
+            const parentDiv = inputElement.closest('.campo-form-evidencia') || inputElement.parentElement;
+            
+            // Crear o limpiar caja de mensaje
+            let msgBox = parentDiv.querySelector('.mensaje-validacion');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.className = 'mensaje-validacion';
+                msgBox.style.fontSize = '0.85em';
+                msgBox.style.marginTop = '5px';
+                parentDiv.appendChild(msgBox);
+            }
+            msgBox.innerHTML = '🔄 Analizando metadatos...';
+            msgBox.style.color = '#666';
+
+            // 1. Validar Tipo
+            const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!tiposPermitidos.includes(archivo.type)) {
+                inputElement.value = ""; // Borrar
+                msgBox.innerHTML = '⛔ <strong>Error:</strong> Solo JPG o PNG.';
+                msgBox.style.color = 'red';
+                return;
+            }
+
+            // 2. Validar Metadatos EXIF
+            if (typeof EXIF !== 'undefined') {
+                EXIF.getData(archivo, function() {
+                    const meta = EXIF.getAllTags(this);
+                    
+                    // VALIDACIÓN CRÍTICA: ¿Tiene fecha original?
+                    if (!meta.DateTimeOriginal) {
+                        // RECHAZO TOTAL
+                        inputElement.value = ""; // Borramos el archivo
+                        msgBox.innerHTML = '⛔ <strong>FOTO RECHAZADA:</strong> Sin fecha original (WhatsApp/Captura).';
+                        msgBox.style.color = 'red';
+                        
+                        alert("🚫 FOTO NO VÁLIDA\n\nEl sistema detectó que esta imagen no tiene fecha original.\n\nPosibles causas:\n1. Fue descargada de WhatsApp.\n2. Es una captura de pantalla.\n\nSolución: Sube la foto original tomada directamente con la cámara.");
+                    } else {
+                        // ACEPTADA
+                        msgBox.innerHTML = '✅ Foto válida (Original).';
+                        msgBox.style.color = 'green';
+                    }
+                });
+            } else {
+                msgBox.innerHTML = '⚠️ Advertencia: No se pudo verificar la autenticidad (Librería faltante).';
+                msgBox.style.color = 'orange';
+            }
+        });
+    }
+
+    // Aplicar validador a TODOS los inputs de archivo en el formulario
+    const inputsFotos = document.querySelectorAll('#form-salida input[type="file"]');
+    inputsFotos.forEach(input => validarInputFoto(input));
+
 
     // =========================================================
-    // 6. ENVÍO DEL FORMULARIO (FINALIZAR TRABAJO)
+    // 7. ENVÍO DEL FORMULARIO (FINALIZAR TRABAJO)
     // =========================================================
     if (formSalida) {
         formSalida.addEventListener('submit', async (e) => {
@@ -244,11 +296,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // 2. Preparar UI
+            // 2. Verificar que todos los inputs de archivo tengan valor
+            // (Si el validador borró alguno por ser inválido, el required nativo lo detendrá, 
+            // pero hacemos doble check aquí)
+            let archivosValidos = true;
+            inputsFotos.forEach(inp => {
+                if(!inp.value) archivosValidos = false;
+            });
+            
+            if(!archivosValidos) {
+                alert("⚠️ Faltan evidencias válidas. Asegúrate de que todas las fotos sean originales.");
+                return;
+            }
+
+            // 3. Preparar UI
             const btnSubmit = formSalida.querySelector('button[type="submit"]');
             const textoOriginal = btnSubmit.textContent;
             btnSubmit.disabled = true;
-            btnSubmit.textContent = "Validando y Guardando...";
+            btnSubmit.textContent = "Guardando...";
 
             const formData = new FormData(formSalida);
 
@@ -258,7 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: formData
                 });
                 
-                // Manejo de respuesta (incluyendo el error 409 o 500)
                 const textoRespuesta = await res.text();
                 let data;
                 try {
@@ -272,7 +336,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert("🎉 ¡MANTENIMIENTO FINALIZADO!\n\n" + data.message);
                     location.reload(); 
                 } else {
-                    // Muestra el mensaje de error específico del backend (Mezcla, Duplicado, etc.)
                     alert("⛔ NO SE PUDO GUARDAR:\n" + data.message);
                 }
 
@@ -287,12 +350,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =========================================================
-    // 7. UTILIDADES
+    // 8. UTILIDADES
     // =========================================================
     window.cancelarServicio = function() {
         formContainer.style.display = 'none';
         formSalida.reset();
         inputIdEntrada.value = "";
+        
+        // Limpiar mensajes de validación
+        document.querySelectorAll('.mensaje-validacion').forEach(el => el.innerHTML = '');
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
