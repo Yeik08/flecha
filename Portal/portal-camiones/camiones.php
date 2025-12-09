@@ -38,6 +38,8 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 						<li><a href="#">Camiones</a></li>
 					</ul>
 
+                    <ul class="menu"><li><a href="/flecha/Portal/portal-inventario/alta-inventario.php">Inventario</a></li></ul>
+
 
 <!--					<ul class="menu">
 						<li class="dropdown">
@@ -48,7 +50,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 								</ul>
 						</li>
 					</ul>-->
-			
+			<!--	
 					<ul class="menu">
 						<li><a href="../portal-inventario/alta-inventario.php">Inventario</a></li>
 					</ul>
@@ -56,7 +58,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
 					<ul class="menu">
 						<li><a href="../portal-personal/personal.html">alta de catalogos</a></li>
-					</ul>
+					</ul>-->
 
 <!--					<ul class="menu">
 						<li class="dropdown">

@@ -27,20 +27,31 @@ $nombre_usuario = $_SESSION['nombre_completo'];
     <div class="contenedor-principal">
         <div class="menu-superior">
             <!-- Opciones del menú -->
-            <div class="opciones">
+<div class="opciones">
                 <div class="fr">FLECHA ROJA</div>
-<!-- 
-                <ul class="menu">
-                    <li><a href="../portal-camiones/camiones.php">Camiones</a></li>
-                </ul>
--->
-                <ul class="menu">
-                    <li><a href="../portal-almacen/almacen.php">Almacén</a></li>
-                </ul>
+
+                <?php if ($_SESSION['role_id'] == 6): // --- MENÚ PARA ALMACENISTA --- ?>
+                    
+                    <ul class="menu">
+                        <li><a href="../portal-almacen/almacen.php">Almacén</a></li>
+                    </ul>
+                    
+                    <ul class="menu">
+                        <li><a href="#" style="font-weight:bold; border-bottom: 2px solid white;">Alta de Inventario</a></li>
+                    </ul>
+
+                <?php else: // --- MENÚ PARA MESA DE MANTENIMIENTO (Rol 2) Y ADMIN (Rol 1) --- ?>
+
+                    <ul class="menu">
+                        <li><a href="../portal-camiones/camiones.php">Camiones</a></li>
+                    </ul>
+
+                    <ul class="menu">
+                        <li><a href="#" style="font-weight:bold; border-bottom: 2px solid white;">Inventario</a></li>
+                    </ul>
                 
-                <ul class="menu">
-                    <li><a href="#">Alta de inventario</a></li>
-                </ul>
+
+                <?php endif; ?>
             </div>
         
 				<div class="perfil">
