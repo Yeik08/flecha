@@ -6,9 +6,9 @@
 }
 
 body {
-    font-family: sans-serif; /* Fuente */
-    background-color: #316961; /* Color de Fondo */
-    color: #fff; /* Texto blanco*/
+    font-family: sans-serif; 
+    background-color: #316961; 
+    color: #fff; 
 
     /* Flexbox para centrar el formulario vertical y horizontalmente */
     display: flex;
@@ -145,8 +145,7 @@ button:hover {
 }
 
 .modal-header {
-    background-color: #316961; /* Tu color verde institucional */
-    color: white;
+    background-color: #316961; 
     padding: 15px 20px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;

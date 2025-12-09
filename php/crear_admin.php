@@ -1,16 +1,8 @@
 
 <?php
-/*
-* crear_admin.php
-* ¡SCRIPT DE AYUDA SÓLO PARA DESARROLLO!
-* Este script crea tu primer usuario Administrador.
-* ¡Bórralo después de usarlo!
-*/
 
-// 1. Incluye la conexión a la BD
 require_once 'db_connect.php';
 
-// --- CONFIGURA TU ADMIN AQUÍ ---
 $nombre = "Yeykocf";
 $apellido_p = "Cuesta";
 $apellido_m = "Meneses";

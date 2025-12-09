@@ -1,8 +1,6 @@
 <?php
-// 1. Inicializar la sesión existente
 session_start();
 
-// 2. Destruir todas las variables de sesión
 $_SESSION = array();
 
 // 3. Borrar la cookie de sesión

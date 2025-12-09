@@ -1,11 +1,8 @@
 <?php
 
-// ini_set('display_errors', 1); // Mantén esto comentado por ahora
-// error_reporting(E_ALL);
 
 session_start();
-header('Content-Type: application/json'); // Siempre responderemos en JSON
-
+header('Content-Type: application/json'); 
 // Inicializa $conn a null para evitar errores si la conexión falla
 $conn = null;
 require_once 'db_connect.php'; // Incluimos la conexión (puede fallar y $conn seguirá null)
@@ -60,11 +57,11 @@ try {
                  $stmt_get->close();
 
             } else {
-                 // --- Devolver TODOS los empleados (como lo tenías antes) ---
+                 // --- Devolver TODOS los empleados ---
                  $sql = "SELECT e.id_empleado, e.id_interno, e.nombre, e.apellido_p, e.apellido_m, e.fecha_ingreso, r.nombre_rol, e.estatus
                          FROM empleados e
                          JOIN roles r ON e.role_id = r.id
-                         -- WHERE e.estatus = 'activo' -- Puedes descomentar si solo quieres activos
+                         -- WHERE e.estatus = 'activo' -- 
                          ORDER BY e.id_empleado DESC";
                  $result = $conn->query($sql);
                  if ($result === false) {
@@ -142,7 +139,7 @@ try {
             // 3. Obtiene el ID numérico
             $nuevo_id_empleado = $conn->insert_id;
             if (empty($nuevo_id_empleado)) {
-                 throw new Exception('Error: No se pudo obtener el ID del nuevo empleado.'); // No debería necesitar rollback aquí
+                 throw new Exception('Error: No se pudo obtener el ID del nuevo empleado.'); 
             }
 
             // 4. Define prefijos
@@ -157,7 +154,7 @@ try {
             $sql_update = "UPDATE empleados SET id_interno = ?, username = ? WHERE id_empleado = ?";
             $stmt_update = $conn->prepare($sql_update);
             if ($stmt_update === false) {
-                 throw new Exception('Error al preparar UPDATE: ' . $conn->error); // No necesita rollback si solo falló el prepare
+                 throw new Exception('Error al preparar UPDATE: ' . $conn->error); 
             }
             $stmt_update->bind_param("ssi", $id_interno_nuevo, $id_interno_nuevo, $nuevo_id_empleado);
 
@@ -232,21 +229,20 @@ case 'PUT':
 
             // --- Lógica de Edición ---
             } else { // Si no es reactivar, asumimos que es editar
-                 // Obtenemos los datos del formulario (asegúrate que $id_empleado se leyó correctamente arriba)
+                 // Obtenemos los datos del formulario
                  $nombre = $datos['nombre'] ?? '';
                  $apellido_p = $datos['apellido_paterno'] ?? '';
                  $apellido_m = $datos['apellido_materno'] ?? '';
                  $role_id = $datos['rol'] ?? null;
                  $fecha_ingreso = $datos['fecha_ingreso'] ?? '';
                  $email = $datos['email'] ?? '';
-                 $password = $datos['password'] ?? ''; // Opcional
+                 $password = $datos['password'] ?? ''; 
 
-                 // Validación para EDICIÓN (aquí estaba el error al reactivar)
+                 // Validación para EDICIÓN 
                  if (empty($id_empleado) || empty($nombre) || empty($apellido_p) || empty($role_id) || empty($email) || empty($fecha_ingreso)) {
-                     throw new Exception('Error: Faltan datos requeridos para la actualización.'); // Este es el error que veías
+                     throw new Exception('Error: Faltan datos requeridos para la actualización.'); 
                  }
 
-                 // --- Verificación Duplicado Nombre (Excluyendo actual) ---
                  $sql_check_nombre = "SELECT id_empleado FROM empleados WHERE nombre = ? AND apellido_p = ? AND apellido_m = ? AND id_empleado != ?";
                  $stmt_check_nombre = $conn->prepare($sql_check_nombre);
                  if ($stmt_check_nombre === false) { throw new Exception('Error al preparar check nombre duplicado: ' . $conn->error); }
@@ -297,27 +293,21 @@ case 'PUT':
                       }
                  }
                  $stmt_update->close();
-            } // Fin del else (lógica de edición)
-
+            } // Fin del else
         break;
     } // Fin del switch
 } catch (Exception $e) {
-    // Bloque CATCH más seguro: Verifica si $conn es un objeto válido ANTES de usarlo
     if (is_object($conn) && $conn->connect_errno == 0 && method_exists($conn, 'ping') && $conn->ping()) {
-         // Solo intenta rollback si hay conexión Y si existe una transacción activa
         try {
              if (method_exists($conn, 'in_transaction') && $conn->in_transaction) {
                 $conn->rollback();
             }
         } catch (mysqli_sql_exception $rollback_ex) {
-             // Ignora errores durante el rollback si la conexión ya está mal
         }
     }
-    // Siempre envía la respuesta de error JSON
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 
 } finally {
-    // Bloque FINALLY más seguro: Cierra la conexión solo si es un objeto válido y está abierta
     if (is_object($conn) && $conn->connect_errno == 0 && method_exists($conn, 'ping') && $conn->ping()) {
         $conn->close();
     }

@@ -1,22 +1,13 @@
 <?php
-/*
-* login.php
-* Procesa el formulario de inicio de sesión.
-*/
 
-// 1. Inicia la sesión de PHP en la parte SUPERIOR
-// (Necesario para guardar que el usuario ha iniciado sesión)
-session_start();
 
-// 2. Incluye el archivo de conexión
 require_once 'db_connect.php';
 
-// 3. Verifica que los datos vengan del formulario (método POST)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 4. Obtiene los datos del formulario (de forma segura)
-    $username = $_POST['username'] ?? ''; // El 'name' del input
-    $password = $_POST['password'] ?? ''; // El 'name' del input
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? ''; 
 
     if (empty($username) || empty($password)) {
         header("Location: ../index.html?error=campos_vacios");
@@ -30,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $username, $username);
     
-    // 6. Ejecuta la consulta
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -54,7 +44,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $role_id = $user['role_id'];
         $url_destino = ""; // Variable para guardar la URL
 
-        // Usamos un 'switch' para asignar la URL basada en el ID del rol
         switch ($role_id) {
             case 1: // 1 = Administrador
                 $url_destino = "../Portal/portal-personal/personal.php";

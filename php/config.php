@@ -1,18 +1,4 @@
 <?php
-/*Credenciales BD*/
-
-// localhost
-//define('DB_HOST', 'localhost');      
-
-// usuariobd    
-//define('DB_USER', 'cytekmx_yeik');   
-
-// contraseña
-//define('DB_PASS', 'WTK$cuesta01');   
-
-// El nombre bd
-//define('DB_NAME', 'cytekmx_flecha_roja_db'); 
-
 
 
 
