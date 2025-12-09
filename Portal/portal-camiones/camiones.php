@@ -72,7 +72,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
         
 				<div class="perfil">
 
-					<a href="../index.html">
+					<a href="../index.php">
 						<img src="../img/cinta_principal2.png" class="img-perfil">
 					</a>
 
@@ -484,8 +484,22 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </form>
         </div>
     </div>
-
-
+<div id="modal-historial" class="modal-overlay" style="display:none;">
+    <div class="modal-content-large">
+        <div class="modal-header">
+            <h2>📜 Historial de Mantenimiento</h2>
+            <button class="btn-cerrar" onclick="document.getElementById('modal-historial').style.display='none'">×</button>
+        </div>
+        <div class="modal-body">
+            <h3 id="titulo-historial" style="color:#316960; border-bottom:1px solid #ddd; padding-bottom:10px;">Cargando...</h3>
+            
+            <div id="timeline-container"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancelar" onclick="document.getElementById('modal-historial').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+</div>
 
     
 

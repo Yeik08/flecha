@@ -1,10 +1,10 @@
 /**
- * scripts.js - VERSIÓN DEFINITIVA (v7)
- * - Separa la lógica de los modales (Alta vs Telemetría).
- * - Añade listener para el nuevo botón 'btn-guardar-archivo-masivo'.
- * - Corrige el listener de 'btn-guardar-csv' para que solo maneje telemetría.
- * - Corrige el botón 'btn-abrir-modal-telemetria' para que abra el modal correcto.
+ * scripts.js - VERSIÓN DEFINITIVA (v8)
+ * - Gestión completa de Camiones (Alta, Baja, Edición, Masivo).
+ * - Telemetría.
+ * - Historial Clínico Detallado (Entradas, Salidas, Materiales, Fotos).
  */
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // --- 1. LÓGICA PARA EL MENÚ DROPDOWN ---
@@ -29,47 +29,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (modalAltaCamion && btnAbrirModalAlta) {
         const abrirModal = () => modalAltaCamion.classList.remove('oculto');
-        const cerrarModal = () => modalAltaCamion.classList.add('oculto');
+        const cerrarModal = () => {
+            modalAltaCamion.classList.add('oculto');
+            if(modalTelemetria) modalTelemetria.classList.add('oculto');
+        };
         
         btnAbrirModalAlta.addEventListener('click', abrirModal);
 
-        //btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
-        //modalAltaCamion.addEventListener('click', e => {
-          //  if (e.target === modalAltaCamion) cerrarModal();
-          btnsCerrarModal.forEach(btn => btn.addEventListener('click', () => {
-            modalAltaCamion.classList.add('oculto');
-            modalTelemetria.classList.add('oculto');
-        }));
-                modalAltaCamion.addEventListener('click', e => {
+        btnsCerrarModal.forEach(btn => btn.addEventListener('click', cerrarModal));
+        
+        modalAltaCamion.addEventListener('click', e => {
             if (e.target === modalAltaCamion) cerrarModal();
         });
     }
-
 
     // --- 2b. LÓGICA DEL MODAL DE SUBIR TELEMETRÍA ---
     const modalTelemetria = document.getElementById('modal-subir-telemetria');
     const btnAbrirModalTelemetria = document.getElementById('btn-abrir-modal-telemetria');
     
     if (modalTelemetria && btnAbrirModalTelemetria) {
-        // Abre el modal de telemetría
         btnAbrirModalTelemetria.addEventListener('click', (e) => {
             e.preventDefault();
             modalTelemetria.classList.remove('oculto');
         });
         
         modalTelemetria.addEventListener('click', e => {
-            if (e.target === modalTelemetria) {
-                modalTelemetria.classList.add('oculto');
-            }
+            if (e.target === modalTelemetria) modalTelemetria.classList.add('oculto');
         });
     }
 
-    // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA (CON ALERTA DUPLICADOS) ---
+    // --- 2c. LÓGICA PARA ENVIAR EL ARCHIVO DE TELEMETRÍA ---
     const btnGuardarCsvTelemetria = document.getElementById('btn-guardar-csv-telemetria');
     const inputCsvRecorridos = document.getElementById('input-csv-recorridos');
 
     if (btnGuardarCsvTelemetria && inputCsvRecorridos) {
-        
         inputCsvRecorridos.addEventListener('change', () => {
             btnGuardarCsvTelemetria.disabled = (inputCsvRecorridos.files.length === 0);
         });
@@ -77,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnGuardarCsvTelemetria.addEventListener('click', async (e) => {
             e.preventDefault();
             if (inputCsvRecorridos.files.length === 0) {
-                alert("Por favor, selecciona un archivo CSV de telemetría para subir.");
+                alert("Por favor, selecciona un archivo CSV de telemetría.");
                 return;
             }
             const file = inputCsvRecorridos.files[0];
@@ -95,30 +88,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (data.success) {
-                    // --- BLOQUE DE ALERTA INTELIGENTE ---
                     let mensajeFinal = "¡Éxito! " + data.message;
-
-                    // Si el PHP reportó duplicados, los mostramos
                     if (data.lista_duplicados && data.lista_duplicados.length > 0) {
-                        mensajeFinal += "\n\n⚠️ ADVERTENCIA: Se detectaron datos repetidos (Mismo Mes/Año).";
-                        mensajeFinal += "\nSe actualizaron los registros de los siguientes camiones:\n";
-                        // Mostramos solo los primeros 5 para no saturar la alerta
+                        mensajeFinal += "\n\n⚠️ ADVERTENCIA: Datos actualizados (Duplicados detectados).\n";
                         mensajeFinal += data.lista_duplicados.slice(0, 5).join("\n");
-                        
-                        if (data.lista_duplicados.length > 5) {
-                            mensajeFinal += "\n... y " + (data.lista_duplicados.length - 5) + " más.";
-                        }
+                        if (data.lista_duplicados.length > 5) mensajeFinal += "\n... y " + (data.lista_duplicados.length - 5) + " más.";
                     }
-                    
                     alert(mensajeFinal);
                     modalTelemetria.classList.add('oculto');
                 } else {
                     alert("Error al procesar el archivo:\n" + data.message);
                 }
-
             } catch (error) {
-                console.error('Error en el fetch de telemetría:', error);
-                alert('Error de conexión. No se pudo contactar al servidor.');
+                console.error('Error:', error);
+                alert('Error de conexión.');
             } finally {
                 btnGuardarCsvTelemetria.disabled = false;
                 btnGuardarCsvTelemetria.textContent = 'Confirmar y Guardar';
@@ -144,12 +127,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 4. LÓGICA FORMULARIO MANUAL: OCULTAR CAMPOS ---
+    // --- 4. OCULTAR CAMPOS (NUEVO/USADO) ---
     const condicionVehiculo = document.getElementById('condicion');
     const camposSoloParaUsado = document.querySelectorAll('.ocultar-si-es-nuevo');
     if (condicionVehiculo && camposSoloParaUsado.length > 0) {
         const toggleCamposUsado = () => {
-            // Quitamos la lógica del 'display:flex' y usamos una clase
             if (condicionVehiculo.value === 'nuevo') {
                 camposSoloParaUsado.forEach(campo => { campo.classList.add('oculto-simple'); });
             } else {
@@ -160,119 +142,92 @@ document.addEventListener('DOMContentLoaded', function() {
         condicionVehiculo.addEventListener('change', toggleCamposUsado); 
     }
 
-    // --- 5. LÓGICA DE CARGA DINÁMICA DE CATÁLOGOS ---
-    // (Esta sección está bien y no necesita cambios)
+    // --- 5. CARGA DINÁMICA DE CATÁLOGOS ---
     let conductoresData = []; 
     const selectTecnologia = document.getElementById("tipo_unidad");
     const selectAnio = document.getElementById("anio");
     const selectMarcaAceite = document.getElementById("marca_filtro");
     const selectMarcaCentrifugo = document.getElementById("marca_filtro_centrifugo");
     const selectLubricante = document.getElementById("tipo_aceite"); 
+    
     async function cargarCatalogos() {
+        // Tecnologías
         if (selectTecnologia) {
             try {
                 const response = await fetch('fetch_catalogos.php?tipo=tecnologias');
-                if (!response.ok) throw new Error('HTTP ' + response.status);
                 const tecnologias = await response.json();
-                selectTecnologia.innerHTML = '<option value="">Selecciona tipo de tecnologia</option>';
+                selectTecnologia.innerHTML = '<option value="">Selecciona tecnología</option>';
                 tecnologias.forEach(tec => {
-                    const opcion = document.createElement("option");
-                    opcion.value = tec.id; 
-                    opcion.textContent = tec.nombre.toUpperCase();
-                    selectTecnologia.appendChild(opcion);
+                    const opt = document.createElement("option");
+                    opt.value = tec.id; 
+                    opt.textContent = tec.nombre.toUpperCase();
+                    selectTecnologia.appendChild(opt);
                 });
-            } catch (error) { console.error('Error en fetch Tecnologías:', error); }
+            } catch (e) { console.error(e); }
         }
+        // Conductores
         try {
             const response = await fetch('fetch_catalogos.php?tipo=conductores');
-            if (!response.ok) throw new Error('HTTP ' + response.status);
             const conductores = await response.json();
             conductoresData = conductores.map(c => ({ id: c.id_usuario, nombre: c.nombre_completo.toUpperCase() }));
-        } catch (error) { console.error('Error en fetch Conductores:', error); }
+        } catch (e) { console.error(e); }
+        
+        // Años
         if (selectAnio) {
             const anioActual = new Date().getFullYear();
             selectAnio.innerHTML = '<option value="">Selecciona año</option>'; 
             for (let i = anioActual; i >= 1990; i--) {
-                const opcion = document.createElement("option");
-                opcion.value = i;
-                opcion.textContent = i;
-                selectAnio.appendChild(opcion);
+                const opt = document.createElement("option");
+                opt.value = i; opt.textContent = i;
+                selectAnio.appendChild(opt);
             }
         }
-        if (selectMarcaAceite) {
-            try {
-                const response = await fetch('fetch_catalogos.php?tipo=filtros_aceite');
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const marcas = await response.json();
-                selectMarcaAceite.innerHTML = '<option value="">Selecciona una marca</option>';
-                marcas.forEach(item => {
-                    const opcion = document.createElement("option");
-                    opcion.value = item.marca;
-                    opcion.textContent = item.marca.toUpperCase();
-                    selectMarcaAceite.appendChild(opcion);
-                });
-            } catch (error) { console.error('Error en fetch Filtros Aceite:', error); }
-        }
-        if (selectMarcaCentrifugo) {
-            try {
-                const response = await fetch('fetch_catalogos.php?tipo=filtros_centrifugo');
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const marcas = await response.json();
-                selectMarcaCentrifugo.innerHTML = '<option value="">Selecciona una marca</option>';
-                marcas.forEach(item => {
-                    const opcion = document.createElement("option");
-                    opcion.value = item.marca;
-                    opcion.textContent = item.marca.toUpperCase();
-                    selectMarcaCentrifugo.appendChild(opcion);
-                });
-            } catch (error) { console.error('Error en fetch Filtros Centrifugo:', error); }
-        }
-        if (selectLubricante) {
-            try {
-                const response = await fetch('fetch_catalogos.php?tipo=lubricantes');
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                const lubricantes = await response.json();
-                selectLubricante.innerHTML = '<option value="">Selecciona un lubricante</option>';
-                lubricantes.forEach(item => {
-                    const opcion = document.createElement("option");
-                    opcion.value = item.nombre; 
-                    opcion.textContent = item.nombre.toUpperCase();
-                    selectLubricante.appendChild(opcion);
-                });
-            } catch (error) { console.error('Error en fetch Lubricantes:', error); }
-        }
+        // Filtros y Lubricantes
+        const llenarSelect = async (select, tipoFetch, defaultText) => {
+            if(select) {
+                try {
+                    const res = await fetch(`fetch_catalogos.php?tipo=${tipoFetch}`);
+                    const items = await res.json();
+                    select.innerHTML = `<option value="">${defaultText}</option>`;
+                    items.forEach(item => {
+                        const opt = document.createElement("option");
+                        // Asumiendo que el endpoint devuelve objetos con propiedad 'marca' o 'nombre'
+                        const val = item.marca || item.nombre;
+                        opt.value = val;
+                        opt.textContent = val.toUpperCase();
+                        select.appendChild(opt);
+                    });
+                } catch(e) { console.error(e); }
+            }
+        };
+
+        llenarSelect(selectMarcaAceite, 'filtros_aceite', 'Selecciona marca');
+        llenarSelect(selectMarcaCentrifugo, 'filtros_centrifugo', 'Selecciona marca');
+        llenarSelect(selectLubricante, 'lubricantes', 'Selecciona lubricante');
     }
     cargarCatalogos();
-
-
     cargarTablaCamiones();
 
-    // --- 5b. LÓGICA PARA CARGAR LA TABLA PRINCIPAL DE CAMIONES ---
+    // --- 5b. CARGAR TABLA PRINCIPAL DE CAMIONES ---
     async function cargarTablaCamiones() {
         const tbody = document.querySelector(".tabla-contenido tbody");
-        if (!tbody) return; // Si no hay tabla, no hacemos nada
+        if (!tbody) return;
 
         tbody.innerHTML = '<tr><td colspan="6">Cargando camiones...</td></tr>';
 
         try {
             const response = await fetch('api_camiones.php');
-            if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
-            
             const datos = await response.json();
 
             if (!datos.success) throw new Error(datos.message);
-
             if (datos.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6">No se encontraron camiones registrados.</td></tr>';
                 return;
             }
 
-            // Limpiamos la tabla
             tbody.innerHTML = '';
 
-            // Construimos cada fila
             datos.data.forEach(camion => {
-                // Preparamos los datos
                 let estatusClase = '';
                 switch (camion.estatus) {
                     case 'Activo': estatusClase = 'estatus-activo'; break;
@@ -280,17 +235,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'Inactivo': estatusClase = 'estatus-inactivo'; break;
                 }
 
-                // Determinamos el próximo mantenimiento
-                let proximoMto = '<span style="color: #999;">Pendiente cálculo</span>'; // Default
+                let proximoMto = '<span style="color: #999;">Pendiente cálculo</span>'; 
                 if (camion.mantenimiento_requerido === 'Si') {
-                    // Si ya urge, mostramos alerta ROJA con la fecha
                     const fechaVenc = camion.fecha_estimada_mantenimiento || 'Fecha desc.';
                     proximoMto = `<span class="mto-requerido">¡URGENTE! (${fechaVenc})</span>`;
                 } else if (camion.fecha_estimada_mantenimiento) {
-                    // Si hay fecha calculada, la mostramos normal
                     proximoMto = `<strong>${camion.fecha_estimada_mantenimiento}</strong>`; 
                 }
-                // Creamos la fila
+
                 const filaHTML = `
                     <tr>
                         <td><strong>${camion.numero_economico}</strong></td>
@@ -300,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${proximoMto}</td>
                         <td class="acciones">
                             <button class="btn-editar" data-id="${camion.id}">Ver/Editar</button>
-                            <button class="btn-historial" data-id="${camion.id}">Historial</button>
+                            <button class="btn-historial" data-id="${camion.id}" data-eco="${camion.numero_economico}">📜 Historial</button>
                         </td>
                     </tr>
                 `;
@@ -308,50 +260,51 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
         } catch (error) {
-            console.error('Error al cargar la tabla de camiones:', error);
-            tbody.innerHTML = `<tr><td colspan="6">Error al cargar los datos: ${error.message}</td></tr>`;
+            console.error(error);
+            tbody.innerHTML = `<tr><td colspan="6">Error al cargar datos.</td></tr>`;
         }
     }
 
-
-    // --- 6. BÚSQUEDA INTELIGENTE DE CONDUCTOR ---
-    // (Esta sección está bien y no necesita cambios)
+    // --- 6. SUGERENCIAS DE CONDUCTOR (ALTA) ---
     const inputConductor = document.getElementById("id_conductor");
     const listaSugerencias = document.getElementById("sugerencias-conductor");
-    if (inputConductor && listaSugerencias) {
-        inputConductor.addEventListener("input", () => {
-            const valor = inputConductor.value.trim().toUpperCase();
-            listaSugerencias.innerHTML = ""; 
-            if (valor === "") { listaSugerencias.style.display = "none"; return; }
-            const filtrados = conductoresData.filter(c => c.id.toUpperCase().includes(valor) || c.nombre.includes(valor));
-            if (filtrados.length > 0) {
-                listaSugerencias.style.display = "block";
-                filtrados.forEach(c => {
-                    const item = document.createElement("div");
-                    item.textContent = c.nombre; 
-                    item.addEventListener("click", () => {
-                        inputConductor.value = c.id; 
-                        listaSugerencias.style.display = "none";
+    
+    const configurarSugerencias = (input, lista) => {
+        if (input && lista) {
+            input.addEventListener("input", () => {
+                const valor = input.value.trim().toUpperCase();
+                lista.innerHTML = ""; 
+                if (valor === "") { lista.style.display = "none"; return; }
+                const filtrados = conductoresData.filter(c => c.id.toUpperCase().includes(valor) || c.nombre.includes(valor));
+                
+                if (filtrados.length > 0) {
+                    lista.style.display = "block";
+                    filtrados.forEach(c => {
+                        const item = document.createElement("div");
+                        item.textContent = `${c.nombre} (${c.id})`; 
+                        item.addEventListener("click", () => {
+                            input.value = c.id; 
+                            lista.style.display = "none";
+                        });
+                        lista.appendChild(item);
                     });
-                    listaSugerencias.appendChild(item);
-                });
-            } else {
-                listaSugerencias.style.display = "block";
-                const noRes = document.createElement("div");
-                noRes.textContent = "Sin coincidencias";
-                noRes.style.color = "#888";
-                listaSugerencias.appendChild(noRes);
-            }
-        });
-        document.addEventListener("click", (e) => {
-            if (!listaSugerencias.contains(e.target) && e.target !== inputConductor) {
-                listaSugerencias.style.display = "none";
-            }
-        });
-    }
+                } else {
+                    lista.style.display = "block";
+                    const noRes = document.createElement("div");
+                    noRes.textContent = "Sin coincidencias";
+                    noRes.style.color = "#888";
+                    lista.appendChild(noRes);
+                }
+            });
+            document.addEventListener("click", (e) => {
+                if (!lista.contains(e.target) && e.target !== input) lista.style.display = "none";
+            });
+        }
+    };
+    
+    configurarSugerencias(inputConductor, listaSugerencias);
 
-    // --- 7. LÓGICA DE DESCARGA DE PLANTILLA (ALTA MASIVA) ---
-    // (Esta sección está bien, solo corregimos el ID del botón)
+    // --- 7. DESCARGA DE PLANTILLA ALTA CAMIONES ---
     const btnDescargarAlta = document.getElementById('btn-descargar-plantilla-alta');
     const selectCondicionArchivo = document.getElementById('condicion-archivo');
     if (btnDescargarAlta && selectCondicionArchivo) {
@@ -360,168 +313,110 @@ document.addEventListener('DOMContentLoaded', function() {
             const tipoPlantilla = selectCondicionArchivo.value;
             let csvContent = "";
             let fileName = "";
-            const headersNuevos = ["numero_economico", "condicion", "placas", "vin", "Marca", "Anio", "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", "marca_filtro_centrifugo_actual", "serie_filtro_centrifugo_actual", "lubricante_actual"];
-            const headersViejos = ["numero_economico", "condicion", "placas", "vin", "Marca", "Anio", "id_tecnologia", "ID_Conductor", "estatus", "kilometraje_total", "fecha_ult_mantenimiento", "fecha_ult_cambio_aceite", "marca_filtro_aceite_actual", "serie_filtro_aceite_actual", "fecha_ult_cambio_centrifugo", "marca_filtro_centrifugo_actual", "serie_filtro_centrifugo_actual", "lubricante_actual"];
+            // (Headers reducidos para brevedad, usando los que definiste antes)
+            const headersBase = "numero_economico,condicion,placas,vin,Marca,Anio,id_tecnologia,ID_Conductor,estatus,kilometraje_total";
+            
             if (tipoPlantilla === 'nuevo') {
                 fileName = "plantilla_camiones_nuevos.csv";
-                csvContent = headersNuevos.join(",") + "\n";
-                csvContent += "ECO-1180,nuevo,PLACA123,VIN123456789,Scania,2025,ID 1=SCANIA i5 13.0 MT / ID 2=Irizar i6/ ID 3=Irizar i6s 15 MT,CON-011,Activo/Inactivo/En Taller/Vendido,1500,SCANIA,SCASERIE123,SCANIA,SCASERIE456,SAE 10W30 MULTIGRADO/SAE 15W30\n";
-            } else if (tipoPlantilla === 'usado') {
-                fileName = "plantilla_camiones_usados.csv";
-                csvContent = headersViejos.join(",") + "\n";
-                csvContent += "ECO-1130,usado,PLACA456,VIN987654321,Scania,2021,ID 1=SCANIA i5 13.0 MT / ID 2=Irizar i6/ ID 3=Irizar i6s 15 MT,CON-012,Activo/Inactivo/En Taller/Vendido,450000,2025-01-01,2025-05-01,SCANIA,SCASERIE789,2025-05-01,SCANIA,SCASERIE101,SAE 10W30 MULTIGRADO/SAE 15W30\n";
+                csvContent = headersBase + ",marca_filtro_aceite_actual,serie_filtro_aceite_actual,marca_filtro_centrifugo_actual,serie_filtro_centrifugo_actual,lubricante_actual\n";
+                csvContent += "ECO-1180,nuevo,PLACA123,VIN12345,Scania,2025,1,CON-011,Activo,1500,SCANIA,SERIE1,SCANIA,SERIE2,SAE 10W30 MULTIGRADO\n";
             } else {
-                alert("Por favor, selecciona una condición (Nuevo o Usado) para descargar la plantilla.");
-                return;
+                fileName = "plantilla_camiones_usados.csv";
+                csvContent = headersBase + ",fecha_ult_mantenimiento,fecha_ult_cambio_aceite,marca_filtro_aceite_actual,serie_filtro_aceite_actual,fecha_ult_cambio_centrifugo,marca_filtro_centrifugo_actual,serie_filtro_centrifugo_actual,lubricante_actual\n";
+                csvContent += "ECO-1130,usado,PLACA456,VIN98765,Scania,2021,1,CON-012,Activo,450000,2025-01-01,2025-05-01,SCANIA,SERIE789,2025-05-01,SCANIA,SERIE101,SAE 15W30\n";
             }
             descargarCSV(csvContent, fileName);
         });
     }
 
-    // --- 8. LÓGICA DE DESCARGA DE PLANTILLA (TELEMETRÍA) ---
-    // (Esta sección está bien y no necesita cambios)
+    // --- 8. DESCARGA PLANTILLA TELEMETRÍA ---
     const btnDescargarRecorridos = document.getElementById('btn-descargar-recorridos-archivo');
     if (btnDescargarRecorridos) {
         btnDescargarRecorridos.addEventListener('click', (e) => {
             e.preventDefault();
-            const headers = ["UNIDAD", "ANIO", "MES", "KILOMETRAJE_MES", "TIEMPO_CONDUCIENDO_HORAS", "TIEMPO_DETENIDO_HORAS", "TIEMPO_RALENTI_HORAS"];
-            let csvContent = headers.join(",") + "\n";
-            csvContent += "ECO-1133,2025,10,9500,180.5,40.2,30.0\n";
-            descargarCSV(csvContent, "plantilla_telemetria.csv");
+            const headers = "UNIDAD,ANIO,MES,KILOMETRAJE_MES,TIEMPO_CONDUCIENDO_HORAS,TIEMPO_DETENIDO_HORAS,TIEMPO_RALENTI_HORAS\n";
+            const row = "ECO-1133,2025,10,9500,180.5,40.2,30.0\n";
+            descargarCSV(headers + row, "plantilla_telemetria.csv");
         });
     }
     
-    // --- FUNCIÓN AUXILIAR PARA CREAR Y DESCARGAR CSV ---
-    function descargarCSV(csvContent, fileName) {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    function descargarCSV(content, fileName) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", fileName);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-// --- 9. LÓGICA DE UI ADICIONAL (KPI Y BÚSQUEDA EN TABLA) ---
-    
-    // Lógica del KPI (Desplegable)
-    const kpi = document.getElementById("kpi-aprobaciones");
-    const lista = document.getElementById("lista-aprobaciones");
-    if (kpi && lista) { 
-        kpi.addEventListener("click", () => { lista.classList.toggle("mostrar"); }); 
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
-    // --- LÓGICA DE BUSCADOR (FILTRO EN TIEMPO REAL) ---
+    // --- 9. BÚSQUEDA EN TABLA (FILTRO LOCAL) ---
     const inputBuscar = document.getElementById("buscar-eco");
-    const tablaBody = document.querySelector(".tabla-contenido tbody");
-
-    if (inputBuscar && tablaBody) {
+    if (inputBuscar) {
         inputBuscar.addEventListener("keyup", function() {
-            // 1. Obtenemos el texto y lo convertimos a minúsculas (para que no importen mayúsculas)
             const textoBusqueda = inputBuscar.value.toLowerCase();
-            const filas = tablaBody.getElementsByTagName("tr");
-
-            // 2. Recorremos todas las filas de la tabla
-            for (let i = 0; i < filas.length; i++) {
-                const fila = filas[i];
-                
-                // Si la fila es un mensaje de "Cargando..." o "No hay datos", no la filtramos
-                if (fila.cells.length < 2) continue;
-
-                // 3. Obtenemos todo el texto de la fila (ID + Placas + Estatus + Fecha...)
-                const textoFila = fila.textContent.toLowerCase();
-
-                // 4. Comparamos: ¿El texto de la fila incluye lo que escribió el usuario?
-                if (textoFila.includes(textoBusqueda)) {
-                    fila.style.display = ""; // Mostrar fila
-                } else {
-                    fila.style.display = "none"; // Ocultar fila
-                }
-            }
+            const filas = document.querySelectorAll(".tabla-contenido tbody tr");
+            filas.forEach(fila => {
+                if(fila.cells.length < 2) return;
+                const texto = fila.textContent.toLowerCase();
+                fila.style.display = texto.includes(textoBusqueda) ? "" : "none";
+            });
         });
     }
 
-
-
-
-
-
-
-
-    // --- 10. LÓGICA DE ENVÍO DEL FORMULARIO DE ALTA MANUAL ---
-    // (Esta sección está bien y no necesita cambios)
+    // --- 10. ENVÍO FORMULARIO ALTA MANUAL ---
     const formAltaCamion = document.getElementById('form-alta-camion');
     if (formAltaCamion) {
         formAltaCamion.addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const formData = new FormData(formAltaCamion);
-            if (formData.get('identificador') === '' || formData.get('placas') === '') {
-                alert('Por favor, llena los campos de ID y Placas.');
-                return;
-            }
             try {
                 const response = await fetch('registrar_camion.php', { method: 'POST', body: formData });
-                if (!response.ok) throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
                 const data = await response.json();
                 if (data.success) {
                     alert(data.message);
                     formAltaCamion.reset();
-                    const btnCerrar = document.querySelector('#modal-formulario .modal-cerrar');
-                    if (btnCerrar) btnCerrar.click();
+                    if(modalAltaCamion) modalAltaCamion.classList.add('oculto');
+                    cargarTablaCamiones();
                 } else {
-                    alert(`Error al registrar: ${data.message}`);
+                    alert(`Error: ${data.message}`);
                 }
             } catch (error) {
-                console.error('Error en el fetch:', error);
-                alert('Error de conexión. No se pudo contactar al servidor.');
+                alert('Error de conexión.');
             }
         });
     }
 
-    // --- 11. (NUEVO) LÓGICA DE ENVÍO DE ALTA MASIVA (CSV CAMIONES) ---
+    // --- 11. ENVÍO ALTA MASIVA ---
     const btnGuardarArchivoMasivo = document.getElementById('btn-guardar-archivo-masivo');
     const inputCsvAlta = document.getElementById('input-csv-alta');
     const formAltaArchivo = document.getElementById('form-alta-archivo');
 
     if (btnGuardarArchivoMasivo && inputCsvAlta && formAltaArchivo) {
-        
-        inputCsvAlta.addEventListener('change', () => {
-            btnGuardarArchivoMasivo.disabled = (inputCsvAlta.files.length === 0);
-        });
+        inputCsvAlta.addEventListener('change', () => btnGuardarArchivoMasivo.disabled = (inputCsvAlta.files.length === 0));
 
         btnGuardarArchivoMasivo.addEventListener('click', async (e) => {
             e.preventDefault();
-            if (inputCsvAlta.files.length === 0) {
-                alert("Por favor, selecciona un archivo CSV de camiones para subir.");
-                return;
-            }
+            if (inputCsvAlta.files.length === 0) return alert("Selecciona un archivo.");
             
             const formData = new FormData(formAltaArchivo); 
-            // El archivo ya está en el formData gracias al 'name="archivo_camiones"'
-
             btnGuardarArchivoMasivo.disabled = true;
             btnGuardarArchivoMasivo.textContent = 'Procesando...';
 
             try {
-                // Asumimos que creaste 'registrar_camion_masivo.php'
-                const response = await fetch('registrar_camion_masivo.php', { 
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch('registrar_camion_masivo.php', { method: 'POST', body: formData });
                 const data = await response.json();
                 if (data.success) {
                     alert("¡Éxito! " + data.message);
                     formAltaArchivo.reset();
-                    modalAltaCamion.classList.add('oculto'); // Cierra el modal principal
+                    modalAltaCamion.classList.add('oculto');
+                    cargarTablaCamiones();
                 } else {
-                    alert("Error al procesar el archivo:\n" + data.message);
+                    alert("Error: " + data.message);
                 }
             } catch (error) {
-                console.error('Error en el fetch de alta masiva:', error);
-                alert('Error de conexión. No se pudo contactar al servidor.');
+                alert('Error de conexión.');
             } finally {
                 btnGuardarArchivoMasivo.disabled = false;
                 btnGuardarArchivoMasivo.textContent = 'Confirmar y Guardar';
@@ -530,44 +425,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
-// --- 12. LÓGICA DE EDICIÓN DE CAMIÓN ---
-    
+    // --- 12. LÓGICA DE EDICIÓN Y EVENTOS DE TABLA ---
     const modalEditar = document.getElementById('modal-editar');
     
+    // Cerrar modal editar
     if (modalEditar) {
-        // 1. Lógica para CERRAR el modal (Botón X y Cancelar)
-        // Seleccionamos los botones DENTRO de este modal específico
-        const btnsCerrarEditar = modalEditar.querySelectorAll('.modal-cerrar, .btn-cerrar-modal');
-        
-        btnsCerrarEditar.forEach(btn => {
+        modalEditar.querySelectorAll('.modal-cerrar, .btn-cerrar-modal').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevenir comportamientos raros
+                e.preventDefault();
                 modalEditar.classList.add('oculto');
             });
         });
-
-        // Cerrar al dar clic fuera (en el fondo oscuro)
         modalEditar.addEventListener('click', e => {
             if (e.target === modalEditar) modalEditar.classList.add('oculto');
         });
     }
-    
-    // 2. Abrir modal y cargar datos (Event Delegation en la tabla)
+
+    // EVENT DELEGATION EN TABLA (PARA EDITAR E HISTORIAL)
     const tablaCuerpo = document.querySelector(".tabla-contenido tbody");
     if (tablaCuerpo) {
         tablaCuerpo.addEventListener('click', async (e) => {
+            
+            // A. BOTÓN EDITAR
             if (e.target.classList.contains('btn-editar')) {
                 const idCamion = e.target.getAttribute('data-id');
-                
-                // Abrir modal
                 if(modalEditar) modalEditar.classList.remove('oculto');
                 
-                // Cargar datos
                 try {
                     const response = await fetch(`api_camiones.php?id=${idCamion}`);
                     const data = await response.json();
-                    
                     if (data.success) {
                         const c = data.data;
                         document.getElementById('titulo-eco-editar').textContent = c.numero_economico;
@@ -576,112 +462,150 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('edit_kilometraje').value = c.kilometraje_total;
                         document.getElementById('edit_placas').value = c.placas;
                         document.getElementById('edit_conductor').value = c.id_interno_conductor || ''; 
-                        
-                        // Sugerencias de conductor (Reutilizamos la lógica si existe)
-                        // (Opcional: Podrías copiar la lógica de sugerencias aquí si la necesitas en el edit también)
                     } else {
-                        alert("Error al cargar datos: " + data.message);
+                        alert("Error al cargar datos.");
                         modalEditar.classList.add('oculto');
                     }
                 } catch (error) {
-                    console.error(error);
-                    alert("Error de conexión al cargar camión.");
+                    alert("Error de conexión.");
                     modalEditar.classList.add('oculto');
                 }
+            }
+
+            // B. BOTÓN HISTORIAL
+            if (e.target.classList.contains('btn-historial')) {
+                const id = e.target.getAttribute('data-id');
+                const eco = e.target.getAttribute('data-eco');
+                verHistorial(id, eco); // Llamamos a la función dedicada
             }
         });
     }
 
-    // 3. Guardar cambios
+    // Guardar Edición
     const formEditar = document.getElementById('form-editar-camion');
     if (formEditar) {
         formEditar.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(formEditar);
-            
             try {
-                const response = await fetch('editar_camion.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                // Verificar si la respuesta es válida antes de parsear
-                if (!response.ok) throw new Error("Error HTTP: " + response.status);
-                
+                const response = await fetch('editar_camion.php', { method: 'POST', body: formData });
                 const data = await response.json();
-                
                 if (data.success) {
                     alert(data.message);
                     modalEditar.classList.add('oculto');
-                    cargarTablaCamiones(); // Recargar la tabla para ver los cambios
+                    cargarTablaCamiones();
                 } else {
                     alert("Error: " + data.message);
                 }
             } catch (error) {
-                console.error(error);
-                alert("Error de conexión al guardar. Revisa la consola para más detalles.");
+                alert("Error de conexión.");
             }
         });
     }
 
+    // Configurar sugerencias en modal de edición
+    configurarSugerencias(document.getElementById("edit_conductor"), document.getElementById("sugerencias-conductor-edit"));
 
 
-// --- 13. BÚSQUEDA INTELIGENTE EN EDICIÓN ---
-    const inputConductorEdit = document.getElementById("edit_conductor");
-    const listaSugerenciasEdit = document.getElementById("sugerencias-conductor-edit");
-
-    if (inputConductorEdit && listaSugerenciasEdit) {
+    // =========================================================
+    // 13. FUNCIÓN VER HISTORIAL (MODAL)
+    // =========================================================
+    async function verHistorial(idCamion, numeroEconomico) {
+        const modal = document.getElementById('modal-historial');
+        const container = document.getElementById('timeline-container');
+        const titulo = document.getElementById('titulo-historial');
         
-        // Evento al escribir
-        inputConductorEdit.addEventListener("input", () => {
-            const valor = inputConductorEdit.value.trim().toUpperCase();
-            listaSugerenciasEdit.innerHTML = ""; 
-            
-            if (valor === "") {
-                listaSugerenciasEdit.style.display = "none";
+        modal.style.display = 'flex'; // Usamos flex para centrar si está definido en CSS
+        titulo.textContent = `Expediente de Unidad: ${numeroEconomico}`;
+        container.innerHTML = '<p style="text-align:center; padding:20px;">🔄 Buscando expedientes...</p>';
+
+        try {
+            const res = await fetch(`php/get_historial_camion.php?id=${idCamion}`);
+            const resp = await res.json();
+
+            if (!resp.success) {
+                container.innerHTML = `<p style="color:red;">Error: ${resp.message}</p>`;
                 return;
             }
 
-            // Filtramos de la lista global 'conductoresData' que ya cargamos al inicio
-            const filtrados = conductoresData.filter(c =>
-                c.id.toUpperCase().includes(valor) || c.nombre.includes(valor)
-            );
+            const datos = resp.data;
 
-            if (filtrados.length > 0) {
-                listaSugerenciasEdit.style.display = "block";
-                filtrados.forEach(c => {
-                    const item = document.createElement("div");
-                    // Mostramos Nombre y ID para mayor claridad
-                    item.textContent = `${c.nombre} (${c.id})`; 
-                    
-                    item.addEventListener("click", () => {
-                        inputConductorEdit.value = c.id; // Al hacer clic, ponemos el ID (CON-XXX)
-                        listaSugerenciasEdit.style.display = "none";
+            if (datos.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">📭 Este camión no tiene registros de mantenimiento en el sistema.</div>';
+                return;
+            }
+
+            let html = '';
+
+            datos.forEach(item => {
+                let colorBorde = item.estatus_entrada === 'Entregado' ? '#2ecc71' : '#f39c12';
+                
+                // Botones Miniatura
+                let botonesFotos = '';
+                if (item.fotos && item.fotos.length > 0) {
+                    botonesFotos = '<div class="mini-galeria">';
+                    item.fotos.forEach(f => {
+                        // Limpieza de ruta relativa
+                        const url = f.ruta_archivo.replace('../../../', '../');
+                        let icono = '📷';
+                        let tooltip = f.tipo_foto;
+                        
+                        if (f.tipo_foto.includes('Viejos')) { icono = '🗑️'; tooltip = 'Piezas Retiradas'; }
+                        else if (f.tipo_foto.includes('Nuevos')) { icono = '✨'; tooltip = 'Piezas Nuevas'; }
+                        else if (f.tipo_foto.includes('Cubetas')) { icono = '🛢️'; tooltip = 'Aceite Usado'; }
+                        
+                        botonesFotos += `<a href="${url}" target="_blank" class="btn-mini-foto" title="${tooltip}">${icono}</a>`;
                     });
-                    listaSugerenciasEdit.appendChild(item);
-                });
-            } else {
-                listaSugerenciasEdit.style.display = "block";
-                const noRes = document.createElement("div");
-                noRes.textContent = "Sin coincidencias";
-                noRes.style.color = "#888";
-                noRes.style.padding = "8px";
-                listaSugerenciasEdit.appendChild(noRes);
-            }
-        });
+                    botonesFotos += '</div>';
+                } else {
+                    botonesFotos = '<span style="color:#aaa; font-size:0.8em">Sin evidencia</span>';
+                }
 
-        // Cerrar lista al hacer clic fuera
-        document.addEventListener("click", (e) => {
-            if (!listaSugerenciasEdit.contains(e.target) && e.target !== inputConductorEdit) {
-                listaSugerenciasEdit.style.display = "none";
-            }
+                html += `
+                    <div class="card-historial" style="border-left: 5px solid ${colorBorde};">
+                        <div class="hist-header">
+                            <span class="folio">Folio: ${item.folio}</span>
+                            <span class="fecha">${new Date(item.fecha_ingreso).toLocaleDateString()}</span>
+                            <span class="duracion">⏱️ ${item.duracion}</span>
+                        </div>
+                        <div class="hist-body">
+                            <div class="col">
+                                <strong>Servicio:</strong><br> ${item.tipo_mantenimiento_solicitado}<br>
+                                <small>Responsable: ${item.mecanico || 'N/A'}</small>
+                            </div>
+                            <div class="col">
+                                <strong>Refacciones:</strong>
+                                <ul class="lista-mini">
+                                    <li>🛢️ Aceite: ${item.cubeta_1_entregada ? 'Sí' : '-'}</li>
+                                    <li>⚙️ Filtro: ${item.filtro_aceite_entregado || '-'}</li>
+                                </ul>
+                            </div>
+                            <div class="col-fotos" style="text-align:right;">
+                                ${botonesFotos}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red">Error al cargar el historial.</p>';
+        }
+    }
+
+    // Función global para cerrar historial (por si se llama desde onclick en HTML)
+    window.cerrarHistorial = function() {
+        document.getElementById('modal-historial').style.display = 'none';
+    };
+
+    // Cerrar historial con clic fuera
+    const modalHistorial = document.getElementById('modal-historial');
+    if(modalHistorial) {
+        modalHistorial.addEventListener('click', (e) => {
+            if (e.target === modalHistorial) modalHistorial.style.display = 'none';
         });
     }
 
-
-
-
-
-
-
-}); // FIN DEL DOMContentLoaded
+});

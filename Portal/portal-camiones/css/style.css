@@ -875,3 +875,118 @@ select {
 .oculto-simple {
     display: none !important;
 }
+/* Modal Grande */
+.modal-content-large {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; /* Más ancho */
+    max-width: 1000px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-height: 90vh; /* Scroll si es muy largo */
+    overflow-y: auto;
+}
+
+/* Tarjetas de Historial */
+.card-historial {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.folio { font-weight: bold; color: #316960; }
+.fecha { color: #666; font-size: 0.9em; }
+
+/* Grid de información */
+.historial-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 columnas */
+    gap: 15px;
+    font-size: 0.9em;
+}
+
+/* Listas compactas */
+.lista-mini {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.lista-mini li {
+    margin-bottom: 2px;
+    color: #555;
+}
+
+/* Botones de Fotos */
+.galeria-botones {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.btn-foto-mini {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #fff;
+    border: 1px solid #316960;
+    color: #316960;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.8em;
+    transition: all 0.2s;
+}
+
+.btn-foto-mini:hover {
+    background-color: #316960;
+    color: white;
+}
+
+/* Botón de acción en la tabla principal */
+.btn-historial {
+    background-color: #3498db;
+    color: white;
+}
+/* Modal Grande */
+.modal-content-large {
+    background: white; width: 90%; max-width: 900px;
+    padding: 20px; border-radius: 8px; max-height: 85vh; overflow-y: auto;
+}
+
+/* Tarjeta de Historial */
+.card-historial {
+    background: #f9f9f9; border: 1px solid #ddd; border-left: 4px solid #316960;
+    margin-bottom: 15px; padding: 10px; border-radius: 4px;
+}
+.hist-header {
+    display: flex; justify-content: space-between; font-weight: bold;
+    border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;
+}
+.hist-body { display: grid; grid-template-columns: 1fr 1fr 0.5fr; gap: 10px; font-size: 0.9em; }
+
+/* Botones Mini de Fotos */
+.mini-galeria { display: flex; gap: 5px; flex-wrap: wrap; }
+.btn-mini-foto {
+    text-decoration: none; background: #fff; border: 1px solid #ccc;
+    padding: 2px 6px; border-radius: 4px; font-size: 1.1em;
+    transition: transform 0.2s;
+}
+.btn-mini-foto:hover { transform: scale(1.2); border-color: #316960; }
+
+/* Botón Historial en Tabla */
+.btn-historial {
+    background-color: #3498db; color: white; border: none;
+    padding: 5px 10px; border-radius: 4px; cursor: pointer;
+}
