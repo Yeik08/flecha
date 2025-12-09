@@ -540,13 +540,27 @@ document.addEventListener('DOMContentLoaded', function() {
             datos.forEach(item => {
                 let colorBorde = item.estatus_entrada === 'Entregado' ? '#2ecc71' : '#f39c12';
                 
-                // Botones Miniatura
+// Botones Miniatura
                 let botonesFotos = '';
                 if (item.fotos && item.fotos.length > 0) {
                     botonesFotos = '<div class="mini-galeria">';
                     item.fotos.forEach(f => {
-                        // Limpieza de ruta relativa
-                        const url = f.ruta_archivo.replace('../../../', '../');
+                        
+                        // --- CORRECCIÓN DE RUTA DE IMAGEN ---
+                        // La BD tiene "../uploads/...", pero nosotros estamos en "Portal/portal-camiones/"
+                        // Necesitamos subir 2 niveles ("../../") para llegar a "uploads/"
+                        let url = f.ruta_archivo;
+                        
+                        // Si la ruta empieza con un solo "../", le agregamos otro para salir de 'portal-camiones'
+                        if (url.startsWith('../uploads')) {
+                            url = '../' + url; // Resultado: ../../uploads/...
+                        } 
+                        // Si por alguna razón tiene tres "../../../" (a veces pasa en saves profundos), lo ajustamos a dos
+                        else if (url.startsWith('../../../')) {
+                            url = url.replace('../../../', '../../');
+                        }
+                        // ------------------------------------
+
                         let icono = '📷';
                         let tooltip = f.tipo_foto;
                         
