@@ -94,19 +94,7 @@ $nombre_usuario = $_SESSION['nombre_completo'];
             </div>
 
             <div class="acciones-header">
-                <div class="tarjeta-accion" id="kpi-aprobaciones">
-                    <h3>Aprobaciones Pendientes</h3>
-                    <p class="numero-grande">4</p>
-                    <p>Camiones esperando salida de taller.</p>
 
-                    <!-- Lista desplegable oculta -->
-                    <ul id="lista-aprobaciones" class="lista-oculta">
-                        <li>ECO-101 — MAN ECLIPSE DD</li>
-                        <li>ECO-203 — SCANIA i5</li>
-                        <li>ECO-319 — BOXER OF</li>
-                        <li>ECO-410 — CENTURY ACM</li>
-                    </ul>
-                </div>
 
                 <div class="tarjeta-accion">
                     <div class="acciones-titulo">

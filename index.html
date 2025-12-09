@@ -28,11 +28,105 @@
                 <input type="password" id="password" name="password" required autocomplete="current-password">
             </div>
 
+<div style="margin: 15px 0; text-align: left; font-size: 14px; color: #fff;">
+    <input type="checkbox" id="privacyCheck" style="transform: scale(1.2); margin-right: 8px; cursor: pointer;">
+    <label for="privacyCheck" style="cursor: pointer;">
+        He leído y acepto el 
+        <a href="#" id="openModal" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">Aviso de Privacidad</a>
+        y el uso de geolocalización.
+    </label>
+</div>
 
+<button type="submit" id="btnLogin" class="btn-login" disabled style="opacity: 0.5; cursor: not-allowed;">Ingresar</button>
 
-            <button type="submit">Ingresar</button>
+<div id="privacyModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Aviso de Privacidad Integral</h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p><strong>AUTOTRANSPORTES FLECHA ROJA</strong>, comprometido con la protección de sus datos personales, le informa:</p>
+            
+            <h3>1. Finalidad del Tratamiento</h3>
+            <p>Los datos recabados a través del "Sistema Web de Control de Mantenimiento" (usuario, contraseña, nombre, cargo) son necesarios para la gestión operativa, asignación de tareas y auditoría interna.</p>
+
+            <h3>2. Datos Sensibles y Metadatos (Cláusula Crítica)</h3>
+            <p>El sistema utiliza algoritmos automáticos para extraer <strong>metadatos EXIF</strong> de las fotografías que usted sube como evidencia. Esto incluye:</p>
+            <ul>
+                <li><strong>Geolocalización (GPS):</strong> Para validar que la reparación se realizó en las instalaciones autorizadas.</li>
+                <li><strong>Fecha y Hora de Captura:</strong> Para asegurar que la evidencia es actual y no una fotografía reutilizada.</li>
+                <li><strong>Huella Digital del Archivo:</strong> Para evitar duplicidad y fraudes.</li>
+            </ul>
+            <p>Al aceptar este aviso, usted otorga su <strong>consentimiento expreso</strong> para el tratamiento de estos datos técnicos con fines exclusivos de control de calidad y seguridad patrimonial.</p>
+
+            <h3>3. Transferencia de Datos</h3>
+            <p>Sus datos no serán compartidos con terceros, salvo requerimiento de autoridad competente. La información se resguarda en servidores locales de la empresa.</p>
+
+            <h3>4. Derechos ARCO</h3>
+            <p>Puede ejercer sus derechos de Acceso, Rectificación, Cancelación u Oposición en el departamento de Recursos Humanos.</p>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #666;">Última actualización: Diciembre 2025</p>
+        </div>
+        <div class="modal-footer">
+            <button id="btnAcceptModal" class="btn-accept">Entendido y Aceptar</button>
+        </div>
+    </div>
+</div>
+
+      <!--    <button type="submit">Ingresar</button>-->  
         </form>
     </div>
+<script>
+    // Referencias a los elementos
+    const modal = document.getElementById("privacyModal");
+    const openBtn = document.getElementById("openModal");
+    const closeSpan = document.querySelector(".close-modal");
+    const acceptBtnModal = document.getElementById("btnAcceptModal");
+    
+    const checkbox = document.getElementById("privacyCheck");
+    const loginBtn = document.getElementById("btnLogin");
 
+    // 1. Lógica del Modal (Abrir/Cerrar)
+    openBtn.onclick = function(e) {
+        e.preventDefault(); // Evita que el link recargue la página
+        modal.style.display = "block";
+    }
+
+    // Cerrar con la X
+    closeSpan.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Cerrar con el botón de "Entendido"
+    acceptBtnModal.onclick = function() {
+        modal.style.display = "none";
+        checkbox.checked = true;
+        toggleLoginButton();
+    }
+
+    // Cerrar si hacen clic fuera del modal
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // 2. Lógica del Bloqueo de Botón (El Candado)
+    function toggleLoginButton() {
+        if (checkbox.checked) {
+            loginBtn.disabled = false;
+            loginBtn.style.opacity = "1";
+            loginBtn.style.cursor = "pointer";
+        } else {
+            loginBtn.disabled = true;
+            loginBtn.style.opacity = "0.5";
+            loginBtn.style.cursor = "not-allowed";
+        }
+    }
+
+    // Escuchar el cambio en el checkbox
+    checkbox.addEventListener('change', toggleLoginButton);
+</script>
 </body>
 </html>

@@ -33,9 +33,9 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 
 				<div class="fr">FLECHA ROJA</div>
                     
-                    <ul class="menu">
+      <!--              <ul class="menu">
 						<li><a href="../portal-camiones/camiones.html">Camiones</a></li>
-					</ul>
+					</ul>-->
 
 <!--					<ul class="menu">
 						<li class="dropdown">
@@ -45,12 +45,12 @@ $nombre_usuario = $_SESSION['nombre_completo'];
 									<li><a id="submenu" href="#">Alta</a></li>
 								</ul>
 						</li>
-					</ul> -->
+					</ul> 
 			
 					<ul class="menu">
 						<li><a href="../portal-inventario/alta-inventario.php">Inventario</a></li>
 					</ul>
-
+ -->
     				<ul class="menu">
 						<li><a href="#">Personal</a></li>
 					</ul>

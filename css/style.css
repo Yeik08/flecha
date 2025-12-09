@@ -109,3 +109,93 @@ button:hover {
     border-bottom: 1px solid #f0f0f0;
     color: #316961;
 }
+
+/* Estilos del Modal de Privacidad */
+.modal-overlay {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro transparente */
+    backdrop-filter: blur(5px); /* Efecto borroso elegante */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    font-family: Arial, sans-serif;
+    animation: slideDown 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh; /* Altura máxima */
+}
+
+@keyframes slideDown {
+    from {transform: translateY(-50px); opacity: 0;}
+    to {transform: translateY(0); opacity: 1;}
+}
+
+.modal-header {
+    background-color: #316961; /* Tu color verde institucional */
+    color: white;
+    padding: 15px 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-modal {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* Permite scroll si el texto es largo */
+    color: #333;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.modal-body h3 {
+    color: #316961;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-top: 15px;
+}
+
+.modal-footer {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+    background-color: #f9f9f9;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.btn-accept {
+    background-color: #316961;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-accept:hover {
+    background-color: #254e48;
+}

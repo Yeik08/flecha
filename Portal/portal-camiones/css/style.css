@@ -179,7 +179,8 @@ a {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     text-align: center;
-    flex-basis: 300px; /* Ancho base */
+    flex-basis: 510px; /* Ancho base */
+    
 }
 
 .tarjeta-accion h3 {
